@@ -390,6 +390,16 @@ body {
     font-weight: 600;
 }
 
+.kb-footer .kb-author {
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.5px;
+}
+
+.kb-footer .kb-author::before { content: "✍  "; }
+
 .kb-footer .kb-disclaimer {
     color: #bdc3c7;
     font-size: 11px;
