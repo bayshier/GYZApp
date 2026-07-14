@@ -98,35 +98,8 @@
                     <img src="assets/2027/photos/公司大门.jpg" alt="公司大门" loading="lazy">
                     <img src="assets/2027/photos/大门前台 1.jpg" alt="大门前台" loading="lazy">
                     <img src="assets/2027/photos/大门 2.jpg" alt="新办公大门" loading="lazy">
-                    <img src="assets/2027/photos/会议大厅.jpg" alt="会议大厅" loading="lazy">
                 </div>
                 <div class="an-office-note">从旧大楼到新大楼 · 一路走来的印记</div>
-            </div>
-        </section>
-
-        <!-- ===== 我们的伙伴：吉祥物 + 产品 ===== -->
-        <section class="an-section" style="padding-top:0;">
-            <div class="an-section-title">
-                <h2>我们的伙伴</h2>
-            </div>
-            <div class="an-brand-card">
-                <div class="an-brand-item">
-                    <img src="assets/guyuzhou/股宇宙 app 启动图.webp" alt="股宇宙APP" loading="lazy">
-                    <div>
-                        <h3>股宇宙</h3>
-                        <p>财富在线旗下的股票投资工具，为投资者提供专业的行情与资讯服务。</p>
-                        <div class="tags">
-                            <span># 行情</span><span># 资讯</span><span># 投资工具</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="an-brand-item">
-                    <img src="assets/cfzx/财富在线吉祥物.png" alt="财富在线吉祥物" loading="lazy">
-                    <div>
-                        <h3>财富在线吉祥物</h3>
-                        <p>陪伴我们一路成长的伙伴，27周年，继续一起出发。</p>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -174,6 +147,7 @@
             </div>
             <div class="an-office">
                 <div class="an-office-thumbs">
+                    <img src="assets/2027/photos/会议大厅.jpg" alt="会议大厅" loading="lazy">
                     <img src="assets/2027/photos/周年气球.jpg" alt="周年气球" loading="lazy">
                     <img src="assets/2027/photos/微信图片_20260714115815_3_2.jpg" alt="2027" loading="lazy">
                     <img src="assets/2027/photos/微信图片_20260714115820_6_2.jpg" alt="2027" loading="lazy">
@@ -238,10 +212,6 @@
         // Hero 视频点击全屏播放
         document.querySelector('.an-hero-video').addEventListener('click', function () {
             showVideo('assets/2027/videos/27周年海报视频.mp4');
-        });
-        // 产品/吉祥物图点击放大
-        document.querySelectorAll('.an-brand-item img').forEach(function (img) {
-            img.addEventListener('click', function () { showImg(img.src); });
         });
 
         closeBtn.addEventListener('click', close);
