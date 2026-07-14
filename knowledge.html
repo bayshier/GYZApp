@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="股宇宙知识库 - 股票基础教学，涵盖K线分时图、均线系统、MACD/KDJ等技术指标、PE/PB/ROE基本面分析等股票入门知识">
+    <meta name="theme-color" content="#1a2b4a">
+    <title>股宇宙知识库 - 股票基础教学</title>
+    <link rel="shortcut icon" href="icon_logo.png" type="image/png">
+    <link rel="icon" href="icon_logo.png" type="image/png">
+    <link rel="stylesheet" href="css/knowledge.css">
+</head>
+
+<body>
+    <!-- 顶部导航 -->
+    <header class="kb-header">
+        <div class="kb-header-inner">
+            <a class="kb-logo" href="#/">
+                <img src="icon_logo.png" alt="股宇宙">
+                <span>股宇宙 · 知识库</span>
+            </a>
+            <button class="kb-back-btn" id="kb-back-btn">← 返回</button>
+        </div>
+    </header>
+
+    <!-- 主内容区（SPA 渲染容器） -->
+    <main class="kb-main">
+        <div id="kb-view">
+            <!-- 路由渲染内容 -->
+            <div class="kb-empty">
+                <div class="icon">⏳</div>
+                <p>知识库加载中...</p>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="kb-footer">
+            <a class="kb-download" href="index.html">下载股宇宙 APP</a>
+            <p>股宇宙知识库 · 为投资新手打造的股票百科</p>
+            <p class="kb-disclaimer">
+                ※ 本知识库内容仅供学习交流，不构成任何投资建议。<br>
+                股市有风险，投资需谨慎。
+            </p>
+        </footer>
+    </main>
+
+    <!-- 数据源 & 路由逻辑 -->
+    <script src="js/knowledge-data.js"></script>
+    <script src="js/knowledge-app.js"></script>
+</body>
+
+</html>
