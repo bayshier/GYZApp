@@ -1,11 +1,11 @@
 /* ============================================================
    股宇宙知识库 - 内容数据源
-   四大模块：K线分时 / 均线MA / 技术指标 / 基本面盘口
+   五大模块：K线分时 / 均线MA / 技术指标 / 基本面盘口 / 港美股
    每篇文章：id / 分类 / 标题 / 摘要 / 正文(HTML) / 标签
    图解采用内联 SVG，零图片依赖
    ============================================================ */
 
-/* ---------- 四大分类 ---------- */
+/* ---------- 五大分类 ---------- */
 var KB_CATEGORIES = [
     {
         id: 'kline',
@@ -30,6 +30,12 @@ var KB_CATEGORIES = [
         name: '基本面与盘口',
         icon: '📊',
         desc: 'PE/PB/ROE 与盘口数据解读'
+    },
+    {
+        id: 'hkus',
+        name: '港美股市场',
+        icon: '🌏',
+        desc: '交易规则、市场结构与中概股'
     }
 ];
 
@@ -288,6 +294,50 @@ var KB_ARTICLES = [
     + '<p>这是一个重要规律：<strong>压力位被有效突破后，会转变为新的支撑位</strong>；<strong>支撑位被有效跌破后，会转变为新的压力位</strong>。这在制定交易计划时非常实用。</p>'
 
     + '<div class="kb-tip"><strong>实战应用：</strong>不要在压力位正下方追高买入，不要在支撑位正上方恐慌卖出。可在<strong>支撑位附近</strong>寻找买入机会，在<strong>压力位附近</strong>考虑减仓，并设好止损。</div>'
+},
+
+{
+    id: 'prepost-session',
+    category: 'kline',
+    title: '盘前盘后：集合竞价与交易时段',
+    summary: 'A股每个交易日从9:15集合竞价开始，盘前盘后的价格发现机制影响开盘价和收盘价，是每个交易者必懂的基础。',
+    tags: ['盘前', '盘后', '集合竞价', '开盘价', '收盘价', '交易时段'],
+    body:
+    '<h2>A股完整交易时间表</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:8px;border:1px solid #ddd;">时段</th><th style="padding:8px;border:1px solid #ddd;">时间</th><th style="padding:8px;border:1px solid #ddd;">说明</th></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>盘前集合竞价</strong></td><td style="padding:8px;border:1px solid #ddd;">9:15 — 9:25</td><td style="padding:8px;border:1px solid #ddd;">确定开盘价</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;"><strong>早盘</strong></td><td style="padding:8px;border:1px solid #ddd;">9:30 — 11:30</td><td style="padding:8px;border:1px solid #ddd;">连续竞价</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>午盘</strong></td><td style="padding:8px;border:1px solid #ddd;">13:00 — 14:57</td><td style="padding:8px;border:1px solid #ddd;">连续竞价</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;"><strong>盘后集合竞价</strong></td><td style="padding:8px;border:1px solid #ddd;">14:57 — 15:00</td><td style="padding:8px;border:1px solid #ddd;">确定收盘价</td></tr>'
+    + '</table>'
+
+    + '<h2>盘前集合竞价（9:15—9:25）</h2>'
+    + '<p>开盘前的10分钟是<strong>集合竞价</strong>阶段，所有买卖委托集中撮合，最终产生当天的<strong>开盘价</strong>。集合竞价分三个阶段：</p>'
+    + '<ul>'
+    + '<li><strong>9:15—9:20</strong>：可委托、可撤单。这5分钟投资者可以自由挂单和撤销，行情活跃。</li>'
+    + '<li><strong>9:20—9:25</strong>：可委托、<strong class="down">不可撤单</strong>。这5分钟只能挂单不能撤销，主力常在此阶段"做盘"，开盘价即将确定。</li>'
+    + '<li><strong>9:25—9:30</strong>：静默期，接受委托但暂不撮合，9:30开盘后统一进入连续竞价。</li>'
+    + '</ul>'
+
+    + '<h2>开盘价怎么产生</h2>'
+    + '<p>9:25时，交易所系统汇总所有有效委托，按"<strong>最大成交量</strong>"原则计算出一个价格作为开盘价。这个价格使得成交的买单和卖单数量最多。高于开盘价的买单和低于开盘价的卖单都会成交，其余进入连续竞价排队。</p>'
+
+    + '<h2>盘后集合竞价（14:57—15:00）</h2>'
+    + '<p>收盘前最后3分钟也是集合竞价，用来确定当天的<strong>收盘价</strong>。这3分钟同样<strong>不可撤单</strong>。收盘价很重要——它是次日涨跌幅的计算基准，也是技术分析（K线、均线）使用的数据。</p>'
+    + '<div class="kb-tip"><strong>为什么要盘后竞价？</strong>过去收盘价是最后1秒的最后一笔成交价，容易被人为操纵。改为集合竞价后，收盘价更<strong>真实反映全天供需</strong>，不易被操纵。</div>'
+
+    + '<h2>盘前盘后怎么看</h2>'
+    + '<ul>'
+    + '<li><strong>看高开/低开</strong>：开盘价高于昨收为<strong class="up">高开</strong>（偏多），低于昨收为<strong class="down">低开</strong>（偏空）。但高开不一定高走，需结合量能观察。</li>'
+    + '<li><strong>看集合竞价量</strong>：9:25的竞价成交量异常放大，说明资金关注度极高，当天可能有较大行情。</li>'
+    + '<li><strong>看尾盘抢筹/砸盘</strong>：14:57后突然放量拉升（抢筹）或跳水（砸盘），往往反映主力的真实意图，因为收盘价是次日的基准。</li>'
+    + '<li><strong>看收盘价位置</strong>：收盘在全天最高附近=强势，收盘在最低附近=弱势，收盘在均价附近=中性。</li>'
+    + '</ul>'
+
+    + '<div class="kb-warn"><strong>注意：</strong>9:20—9:25 和 14:57—15:00 <strong>不能撤单</strong>。这两个时段挂的单若成交无法撤销，新手切记不要随意挂单，尤其不要在临近收盘时挂"高价买"或"低价卖"的乌龙单。</div>'
+
+    + '<div class="kb-tip"><strong>实战要点：</strong>开盘后前15分钟（9:30—9:45）波动最剧烈、最活跃，是<strong>消化隔夜消息</strong>的时段，方向尚不稳定，新手建议观察不急躁。真正可靠的走势往往在10:00之后才逐步明朗。</div>'
 },
 
 /* ====================================================================
@@ -756,6 +806,207 @@ var KB_ARTICLES = [
 
     + '<div class="kb-warn"><strong>注意盘口"假象"：</strong>主力常通过挂大单（虚假委托）来影响委比、制造盘口强势/弱势假象，诱导散户跟风，随后撤单。这就是"骗线"。盘口数据是<strong>动态、瞬时</strong>的，参考价值有限，不能作为唯一依据，务必结合价格走势和成交量。</div>'
     + '<div class="kb-tip"><strong>综合判断：</strong>盘口数据适合<strong>短线盯盘</strong>参考。真正的趋势判断仍需 K线、均线、成交量等中观指标。新手不必过度纠结盘口的每个数字，把握"量价配合 + 大方向"更重要。</div>'
+},
+
+/* ====================================================================
+   五、港美股市场
+   ==================================================================== */
+{
+    id: 'hk-rules',
+    category: 'hkus',
+    title: '港股交易规则：无涨跌停的T+0市场',
+    summary: '港股没有涨跌幅限制，支持T+0回转交易，交易单位不统一，规则与A股差异较大。',
+    tags: ['港股', '交易规则', 'T+0', '涨跌停', '交易单位', '手'],
+    body:
+    '<h2>港股核心交易规则</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:8px;border:1px solid #ddd;">项目</th><th style="padding:8px;border:1px solid #ddd;">港股</th></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">交易时间</td><td style="padding:8px;border:1px solid #ddd;">9:30-12:00 / 13:00-16:00</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">交易制度</td><td style="padding:8px;border:1px solid #ddd;"><strong>T+0</strong>（当日买当日卖）</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">交收制度</td><td style="padding:8px;border:1px solid #ddd;">T+2（资金T+2到账）</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">涨跌幅限制</td><td style="padding:8px;border:1px solid #ddd;"><strong class="down">无</strong>（可暴涨暴跌）</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">交易单位</td><td style="padding:8px;border:1px solid #ddd;">不统一（每手股数由公司定）</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">报价货币</td><td style="padding:8px;border:1px solid #ddd;">港币 HKD</td></tr>'
+    + '</table>'
+
+    + '<h2>无涨跌停意味着什么</h2>'
+    + '<p>港股<strong>没有10%或20%的涨跌幅限制</strong>，单日可以涨几倍，也可以跌去大半。利好消息下可能一天翻倍，利空时（如业绩暴雷、退市风险）可能单日暴跌50%以上。这是港股最大的特征，也是最大的风险。</p>'
+    + '<div class="kb-warn"><strong>风险提示：</strong>无涨跌停意味着<strong>风险和收益都被放大</strong>。务必做好风控、设止损，切勿重仓单只个股，尤其是基本面不明的仙股（低价股）。</div>'
+
+    + '<h2>T+0 回转交易</h2>'
+    + '<p>港股支持<strong>T+0</strong>：当天买入的股票当天就能卖出，不限次数。相比A股的T+1，港股交易更灵活，适合做短线和日内交易。但灵活也意味着<strong>容易频繁操作、追涨杀跌</strong>，新手需克制。</p>'
+
+    + '<h2>交易单位：每手股数不统一</h2>'
+    + '<p>A股统一100股为1手，而港股<strong>每手股数由上市公司自行决定</strong>，从100股到10000股不等：</p>'
+    + '<ul>'
+    + '<li>腾讯：每手100股</li>'
+    + '<li>汇丰：每手400股</li>'
+    + '<li>部分股票：每手1000股、2000股甚至更高</li>'
+    + '</ul>'
+    + '<p>买入必须按<strong>整手</strong>交易，不能零买。所以同样资金，能买不同股票的"手数"差别很大。</p>'
+
+    + '<div class="kb-tip"><strong>交易费用：</strong>港股交易费用比A股高，包括佣金、交易征费、交易费、交收费等。频繁交易成本不低，做T+0前务必算清手续费。</div>'
+},
+
+{
+    id: 'us-rules',
+    category: 'hkus',
+    title: '美股交易规则：做空与盘前盘后',
+    summary: '美股交易时段分盘前、正常、盘后三段，支持做空和T+0，最小单位1股，规则成熟灵活。',
+    tags: ['美股', '交易规则', '做空', '盘前盘后', 'T+0', '1股'],
+    body:
+    '<h2>美股核心交易规则</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:8px;border:1px solid #ddd;">项目</th><th style="padding:8px;border:1px solid #ddd;">美股</th></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">交易时间（东部）</td><td style="padding:8px;border:1px solid #ddd;">9:30-16:00（北京时间晚）</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">交易制度</td><td style="padding:8px;border:1px solid #ddd;"><strong>T+0</strong>（融资账户可日内交易）</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">交收制度</td><td style="padding:8px;border:1px solid #ddd;">T+1（2024年起）</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">涨跌幅限制</td><td style="padding:8px;border:1px solid #ddd;">有个股熔断（非每日限制）</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">交易单位</td><td style="padding:8px;border:1px solid #ddd;"><strong>1股起</strong>（可零股交易）</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">报价货币</td><td style="padding:8px;border:1px solid #ddd;">美元 USD</td></tr>'
+    + '</table>'
+
+    + '<h2>交易时段（北京时间）</h2>'
+    + '<p>美股分为三个时段（以美东时间计，冬令时比夏令时晚1小时）：</p>'
+    + '<ul>'
+    + '<li><strong>盘前</strong>：4:00-9:30（流动性低，波动大）</li>'
+    + '<li><strong>正常交易</strong>：9:30-16:00</li>'
+    + '<li><strong>盘后</strong>：16:00-20:00（流动性低，波动大）</li>'
+    + '</ul>'
+    + '<p>对应北京时间：夏令时晚上21:30开盘，冬令时晚上22:30开盘。所以美股投资者常需<strong>熬夜看盘</strong>。</p>'
+
+    + '<h2>做空机制</h2>'
+    + '<p>美股<strong>做空非常成熟</strong>——先借股票卖出，等跌了再买回归还，赚下跌的钱。机构常用做空对冲风险或表达看空观点。做空机制使美股定价更有效，但也可能引发<strong>逼空行情</strong>（如2021年游戏驿站GME事件）。</p>'
+
+    + '<h2>个股熔断（LULD机制）</h2>'
+    + '<p>美股没有A股那样的每日涨跌停板，但有<strong>个股熔断</strong>（Limit Up-Limit Down）：5分钟内涨跌超过一定幅度会触发短暂停牌，冷却后恢复交易。此外还有<strong>大盘熔断</strong>（市场下跌7%/13%/20%三级）。</p>'
+
+    + '<h2>1股起买，可买零股</h2>'
+    + '<p>美股最小交易单位是<strong>1股</strong>，甚至支持<strong>碎股（零股）</strong>交易。像伯克希尔（巴菲特公司）股价几十万美元一股，普通人买不起整手，但可以买0.1股。资金门槛很低。</p>'
+
+    + '<div class="kb-tip"><strong>交易费用：</strong>美股主流券商已普遍<strong>零佣金</strong>（如盈透、富途、老虎等），但买卖会有微小的<strong>SEC费、交易活动费</strong>。相比港股，美股交易成本更低。</div>'
+},
+
+{
+    id: 'hk-us-structure',
+    category: 'hkus',
+    title: '港美股市场结构：主板、创业板与板块',
+    summary: '港股分主板与GEM创业板，美股有纽交所、纳斯达克等交易所，各自定位不同类型企业。',
+    tags: ['港交所', '纽交所', '纳斯达克', '主板', '创业板', '市场结构'],
+    body:
+    '<h2>香港市场结构</h2>'
+    + '<p>香港交易所（HKEX）主要分两个板块：</p>'
+    + '<ul>'
+    + '<li><strong>主板</strong>：成熟大型企业上市地，门槛较高（盈利、市值、现金流等要求）。绝大多数知名公司都在主板，如腾讯、美团、阿里。</li>'
+    + '<li><strong>GEM（创业板）</strong>：面向中小型成长企业，门槛较低，风险较高，流动性差。过去是"跳板"，但近年来活跃度很低。</li>'
+    + '</ul>'
+
+    + '<h3>港股的特色板块</h3>'
+    + '<ul>'
+    + '<li><strong>蓝筹股</strong>：恒生指数成分股，市值大、流动性好、分红稳定（如汇丰、腾讯、友邦）。</li>'
+    + '<li><strong>红筹股</strong>：在港注册上市、但主要业务在境内的中资公司。</li>'
+    + '<li><strong>H股</strong>：在内地注册、香港上市的公司（如工商银行、中国平安）。</li>'
+    + '<li><strong>仙股</strong>：股价低于1港元的低价股，风险极高，易被操控，新手慎碰。</li>'
+    + '</ul>'
+
+    + '<h2>美国市场结构</h2>'
+    + '<p>美国有<strong>两大主流交易所</strong>，各具特色：</p>'
+
+    + '<h3>1. 纽交所（NYSE）</h3>'
+    + '<ul>'
+    + '<li>全球市值最大的交易所。</li>'
+    + '<li>上市要求严格，以<strong>传统行业大蓝筹</strong>为主：金融（摩根大通）、消费（可口可乐、沃尔玛）、工业（波音）等。</li>'
+    + '<li>形象稳重，老牌巨头聚集地。</li>'
+    + '</ul>'
+
+    + '<h3>2. 纳斯达克（NASDAQ）</h3>'
+    + '<ul>'
+    + '<li>全球第二大，以<strong>科技股</strong>著称：苹果、微软、谷歌、亚马逊、英伟达、特斯拉。</li>'
+    + '<li>上市门槛相对灵活，吸引高成长、高创新企业。</li>'
+    + '<li>纳斯达克综合指数是科技股风向标；纳斯达克100指数（QQQ）是热门ETF。</li>'
+    + '</ul>'
+
+    + '<h3>美股三大指数</h3>'
+    + '<ul>'
+    + '<li><strong>道琼斯</strong>：30只蓝筹股，最老牌，代表性强但样本少。</li>'
+    + '<li><strong>标普500</strong>：500家大公司，覆盖面广，被视作<strong>美股大盘风向标</strong>。</li>'
+    + '<li><strong>纳斯达克综合</strong>：偏科技，波动大，代表创新经济。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>选市场建议：</strong>稳健型选港股蓝筹/美股道指标普，追求成长选美股纳斯达克。投资前务必了解公司在哪个市场、什么板块，这决定了流动性和风险特征。</div>'
+},
+
+{
+    id: 'adr-interconnect',
+    category: 'hkus',
+    title: 'ADR存托凭证与沪深港通',
+    summary: '中概股通过ADR在美上市，内地资金通过沪深港通投资港股，理解这些机制才能读懂跨境投资。',
+    tags: ['ADR', '中概股', '沪深港通', '互联互通', '存托凭证'],
+    body:
+    '<h2>什么是ADR（美国存托凭证）</h2>'
+    + '<p>ADR（American Depositary Receipt）是<strong>美国存托凭证</strong>。外国公司想在美国上市、让美国投资者用美元买卖，通常不直接发行股票，而是通过<strong>存托银行</strong>发行一种代表其股票的"凭证"，这就是ADR。</p>'
+    + '<p>大部分<strong>中概股</strong>（中国概念股）就是通过ADR在美股上市的，如阿里巴巴（BABA）、京东（JD）、百度（BIDU）、拼多多（PDD）。</p>'
+
+    + '<h2>中概股的三种上市路径</h2>'
+    + '<ul>'
+    + '<li><strong>美股ADR</strong>：阿里、京东、百度等，以ADR形式在纽交所/纳斯达克交易。</li>'
+    + '<li><strong>港股二次上市/双重主要上市</strong>：近年很多中概股<strong>回港上市</strong>，如阿里、京东、网易、B站，既在美股也在港股交易，两地股票可转换。</li>'
+    + '<li><strong>A股</strong>：少数中概股回归A股（如三六零），或采用A+H股两地上市。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>为什么中概股回港？</strong>中美监管摩擦（如PCAOB审计争议、HFCAA法案）使中概股面临<strong>退市风险</strong>。回港上市是<strong>风险对冲</strong>，保留融资渠道，也方便亚洲投资者参与。</div>'
+
+    + '<h2>沪深港通：内地资金的出海通道</h2>'
+    + '<p><strong>沪深港通</strong>（Stock Connect）是内地与香港股市的互联互通机制，让两地投资者互相买卖对方市场的股票：</p>'
+    + '<ul>'
+    + '<li><strong>港股通</strong>（内地→香港）：内地投资者可买符合条件的<strong>港股</strong>。包括<strong>沪港通</strong>和<strong>深港通</strong>。</li>'
+    + '<li><strong>陆股通</strong>（香港→内地）：境外资金通过香港买<strong>A股</strong>，这就是常说的"北向资金"。</li>'
+    + '</ul>'
+
+    + '<h2>北向资金：外资风向标</h2>'
+    + '<p>通过陆股通流入A股的境外资金被称为<strong>"北向资金"</strong>（从香港向北流入内地）。市场普遍关注北向资金的<strong>净流入/流出</strong>，将其视为<strong>外资对A股的态度风向标</strong>：</p>'
+    + '<ul>'
+    + '<li>北向资金大幅<strong>净流入</strong>：外资看好A股，市场情绪偏暖。</li>'
+    + '<li>北向资金大幅<strong>净流出</strong>：外资撤离，需警惕。</li>'
+    + '</ul>'
+    + '<div class="kb-warn"><strong>注意：</strong>北向资金只是参考指标之一，不能单独决定买卖。外资也会追涨杀跌，短线波动不代表长期趋势。</div>'
+
+    + '<h2>港股通能买什么</h2>'
+    + '<p>港股通不是所有港股都能买，有<strong>成分股名单</strong>（恒生综合大型/中型/小型指数成分股等）。像腾讯、美团、阿里、汇丰都在名单内，但部分小市值或新上市公司可能不在。开通港股通还需满足<strong>50万元</strong>资产门槛。</p>'
+},
+
+{
+    id: 'hk-vs-a-vs-us',
+    category: 'hkus',
+    title: 'A股 / 港股 / 美股：三大市场对比',
+    summary: '一表看清A股、港股、美股在交易规则、涨跌停、做空、费用等核心维度的差异。',
+    tags: ['对比', 'A股', '港股', '美股', '差异', 'T+1', 'T+0'],
+    body:
+    '<h2>三大市场核心对比</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:7px;border:1px solid #ddd;">对比项</th><th style="padding:7px;border:1px solid #ddd;">A股</th><th style="padding:7px;border:1px solid #ddd;">港股</th><th style="padding:7px;border:1px solid #ddd;">美股</th></tr>'
+    + '<tr><td style="padding:7px;border:1px solid #ddd;">交易制度</td><td style="padding:7px;border:1px solid #ddd;">T+1</td><td style="padding:7px;border:1px solid #ddd;">T+0</td><td style="padding:7px;border:1px solid #ddd;">T+0</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:7px;border:1px solid #ddd;">涨跌停</td><td style="padding:7px;border:1px solid #ddd;">±10%/20%</td><td style="padding:7px;border:1px solid #ddd;">无</td><td style="padding:7px;border:1px solid #ddd;">个股熔断</td></tr>'
+    + '<tr><td style="padding:7px;border:1px solid #ddd;">做空</td><td style="padding:7px;border:1px solid #ddd;">有限制</td><td style="padding:7px;border:1px solid #ddd;">支持</td><td style="padding:7px;border:1px solid #ddd;">成熟</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:7px;border:1px solid #ddd;">交易单位</td><td style="padding:7px;border:1px solid #ddd;">100股/手</td><td style="padding:7px;border:1px solid #ddd;">不统一</td><td style="padding:7px;border:1px solid #ddd;">1股起</td></tr>'
+    + '<tr><td style="padding:7px;border:1px solid #ddd;">货币</td><td style="padding:7px;border:1px solid #ddd;">人民币</td><td style="padding:7px;border:1px solid #ddd;">港币</td><td style="padding:7px;border:1px solid #ddd;">美元</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:7px;border:1px solid #ddd;">交易时间</td><td style="padding:7px;border:1px solid #ddd;">9:30-15:00</td><td style="padding:7px;border:1px solid #ddd;">9:30-16:00</td><td style="padding:7px;border:1px solid #ddd;">21:30-次4:00</td></tr>'
+    + '<tr><td style="padding:7px;border:1px solid #ddd;">佣金</td><td style="padding:7px;border:1px solid #ddd;">较低</td><td style="padding:7px;border:1px solid #ddd;">较高</td><td style="padding:7px;border:1px solid #ddd;">零佣金为主</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:7px;border:1px solid #ddd;">分红</td><td style="padding:7px;border:1px solid #ddd;">不稳定</td><td style="padding:7px;border:1px solid #ddd;">较高（蓝筹）</td><td style="padding:7px;border:1px solid #ddd;">多回购少分红</td></tr>'
+    + '</table>'
+
+    + '<h2>A股特点：政策市 + 散户多</h2>'
+    + '<p>A股<strong>散户占比高</strong>，情绪化明显，受政策影响大（俗称"政策市"）。涨跌停板和T+1限制了短期波动，但也限制了流动性。适合偏好稳健、能承受政策博弈的投资者。</p>'
+
+    + '<h2>港股特点：低估值 + 高股息</h2>'
+    + '<p>港股<strong>估值普遍偏低</strong>（PE/PB低于A股和美股），蓝筹股<strong>股息率高</strong>（汇丰、中海油常达5%以上），适合价值投资和收息策略。但<strong>流动性分化严重</strong>——少数龙头成交活跃，大量中小盘股流动性极差。</p>'
+
+    + '<h2>美股特点：长牛 + 科技龙头</h2>'
+    + '<p>美股是全球<strong>最成熟、流动性最好</strong>的市场，长期呈慢牛走势。以科技巨头（FAANG+英伟达）为代表的成长股是核心驱动力。美股公司<strong>更爱回购</strong>（buyback）而非分红，回购推高每股收益和股价。适合长期配置、追求成长收益。</p>'
+
+    + '<div class="kb-tip"><strong>汇率影响：</strong>投资港美股涉及<strong>汇率波动</strong>。人民币升值时，港美股的收益会被汇率抵消一部分；贬值时反而增厚收益。这是跨境投资不可忽视的隐性成本/收益。</div>'
+
+    + '<div class="kb-warn"><strong>风险提示：</strong>港美股无涨跌停，单日波动可能极大；美股需熬夜看盘；港股流动性风险（想卖卖不掉）；中概股的政策与退市风险。跨市场投资务必分散、控仓、设止损。</div>'
 }
 ];
 
