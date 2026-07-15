@@ -60,6 +60,14 @@
             + '<input type="text" class="kb-search" id="kb-search-input" '
             + 'placeholder="搜索知识库（如：MACD、市盈率、金叉）..." /></div>';
 
+        // 小白入口：学习路线
+        html += '<div class="kb-newbie-banner" onclick="location.hash=\'#/guide\'">'
+            + '<div class="kb-newbie-icon">🌱</div>'
+            + '<div class="kb-newbie-text">'
+            + '<div class="kb-newbie-title">股票小白？从这里开始</div>'
+            + '<div class="kb-newbie-desc">完全不懂也没关系，6 步带你从零入门 →</div>'
+            + '</div></div>';
+
         html += '<div class="kb-home-title">选择分类开始学习</div>';
         html += '<div class="kb-cats">';
 
@@ -211,6 +219,78 @@
         document.getElementById('kb-view').innerHTML = html;
     }
 
+    /* 小白学习路线 */
+    function renderGuide() {
+        var steps = [
+            { num: '01', icon: '📘', title: '认识股票是什么',
+              desc: '先搞懂股票的本质——买股票就是买公司的一部分，分享公司的成长。',
+              articleId: 'pe' },
+            { num: '02', icon: '📈', title: '看懂K线图',
+              desc: 'K线是技术分析的基石，一根线记录了开盘、收盘、最高、最低四个价位。',
+              articleId: 'kline-basic' },
+            { num: '03', icon: '🕐', title: '搞清交易时间和规则',
+              desc: '集合竞价、开盘收盘、T+1交易——这些规则决定你什么时候能买卖。',
+              articleId: 'prepost-session' },
+            { num: '04', icon: '〰️', title: '学会看趋势：均线',
+              desc: '均线帮你判断大方向，顺势而为是投资的第一课。',
+              articleId: 'ma-intro' },
+            { num: '05', icon: '🎯', title: '掌握一两个核心指标',
+              desc: 'MACD看趋势和背离，KDJ找超买超卖——不用学多，够用就好。',
+              articleId: 'macd' },
+            { num: '06', icon: '🌏', title: '了解不同市场',
+              desc: 'A股、港股、美股规则不同，了解差异才能选择适合自己的市场。',
+              articleId: 'hk-vs-a-vs-us' }
+        ];
+
+        var html = '<div class="kb-guide">';
+        html += '<div class="kb-guide-header">'
+            + '<div class="kb-guide-emoji">🌱</div>'
+            + '<h1>股票小白学习路线</h1>'
+            + '<p>完全不懂也没关系，按这个顺序一步步来，6 步建立基础认知。</p>'
+            + '</div>';
+
+        html += '<div class="kb-guide-tip">'
+            + '<strong>💡 学习建议：</strong>不要着急，每篇花 10 分钟读完。'
+            + '先理解概念，再看实战要点。投资是长跑，基础扎实比急着操作重要得多。'
+            + '</div>';
+
+        html += '<div class="kb-guide-steps">';
+        steps.forEach(function (s, i) {
+            var a = getArticle(s.articleId);
+            var cat = a ? getCat(a.category) : null;
+            html += '<div class="kb-guide-step">'
+                + '<div class="kb-guide-step-num">' + s.num + '</div>'
+                + '<div class="kb-guide-step-body">'
+                + '<div class="kb-guide-step-head">'
+                + '<span class="kb-guide-step-icon">' + s.icon + '</span>'
+                + '<span class="kb-guide-step-title">' + s.title + '</span>'
+                + '</div>'
+                + '<p class="kb-guide-step-desc">' + s.desc + '</p>';
+            if (a) {
+                html += '<a class="kb-guide-step-link" href="#/article/' + a.id + '">'
+                    + '开始学习 →</a>';
+            }
+            html += '</div>';
+            if (i < steps.length - 1) {
+                html += '<div class="kb-guide-step-arrow">↓</div>';
+            }
+            html += '</div>';
+        });
+        html += '</div>';
+
+        html += '<div class="kb-guide-end">'
+            + '<div class="kb-guide-end-emoji">🎉</div>'
+            + '<h3>恭喜！基础认知已建立</h3>'
+            + '<p>完成以上 6 步，你已经超过了大部分散户。<br>接下来可以从首页选择感兴趣的分类，深入学习。</p>'
+            + '<a class="kb-guide-end-btn" href="#/">去探索更多知识 →</a>'
+            + '</div>';
+
+        html += '</div>';
+
+        document.getElementById('kb-view').innerHTML = html;
+        window.scrollTo(0, 0);
+    }
+
     /* 404 */
     function renderNotFound() {
         document.getElementById('kb-view').innerHTML =
@@ -249,6 +329,8 @@
 
         if (hash === '' || hash === '/') {
             renderHome();
+        } else if (hash === 'guide') {
+            renderGuide();
         } else if (hash.indexOf('cat/') === 0) {
             var catId = hash.substring(4);
             renderCatList(catId);

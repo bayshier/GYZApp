@@ -426,3 +426,231 @@ body {
 /* 滚动条美化 */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-thumb { background: #cfd8dc; border-radius: 3px; }
+
+/* ============================================================
+   小白入口 & 学习路线
+   ============================================================ */
+
+/* 首页小白入口横幅 */
+.kb-newbie-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(135deg, #1a2b4a 0%, #2d4a7a 100%);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+    border: 1px solid rgba(212, 166, 68, 0.3);
+}
+
+.kb-newbie-banner:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(26, 43, 74, 0.2);
+    border-color: var(--accent);
+}
+
+.kb-newbie-icon {
+    font-size: 36px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.kb-newbie-text { flex: 1; }
+
+.kb-newbie-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.kb-newbie-desc {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ---------- 学习路线页 ---------- */
+.kb-guide {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.kb-guide-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.kb-guide-emoji {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+.kb-guide-header h1 {
+    font-size: 24px;
+    color: var(--brand);
+    margin-bottom: 8px;
+}
+
+.kb-guide-header p {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.7;
+}
+
+/* 学习建议提示框 */
+.kb-guide-tip {
+    background: rgba(212, 166, 68, 0.1);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 28px;
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text);
+}
+
+.kb-guide-tip strong { color: var(--accent); }
+
+/* 步骤列表 */
+.kb-guide-steps {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.kb-guide-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.kb-guide-step-num {
+    width: 44px;
+    height: 44px;
+    line-height: 44px;
+    text-align: center;
+    border-radius: 50%;
+    background: var(--brand);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(26, 43, 74, 0.2);
+    margin-bottom: 14px;
+}
+
+/* 每隔一步换金色 */
+.kb-guide-step:nth-child(odd) .kb-guide-step-num {
+    background: var(--accent);
+}
+
+.kb-guide-step-body {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    width: 100%;
+    border: 1px solid var(--border);
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.kb-guide-step-body:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+}
+
+.kb-guide-step-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.kb-guide-step-icon { font-size: 24px; }
+
+.kb-guide-step-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.kb-guide-step-desc {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.7;
+    margin-bottom: 12px;
+}
+
+.kb-guide-step-link {
+    display: inline-block;
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 6px 16px;
+    background: rgba(212, 166, 68, 0.1);
+    border-radius: 16px;
+    transition: all 0.2s;
+}
+
+.kb-guide-step-link:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* 步骤间箭头 */
+.kb-guide-step-arrow {
+    color: var(--accent);
+    font-size: 18px;
+    margin: 6px 0;
+    opacity: 0.6;
+}
+
+/* 完成庆祝区 */
+.kb-guide-end {
+    text-align: center;
+    margin-top: 32px;
+    padding: 28px 20px;
+    background: linear-gradient(135deg, rgba(212, 166, 68, 0.1), rgba(26, 43, 74, 0.08));
+    border-radius: 14px;
+    border: 1px solid var(--border);
+}
+
+.kb-guide-end-emoji {
+    font-size: 40px;
+    margin-bottom: 8px;
+}
+
+.kb-guide-end h3 {
+    font-size: 20px;
+    color: var(--brand);
+    margin-bottom: 8px;
+}
+
+.kb-guide-end p {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.8;
+    margin-bottom: 18px;
+}
+
+.kb-guide-end-btn {
+    display: inline-block;
+    background: var(--brand);
+    color: #fff;
+    padding: 12px 32px;
+    border-radius: 24px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kb-guide-end-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(26, 43, 74, 0.2);
+}
