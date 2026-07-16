@@ -654,3 +654,135 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 4px 16px rgba(26, 43, 74, 0.2);
 }
+
+/* ============================================================
+   财经网址导航（黄页）
+   ============================================================ */
+
+/* 首页黄页入口横幅（区别于小白入口，用绿色调） */
+.kb-links-banner {
+    background: linear-gradient(135deg, #1a6b4c 0%, #2d8a68 100%) !important;
+    border-color: rgba(46, 204, 113, 0.3) !important;
+}
+
+.kb-links-banner:hover {
+    border-color: #2ecc71 !important;
+}
+
+/* ---------- 黄页页 ---------- */
+/* 分类区块 */
+.kb-links-cat {
+    margin-bottom: 24px;
+}
+
+.kb-links-cat-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.kb-links-cat-icon { font-size: 22px; }
+
+.kb-links-cat-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--brand);
+}
+
+.kb-links-cat-count {
+    font-size: 12px;
+    color: var(--accent);
+    background: rgba(212, 166, 68, 0.12);
+    padding: 2px 10px;
+    border-radius: 10px;
+}
+
+.kb-links-cat-desc {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-bottom: 14px;
+    padding-left: 30px;
+}
+
+/* 网站卡片网格 */
+.kb-links-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.kb-link-card {
+    display: block;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    text-decoration: none;
+    color: var(--text);
+    box-shadow: var(--shadow);
+    border: 1px solid transparent;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.kb-link-card:hover, .kb-link-card:active {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: 0 4px 16px rgba(26, 43, 74, 0.12);
+}
+
+.kb-link-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.kb-link-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.kb-link-tag {
+    font-size: 11px;
+    color: var(--brand-light);
+    background: rgba(45, 74, 122, 0.08);
+    padding: 2px 10px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.kb-link-desc {
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 6px;
+}
+
+.kb-link-host {
+    font-size: 11px;
+    color: var(--accent);
+    font-family: -apple-system, monospace;
+}
+
+/* 页脚 */
+.kb-links-footer {
+    text-align: center;
+    margin-top: 28px;
+    padding: 20px;
+    font-size: 13px;
+    color: var(--text-light);
+    background: var(--card);
+    border-radius: var(--radius);
+    line-height: 1.8;
+}
+
+.kb-links-note {
+    font-size: 12px;
+    color: var(--text-faint);
+}
+
+/* 响应式：宽屏两列 */
+@media (min-width: 600px) {
+    .kb-links-grid { grid-template-columns: repeat(2, 1fr); }
+}

@@ -68,6 +68,14 @@
             + '<div class="kb-newbie-desc">完全不懂也没关系，6 步带你从零入门 →</div>'
             + '</div></div>';
 
+        // 财经黄页入口
+        html += '<div class="kb-newbie-banner kb-links-banner" onclick="location.hash=\'#/links\'">'
+            + '<div class="kb-newbie-icon">🔗</div>'
+            + '<div class="kb-newbie-text">'
+            + '<div class="kb-newbie-title">财经网址导航</div>'
+            + '<div class="kb-newbie-desc">25 个国内外财经网站，一键直达 →</div>'
+            + '</div></div>';
+
         html += '<div class="kb-home-title">选择分类开始学习</div>';
         html += '<div class="kb-cats">';
 
@@ -291,6 +299,47 @@
         window.scrollTo(0, 0);
     }
 
+    /* 财经网址导航（黄页） */
+    function renderLinks() {
+        var groups = window.KB_LINKS || [];
+        var html = '<div class="kb-section-title"><h2>🔗 财经网址导航</h2>'
+            + '<p>精选 25 个国内外财经网站，一键直达</p></div>';
+
+        var total = 0;
+        groups.forEach(function (g) {
+            total += g.sites.length;
+            html += '<div class="kb-links-cat">'
+                + '<div class="kb-links-cat-head">'
+                + '<span class="kb-links-cat-icon">' + g.catIcon + '</span>'
+                + '<span class="kb-links-cat-name">' + g.catName + '</span>'
+                + '<span class="kb-links-cat-count">' + g.sites.length + ' 个</span>'
+                + '</div>'
+                + '<div class="kb-links-cat-desc">' + g.catDesc + '</div>'
+                + '<div class="kb-links-grid">';
+
+            g.sites.forEach(function (s) {
+                var host = s.url.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+                html += '<a class="kb-link-card" href="' + s.url + '" target="_blank" rel="noopener noreferrer">'
+                    + '<div class="kb-link-card-head">'
+                    + '<span class="kb-link-name">' + s.name + '</span>'
+                    + '<span class="kb-link-tag">' + s.tag + '</span>'
+                    + '</div>'
+                    + '<p class="kb-link-desc">' + s.desc + '</p>'
+                    + '<span class="kb-link-host">' + host + ' ↗</span>'
+                    + '</a>';
+            });
+
+            html += '</div></div>';
+        });
+
+        html += '<div class="kb-links-footer">'
+            + '共收录 ' + total + ' 个财经网站 · 持续更新中<br>'
+            + '<span class="kb-links-note">提示：点击卡片在新标签页打开对方官网</span>'
+            + '</div>';
+
+        document.getElementById('kb-view').innerHTML = html;
+    }
+
     /* 404 */
     function renderNotFound() {
         document.getElementById('kb-view').innerHTML =
@@ -331,6 +380,8 @@
             renderHome();
         } else if (hash === 'guide') {
             renderGuide();
+        } else if (hash === 'links') {
+            renderLinks();
         } else if (hash.indexOf('cat/') === 0) {
             var catId = hash.substring(4);
             renderCatList(catId);
