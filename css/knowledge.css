@@ -721,6 +721,7 @@ body {
     color: var(--text);
     box-shadow: var(--shadow);
     border: 1px solid transparent;
+    cursor: pointer;
     transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 

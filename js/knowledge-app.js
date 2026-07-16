@@ -319,14 +319,14 @@
 
             g.sites.forEach(function (s) {
                 var host = s.url.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-                html += '<a class="kb-link-card" href="' + s.url + '" target="_blank" rel="noopener noreferrer">'
+                html += '<div class="kb-link-card" onclick="window.open(\'' + s.url + '\', \'_blank\')">'
                     + '<div class="kb-link-card-head">'
                     + '<span class="kb-link-name">' + s.name + '</span>'
                     + '<span class="kb-link-tag">' + s.tag + '</span>'
                     + '</div>'
                     + '<p class="kb-link-desc">' + s.desc + '</p>'
                     + '<span class="kb-link-host">' + host + ' ↗</span>'
-                    + '</a>';
+                    + '</div>';
             });
 
             html += '</div></div>';
