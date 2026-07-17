@@ -814,6 +814,63 @@ var KB_ARTICLES = [
     + '<div class="kb-tip"><strong>综合判断：</strong>盘口数据适合<strong>短线盯盘</strong>参考。真正的趋势判断仍需 K线、均线、成交量等中观指标。新手不必过度纠结盘口的每个数字，把握"量价配合 + 大方向"更重要。</div>'
 },
 
+{
+    id: 'f10',
+    category: 'fundamental',
+    title: 'F10：一键看懂一只股票的基本面',
+    summary: 'F10是行情软件里查看个股基本面的功能键，集成了公司资料、股东、财务、分红等核心信息，是基本面研究的起点。',
+    tags: ['F10', '基本面', '公司资料', '股东', '十大股东', '分红', '研报'],
+    body:
+    '<h2>什么是 F10</h2>'
+    + '<p>在大部分行情软件（同花顺、东方财富、通达信等）里，选中一只股票后按键盘<strong>F10</strong>键，就会弹出该股票的<strong>基本面资料页</strong>。F10 是股民最常用的"查公司"入口，相当于一份<strong>股票的身份证+体检报告</strong>。</p>'
+    + '<div class="kb-tip"><strong>为什么叫 F10？</strong>因为早期软件把它绑定在键盘的 F10 功能键上，沿用至今。手机端一般在个股页面点"资讯"或"F10"标签进入。</div>'
+
+    + '<h2>F10 里有哪些核心信息</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:8px;border:1px solid #ddd;">栏目</th><th style="padding:8px;border:1px solid #ddd;">看什么</th><th style="padding:8px;border:1px solid #ddd;">重点关注</th></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>公司概况</strong></td><td style="padding:8px;border:1px solid #ddd;">公司全称、所属行业、主营业务、上市日期</td><td style="padding:8px;border:1px solid #ddd;">公司到底靠什么赚钱</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;"><strong>股本结构</strong></td><td style="padding:8px;border:1px solid #ddd;">总股本、流通股本、限售股</td><td style="padding:8px;border:1px solid #ddd;">有没有大量解禁压力</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>股东研究</strong></td><td style="padding:8px;border:1px solid #ddd;">十大股东、股东变动、机构持仓</td><td style="padding:8px;border:1px solid #ddd;">大股东在增持还是减持</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;"><strong>财务分析</strong></td><td style="padding:8px;border:1px solid #ddd;">营收、净利润、ROE、资产负债率</td><td style="padding:8px;border:1px solid #ddd;">业绩是增长还是下滑</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>分红融资</strong></td><td style="padding:8px;border:1px solid #ddd;">历年的分红记录、增发/配股</td><td style="padding:8px;border:1px solid #ddd;">是分红回报还是圈钱</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;"><strong>新闻公告</strong></td><td style="padding:8px;border:1px solid #ddd;">最新公告、重大事项、新闻</td><td style="padding:8px;border:1px solid #ddd;">有没有利空利好</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>研究报告</strong></td><td style="padding:8px;border:1px solid #ddd;">券商对该公司的研报与评级</td><td style="padding:8px;border:1px solid #ddd;">机构怎么看这家公司</td></tr>'
+    + '</table>'
+
+    + '<h2>新手必看的 4 个栏目</h2>'
+
+    + '<h3>1. 公司概况——搞清楚"它是干嘛的"</h3>'
+    + '<p>很多人买股票连公司做什么的都不知道。F10 第一栏就写清楚了<strong>主营业务</strong>。比如某只股票名字像科技股，F10 一看主营业务其实是房地产——这就是"名不副实"，投资前必须搞清。</p>'
+
+    + '<h3>2. 十大股东——谁在持仓</h3>'
+    + '<p>十大股东列表能看到<strong>谁在重仓这只股票</strong>：</p>'
+    + '<ul>'
+    + '<li><strong>机构云集</strong>（公募、社保、QFII）→ 受机构认可，相对稳健。</li>'
+    + '<li><strong>大股东减持</strong> → 连续几个季度大股东在卖，需警惕（连大股东都不看好）。</li>'
+    + '<li><strong>股东人数骤减</strong> → 筹码在集中（可能主力吸筹）；骤增 → 筹码分散（可能出货）。</li>'
+    + '</ul>'
+
+    + '<h3>3. 财务分析——业绩好不好</h3>'
+    + '<p>核心看几个数字的<strong>同比变化</strong>（和去年同期比）：</p>'
+    + '<ul>'
+    + '<li><strong>营收</strong>：卖了多少，增长说明在扩张。</li>'
+    + '<li><strong>净利润</strong>：赚了多少，这才是真金白银。</li>'
+    + '<li><strong>ROE</strong>：净资产收益率，>15%算优秀（详见 ROE 专篇）。</li>'
+    + '<li><strong>经营现金流</strong>：赚的是不是真钱——净利润高但现金流为负，可能是"纸面利润"。</li>'
+    + '</ul>'
+
+    + '<h3>4. 分红融资——回报还是圈钱</h3>'
+    + '<p>这一栏能看出公司对股东的态度：</p>'
+    + '<ul>'
+    + '<li><strong>常年稳定高分红</strong>（如银行、公用事业）→ 重视股东回报，适合长线。</li>'
+    + '<li><strong>反复增发圈钱、很少分红</strong> → 把股市当提款机，需谨慎。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>实战用法：</strong>买入任何一只股票前，<strong>至少按一次 F10</strong>。花 5 分钟看公司概况+十大股东+财务趋势+近期公告，能避开大量"地雷股"。这是性价比最高的基本功。</div>'
+
+    + '<div class="kb-warn"><strong>注意：</strong>F10 数据有<strong>滞后性</strong>——财务数据按季披露，股东数据更是延迟公布。F10 看的是"历史快照"，不能完全代表当下。结合最新公告和盘面动态综合判断。</div>'
+},
+
 /* ====================================================================
    五、港美股市场
    ==================================================================== */
