@@ -815,6 +815,82 @@ var KB_ARTICLES = [
 },
 
 {
+    id: 'bid-ask',
+    category: 'fundamental',
+    title: '买卖盘：买一卖一与五档行情',
+    summary: '盘口五档显示当前排队买卖的价位和数量，买一卖一是最优报价，理解它就看懂了撮合成交的本质。',
+    tags: ['买卖盘', '买一', '卖一', '五档', '盘口', '撮合', '成交价', '分时成交'],
+    body:
+    '<h2>什么是买卖盘</h2>'
+    + '<p>打开任意一只股票的分时界面，右侧（电脑端）或下方（手机端）会显示一排排数字，这就是<strong>买卖盘</strong>——实时展示当前市场上<strong>谁在排队买、谁在排队卖、各挂在什么价位、各挂多少</strong>。它是市场供需最直接的呈现。</p>'
+
+    + '<h2>买一价与卖一价</h2>'
+    + '<p>买卖盘按价格优先排序，最优的报价排在最前面：</p>'
+    + '<ul>'
+    + '<li><strong class="up">买一价（买一）</strong>：当前所有买单中<strong>出价最高</strong>的那一个。买方愿意花的最多的钱。</li>'
+    + '<li><strong class="down">卖一价（卖一）</strong>：当前所有卖单中<strong>要价最低</strong>的那一个。卖方愿意接受的最少的钱。</li>'
+    + '</ul>'
+    + '<p>买一价和卖一价之间通常有一个<strong>微小价差</strong>（最小跳动0.01元）。比如买一10.00、卖一10.01，价差就是1分钱。</p>'
+
+    + '<figure class="kb-figure">'
+    + '<svg viewBox="0 0 300 200" width="300" height="200" xmlns="http://www.w3.org/2000/svg">'
+    + '<text x="150" y="20" text-anchor="middle" font-size="13" fill="#1a2b4a" font-weight="bold">买卖五档示意图</text>'
+    /* 卖档（上，绿）从卖五到卖一 */
+    + '<rect x="40" y="35" width="220" height="20" fill="#2ecc71" fill-opacity="0.15"/><text x="50" y="49" font-size="11" fill="#2ecc71">卖五 10.05</text><text x="230" y="49" font-size="11" fill="#888" text-anchor="end">200手</text>'
+    + '<rect x="40" y="58" width="220" height="20" fill="#2ecc71" fill-opacity="0.25"/><text x="50" y="72" font-size="11" fill="#2ecc71">卖四 10.04</text><text x="230" y="72" font-size="11" fill="#888" text-anchor="end">150手</text>'
+    + '<rect x="40" y="81" width="220" height="20" fill="#2ecc71" fill-opacity="0.4"/><text x="50" y="95" font-size="11" fill="#2ecc71">卖三 10.03</text><text x="230" y="95" font-size="11" fill="#888" text-anchor="end">500手</text>'
+    + '<rect x="40" y="104" width="220" height="20" fill="#2ecc71" fill-opacity="0.6"/><text x="50" y="118" font-size="11" fill="#2ecc71">卖二 10.02</text><text x="230" y="118" font-size="11" fill="#888" text-anchor="end">300手</text>'
+    + '<rect x="40" y="127" width="220" height="20" fill="#2ecc71" fill-opacity="0.85"/><text x="50" y="141" font-size="12" fill="#1a7a3a" font-weight="bold">卖一 10.01</text><text x="230" y="141" font-size="11" fill="#333" text-anchor="end" font-weight="bold">800手</text>'
+    /* 最新价 */
+    + '<line x1="40" y1="150" x2="260" y2="150" stroke="#d4a644" stroke-width="2" stroke-dasharray="4,2"/>'
+    + '<text x="150" y="162" text-anchor="middle" font-size="11" fill="#d4a644">最新成交 10.00</text>'
+    /* 买档（下，红）从买一到买五 */
+    + '<rect x="40" y="168" width="220" height="20" fill="#e74c3c" fill-opacity="0.85"/><text x="50" y="182" font-size="12" fill="#a02020" font-weight="bold">买一 10.00</text><text x="230" y="182" font-size="11" fill="#333" text-anchor="end" font-weight="bold">1000手</text>'
+    + '</svg>'
+    + '<figcaption>卖档在上（绿色）、买档在下（红色），中间虚线为最新成交价</figcaption>'
+    + '</figure>'
+
+    + '<h2>五档行情</h2>'
+    + '<p>A股免费行情一般显示<strong>买卖各五档</strong>（买一到买五、卖一到卖五），共10个价位：</p>'
+    + '<ul>'
+    + '<li><strong>卖一 ~ 卖五</strong>：从最低要价到第五低要价，越往上越贵。</li>'
+    + '<li><strong>买一 ~ 买五</strong>：从最高出价到第五高出价，越往下越便宜。</li>'
+    + '<li>每档后面跟着<strong>挂单数量（手数）</strong>，代表这个价位排队等成交的量。</li>'
+    + '</ul>'
+    + '<div class="kb-tip"><strong>十档/千档：</strong>付费Level-2行情可看买卖各十档，甚至千档委托队列，信息更全。普通投资者看五档基本够用。</div>'
+
+    + '<h2>成交是怎么发生的（撮合机制）</h2>'
+    + '<p>A股采用<strong>价格优先、时间优先</strong>的连续竞价撮合：</p>'
+    + '<ol>'
+    + '<li><strong>价格优先</strong>：买价高的优先买，卖价低的优先卖。</li>'
+    + '<li><strong>时间优先</strong>：同价位先挂单的先成交。</li>'
+    + '</ol>'
+    + '<p><strong>举例</strong>：你想立刻买入，可以挂一个<strong>≥卖一价</strong>的买单（比如直接出10.01元），就会和排在前面的卖一撮合成交。如果你想便宜点买，就挂在买一（10.00）排队，等有人愿意10.00卖给你。</p>'
+
+    + '<h2>分时成交价（最新价）从哪来</h2>'
+    + '<p>盘面跳动的"最新价"，就是<strong>刚刚发生的那一笔撮合成交的价格</strong>。每一笔成交都对应四个信息：</p>'
+    + '<ul>'
+    + '<li><strong>成交价</strong>：这笔交易的价格。</li>'
+    + '<li><strong>成交量</strong>：成交了多少手。</li>'
+    + '<li><strong>买卖方向</strong>：<strong class="up">红色（外盘/主动买）</strong>——买方主动按卖方价买入；<strong class="down">绿色（内盘/主动卖）</strong>——卖方主动按买方价卖出。</li>'
+    + '<li><strong>成交时间</strong>：精确到秒。</li>'
+    + '</ul>'
+    + '<p>分时图上的白线，就是把这些<strong>每一笔成交价</strong>按时间连起来的曲线。</p>'
+
+    + '<h2>看买卖盘能读出什么</h2>'
+    + '<ul>'
+    + '<li><strong>买一挂单远大于卖一</strong>：买方力量看似强（但小心主力挂大单诱多，随时撤单）。</li>'
+    + '<li><strong>卖一挂单巨大</strong>：上方压力大，上涨困难（同样可能是压单洗盘）。</li>'
+    + '<li><strong>买卖盘频繁跳价</strong>：成交活跃，多空争夺激烈。</li>'
+    + '<li><strong>买一卖一价差突然拉大</strong>：流动性变差，可能临近涨跌停或停牌。</li>'
+    + '</ul>'
+
+    + '<div class="kb-warn"><strong>警惕"假盘口"：</strong>挂单≠成交。主力常挂出巨额买卖单制造强势/弱势假象，诱导散户跟风后再<strong>撤单</strong>。看到买一几万手大单别激动，它可能下一秒就消失。判断真假要看<strong>是否真的成交</strong>（看分时成交明细），而不是看挂了多少。</div>'
+
+    + '<div class="kb-tip"><strong>新手建议：</strong>不必纠结每一笔挂单。把握大方向——<strong>买卖盘整体结构 + 分时成交的红绿比例 + 量价配合</strong>，比盯某个具体数字更有意义。盘口是短线工具，中长线投资更应关注基本面和趋势。</div>'
+},
+
+{
     id: 'f10',
     category: 'fundamental',
     title: 'F10：一键看懂一只股票的基本面',
