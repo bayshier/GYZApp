@@ -91,6 +91,9 @@
 
         html += '</div>';
 
+        // 关键词星球（内嵌，分类下、入门推荐上）
+        html += buildKeywordSphereHTML();
+
         // 推荐入门
         html += '<div class="kb-home-title" style="margin-top:24px;">入门推荐</div>';
         var beginners = ['kline-basic', 'ma-intro', 'macd', 'pe'];
@@ -105,6 +108,7 @@
 
         document.getElementById('kb-view').innerHTML = html;
         bindSearch();
+        initSphereDrag();
     }
 
     /* 分类列表页 */
@@ -340,6 +344,130 @@
         document.getElementById('kb-view').innerHTML = html;
     }
 
+    /* 关键词星球：生成球体 HTML（首页内嵌 & 星球页共用） */
+    function buildKeywordSphereHTML() {
+        // 从所有文章标签提取关键词，统计频次
+        var tagCount = {};
+        articles.forEach(function (a) {
+            (a.tags || []).forEach(function (t) {
+                tagCount[t] = (tagCount[t] || 0) + 1;
+            });
+        });
+        var keywords = Object.keys(tagCount).map(function (k) {
+            return { word: k, count: tagCount[k] };
+        }).sort(function (a, b) { return b.count - a.count; });
+
+        var html = '<div class="kb-kw-section-title">🔮 关键词星球</div>';
+        html += '<div class="kb-kw-scene" id="kb-kw-scene">'
+            + '<div class="kb-kw-sphere" id="kb-kw-sphere">';
+
+        var n = keywords.length;
+        keywords.forEach(function (kw, i) {
+            var phi = Math.acos(-1 + (2 * i) / n);
+            var theta = Math.sqrt(n * Math.PI) * phi;
+            var r = 42;
+            var x = r * Math.cos(theta) * Math.sin(phi);
+            var y = r * Math.sin(theta) * Math.sin(phi);
+            var z = r * Math.cos(phi);
+
+            var size = 13 + kw.count * 4;
+            var colors = ['#00d4ff', '#7b61ff', '#f0c75e', '#2ecc71', '#e94560'];
+            var color = colors[kw.count % colors.length] || colors[0];
+
+            html += '<a class="kb-kw-item" '
+                + 'style="transform:translate3d(' + x.toFixed(1) + 'vw,' + y.toFixed(1) + 'vh,' + z.toFixed(1) + 'vh);'
+                + 'font-size:' + size + 'px;color:' + color + '" '
+                + 'href="#/search/' + encodeURIComponent(kw.word) + '" '
+                + 'title="' + kw.word + '（' + kw.count + '篇）">'
+                + kw.word
+                + '</a>';
+        });
+
+        html += '</div></div>';
+        html += '<div class="kb-kw-hint">💡 拖动旋转 · 点击关键词探索 · 共 ' + keywords.length + ' 个知识点</div>';
+        return html;
+    }
+
+    /* 关键词星球页（独立全屏版，保留路由） */
+    function renderKeywordWall() {
+        var html = '<div class="kb-kw-header">'
+            + '<h1>🔮 关键词星球</h1>'
+            + '<p>共 <strong>' + articles.reduce(function(s,a){return s+(a.tags?a.tags.length:0)},0) + '</strong> 个标签关键词 · 点击任意词探索相关知识</p>'
+            + '</div>';
+
+        html += '</div></div>';
+
+        html += '<div class="kb-kw-tip">'
+            + '💡 拖动星球可旋转 · 点击关键词跳转到相关知识<br>'
+            + '<span class="kb-kw-legend">'
+            + '<span style="color:#f0c75e">●</span>高频 &nbsp;'
+            + '<span style="color:#00d4ff">●</span>常用 &nbsp;'
+            + '<span style="color:#7b61ff">●</span>专题'
+            + '</span></div>';
+
+        html += '<div class="kb-kw-back"><a href="#/">← 返回知识库首页</a></div>';
+
+        document.getElementById('kb-view').innerHTML = html;
+        initSphereDrag();
+    }
+
+    /* 球体拖拽旋转 */
+    function initSphereDrag() {
+        var scene = document.getElementById('kb-kw-scene');
+        var sphere = document.getElementById('kb-kw-sphere');
+        if (!scene || !sphere) return;
+
+        var rotX = -15, rotY = 0;
+        var autoSpeed = 0.15;
+        var dragging = false;
+        var lastX = 0, lastY = 0;
+        var velocityX = 0, velocityY = 0;
+
+        function apply() {
+            sphere.style.transform = 'rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg)';
+        }
+
+        // 自动旋转 + 惯性
+        function tick() {
+            if (!dragging) {
+                rotY += autoSpeed + velocityY;
+                rotX += velocityX;
+                velocityY *= 0.95;
+                velocityX *= 0.95;
+                // 限制X轴避免翻转
+                if (rotX > 30) rotX = 30;
+                if (rotX < -60) rotX = -60;
+            }
+            apply();
+            requestAnimationFrame(tick);
+        }
+        tick();
+
+        // 鼠标拖拽
+        function down(x, y) { dragging = true; lastX = x; lastY = y; velocityX = 0; velocityY = 0; }
+        function move(x, y) {
+            if (!dragging) return;
+            var dx = x - lastX, dy = y - lastY;
+            rotY += dx * 0.5;
+            rotX -= dy * 0.5;
+            if (rotX > 30) rotX = 30;
+            if (rotX < -60) rotX = -60;
+            velocityY = dx * 0.5;
+            velocityX = -dy * 0.5;
+            lastX = x; lastY = y;
+        }
+        function up() { dragging = false; }
+
+        scene.addEventListener('mousedown', function (e) { down(e.clientX, e.clientY); e.preventDefault(); });
+        document.addEventListener('mousemove', function (e) { move(e.clientX, e.clientY); });
+        document.addEventListener('mouseup', up);
+
+        // 触摸支持
+        scene.addEventListener('touchstart', function (e) { var t = e.touches[0]; down(t.clientX, t.clientY); }, { passive: true });
+        document.addEventListener('touchmove', function (e) { if (dragging) { var t = e.touches[0]; move(t.clientX, t.clientY); } }, { passive: true });
+        document.addEventListener('touchend', up);
+    }
+
     /* 404 */
     function renderNotFound() {
         document.getElementById('kb-view').innerHTML =
@@ -382,6 +510,8 @@
             renderGuide();
         } else if (hash === 'links') {
             renderLinks();
+        } else if (hash === 'keywords') {
+            renderKeywordWall();
         } else if (hash.indexOf('cat/') === 0) {
             var catId = hash.substring(4);
             renderCatList(catId);

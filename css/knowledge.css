@@ -787,3 +787,144 @@ body {
 @media (min-width: 600px) {
     .kb-links-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ============================================================
+   关键词星球（3D 漂浮墙）
+   ============================================================ */
+
+/* 首页入口横幅（紫色调，区别于小白蓝/黄页绿） */
+.kb-keywords-banner {
+    background: linear-gradient(135deg, #4a1a6b 0%, #7b2d8e 100%) !important;
+    border-color: rgba(123, 97, 255, 0.4) !important;
+}
+.kb-keywords-banner:hover { border-color: #9b6bff !important; }
+
+/* ---------- 星球页 ---------- */
+.kb-kw-header {
+    text-align: center;
+    padding: 20px 18px 10px;
+}
+
+.kb-kw-header h1 {
+    font-size: 26px;
+    color: #00d4ff;
+    margin-bottom: 6px;
+    text-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+}
+
+.kb-kw-header p {
+    font-size: 14px;
+    color: #8a9bb8;
+}
+
+.kb-kw-header strong { color: #f0c75e; }
+
+/* 3D 场景容器 */
+.kb-kw-scene {
+    position: relative;
+    width: 100%;
+    height: 60vh;
+    min-height: 380px;
+    max-height: 560px;
+    margin: 10px 0;
+    overflow: hidden;
+    cursor: grab;
+    perspective: 1000px;
+    background:
+        radial-gradient(ellipse at center, rgba(123, 97, 255, 0.12), transparent 65%),
+        radial-gradient(ellipse at 30% 40%, rgba(0, 212, 255, 0.08), transparent 50%);
+    border-radius: 16px;
+    border: 1px solid rgba(123, 97, 255, 0.15);
+}
+
+.kb-kw-scene:active { cursor: grabbing; }
+
+/* 星空背景点 */
+.kb-kw-scene::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 80% 20%, rgba(0,212,255,0.5), transparent),
+        radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.3), transparent),
+        radial-gradient(2px 2px at 90% 50%, rgba(240,199,94,0.4), transparent),
+        radial-gradient(1px 1px at 10% 60%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 70% 90%, rgba(123,97,255,0.5), transparent);
+    pointer-events: none;
+}
+
+/* 球体（旋转中心） */
+.kb-kw-sphere {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+/* 单个关键词 */
+.kb-kw-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-style: preserve-3d;
+    white-space: nowrap;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 14px;
+    /* 让关键词以自身位置为中心 */
+    translate: -50% -50% 0;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.kb-kw-item:hover {
+    background: rgba(0, 212, 255, 0.2);
+    border-color: rgba(0, 212, 255, 0.6);
+    box-shadow: 0 0 16px rgba(0, 212, 255, 0.4);
+    z-index: 10;
+}
+
+/* 提示说明 */
+.kb-kw-tip {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-light);
+    padding: 14px;
+    line-height: 1.9;
+}
+
+.kb-kw-legend {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 12px;
+    padding: 4px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+}
+
+.kb-kw-back {
+    text-align: center;
+    padding: 20px;
+}
+
+.kb-kw-back a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 14px;
+}
+
+/* 响应式：小屏降低球半径（通过缩放容器） */
+@media (max-width: 480px) {
+    .kb-kw-scene { height: 55vh; min-height: 340px; }
+}
+

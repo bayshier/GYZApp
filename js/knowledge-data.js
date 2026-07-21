@@ -346,6 +346,82 @@ var KB_ARTICLES = [
     + '<div class="kb-tip"><strong>实战要点：</strong>开盘后前15分钟（9:30—9:45）波动最剧烈、最活跃，是<strong>消化隔夜消息</strong>的时段，方向尚不稳定，新手建议观察不急躁。真正可靠的走势往往在10:00之后才逐步明朗。</div>'
 },
 
+{
+    id: 'call-auction',
+    category: 'kline',
+    title: '集合竞价怎么看：开盘前的信号',
+    summary: '集合竞价是开盘价的诞生过程，通过竞价量、撮合价、挂单变化，可以预判当天强弱，是短线盯盘的第一课。',
+    tags: ['集合竞价', '开盘价', '高开', '低开', '平开', '竞价量', '试单'],
+    body:
+    '<h2>为什么集合竞价这么重要</h2>'
+    + '<p>9:25 产生的<strong>开盘价</strong>，是全天第一个参考锚点。而开盘价怎么来的、竞价过程透露了什么信息，直接反映了隔夜消息和主力意图。读懂集合竞价，等于在开盘前就<strong>摸到了当天的市场温度</strong>。</p>'
+
+    + '<h2>集合竞价的撮合规则（核心）</h2>'
+    + '<p>集合竞价不是一笔笔连续成交，而是在<strong>9:25这一刻</strong>，把所有买卖委托集中起来，按一个统一规则算出一个开盘价：</p>'
+    + '<p style="background:#f5f6f8;padding:12px;border-radius:8px;text-align:center;margin:10px 0;">'
+    + '<strong>最大成交量原则</strong>：选一个价格，使这个价位上能成交的<strong>买方和卖方总和最大</strong>。</p>'
+    + '<ul>'
+    + '<li><strong>高于该价的买单</strong>：全部成交（你出价高，愿意买）。</li>'
+    + '<li><strong>低于该价的卖单</strong>：全部成交（你要价低，愿意卖）。</li>'
+    + '<li><strong>等于该价的买卖单</strong>：按<strong>时间优先</strong>撮合，先排队的先成交。</li>'
+    + '</ul>'
+
+    + '<h2>三个阶段：能撤 / 不能撤 / 静默</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:8px;border:1px solid #ddd;">时段</th><th style="padding:8px;border:1px solid #ddd;">操作</th><th style="padding:8px;border:1px solid #ddd;">主力在干什么</th></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>9:15-9:20</strong></td><td style="padding:8px;border:1px solid #ddd;">可挂单 + <strong>可撤单</strong></td><td style="padding:8px;border:1px solid #ddd;">主力常在此"试单"——挂大单测试市场反应，随时撤</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;"><strong>9:20-9:25</strong></td><td style="padding:8px;border:1px solid #ddd;">可挂单 + <strong class="down">不可撤单</strong></td><td style="padding:8px;border:1px solid #ddd;">主力意图开始"做实"，这是开盘前最关键的5分钟</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>9:25-9:30</strong></td><td style="padding:8px;border:1px solid #ddd;">可挂单（静默期，不撮合）</td><td style="padding:8px;border:1px solid #ddd;">9:30开盘后统一进入连续竞价</td></tr>'
+    + '</table>'
+
+    + '<div class="kb-warn"><strong>关键陷阱：</strong>9:15-9:20 的竞价数据<strong>最不可信</strong>。主力可能挂出巨额买单吸引跟风，到 9:19 突然撤单，留下散户高位接盘。<strong>看竞价要看 9:20 之后的数据</strong>，那时撤不了单，主力意图更真实。</div>'
+
+    + '<h2>高开 / 平开 / 低开</h2>'
+    + '<p>开盘价相对<strong>昨日收盘价</strong>的位置，是判断当天强弱的第一信号：</p>'
+    + '<ul>'
+    + '<li><strong class="up">高开</strong>：开盘价 > 昨收。说明竞价阶段买方积极，<strong>看多情绪占上风</strong>。但要注意：高开太多（如+5%以上）易遭获利盘抛压，高开低走是常见坑。</li>'
+    + '<li><strong>平开</strong>：开盘价 ≈ 昨收。多空均衡，需看开盘后的走势判断方向。</li>'
+    + '<li><strong class="down">低开</strong>：开盘价 < 昨收。说明卖压较重，<strong>偏空</strong>。但低开高走（低开后被拉起）反而是强势信号——说明有资金逢低承接。</li>'
+    + '</ul>'
+
+    + '<h2>看集合竞价的 4 个维度</h2>'
+
+    + '<h3>1. 竞价量：是否异常放大</h3>'
+    + '<p>9:25 的撮合成交量（竞价量）如果<strong>明显大于平时</strong>（比如平时的3-5倍），说明资金关注度极高，当天可能有<strong>大行情</strong>（无论涨跌）。竞价量平淡，则当天多为震荡。</p>'
+
+    + '<h3>2. 撮合价的变动方向</h3>'
+    + '<p>盯着 9:20-9:25 这5分钟，撮合参考价是<strong>逐步抬高还是逐步走低</strong>：</p>'
+    + '<ul>'
+    + '<li>撮合价<strong>持续上移</strong> → 买盘踊跃，开盘强势。</li>'
+    + '<li>撮合价<strong>持续下移</strong> → 卖压增加，开盘偏弱。</li>'
+    + '<li>撮合价<strong>剧烈跳动</strong> → 多空分歧大，开盘后波动剧烈。</li>'
+    + '</ul>'
+
+    + '<h3>3. 撤单变化：识别"试单"</h3>'
+    + '<p>观察 9:15-9:20 的<strong>挂单数量变化</strong>。如果某价位突然出现巨额挂单（如买一挂几万手），9:19 又突然消失——这是典型的<strong>试单/诱单</strong>，目的是测试跟风盘或制造假象。<strong>真正要动手的主力，会在 9:20 后才挂实单</strong>（因为撤不了）。</p>'
+
+    + '<h3>4. 匹配量与未匹配量</h3>'
+    + '<p>Level-2 行情会显示两个数据：</p>'
+    + '<ul>'
+    + '<li><strong>匹配量</strong>：已经撮合的量（将计入开盘成交）。</li>'
+    + '<li><strong>未匹配量</strong>：排队等着的量。买方未匹配大 → 开盘后可能继续涨；卖方未匹配大 → 开盘后可能继续跌。</li>'
+    + '</ul>'
+
+    + '<h2>常见集合竞价形态</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:8px;border:1px solid #ddd;">形态</th><th style="padding:8px;border:1px solid #ddd;">特征</th><th style="padding:8px;border:1px solid #ddd;">含义</th></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">放量高开</td><td style="padding:8px;border:1px solid #ddd;">高开 + 竞价量大</td><td style="padding:8px;border:1px solid #ddd;">资金看好，可能有大行情（关注是否高开高走）</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">缩量高开</td><td style="padding:8px;border:1px solid #ddd;">高开但竞价量小</td><td style="padding:8px;border:1px solid #ddd;">跟风不足，易高开低走回落</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">跳空高开</td><td style="padding:8px;border:1px solid #ddd;">高开幅度大（如+5%以上）</td><td style="padding:8px;border:1px solid #ddd;">利好刺激，但获利盘抛压重，追高风险大</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">放量低开</td><td style="padding:8px;border:1px solid #ddd;">低开 + 竞价量大</td><td style="padding:8px;border:1px solid #ddd;">抛压重，偏空（关注低开后是否被拉起）</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">平量平开</td><td style="padding:8px;border:1px solid #ddd;">平开 + 竞价量正常</td><td style="padding:8px;border:1px solid #ddd;">无明确信号，看开盘后走势</td></tr>'
+    + '</table>'
+
+    + '<div class="kb-tip"><strong>实战用法：</strong>集合竞价是<strong>预判</strong>工具，不是<strong>决策</strong>工具。竞价强≠一定涨，竞价弱≠一定跌。真正确认方向要看<strong>开盘后前15分钟的走势</strong>（9:30-9:45）。竞价给的是概率倾向，开盘走势才是验证。</div>'
+
+    + '<div class="kb-warn"><strong>新手切记：</strong>① 不要在 9:15-9:20 跟风挂单（容易被主力撤单坑）；② 不要在 9:20 后挂离谱价格的"乌龙单"（撤不了）；③ 开盘前5分钟波动最大，新手建议<strong>多看少动</strong>，等 9:35 后方向明朗再考虑操作。</div>'
+},
+
 /* ====================================================================
    二、均线系统 MA
    ==================================================================== */
@@ -888,6 +964,78 @@ var KB_ARTICLES = [
     + '<div class="kb-warn"><strong>警惕"假盘口"：</strong>挂单≠成交。主力常挂出巨额买卖单制造强势/弱势假象，诱导散户跟风后再<strong>撤单</strong>。看到买一几万手大单别激动，它可能下一秒就消失。判断真假要看<strong>是否真的成交</strong>（看分时成交明细），而不是看挂了多少。</div>'
 
     + '<div class="kb-tip"><strong>新手建议：</strong>不必纠结每一笔挂单。把握大方向——<strong>买卖盘整体结构 + 分时成交的红绿比例 + 量价配合</strong>，比盯某个具体数字更有意义。盘口是短线工具，中长线投资更应关注基本面和趋势。</div>'
+},
+
+{
+    id: 'etf',
+    category: 'fundamental',
+    title: 'ETF 基金：一篮子股票的投资利器',
+    summary: 'ETF 是像股票一样交易的基金，买入一只就等于买入一篮子股票，分散风险、费用低廉，是新手的优选。',
+    tags: ['ETF', '指数基金', '宽基', '行业ETF', '场内基金', 'LOF'],
+    body:
+    '<h2>什么是 ETF</h2>'
+    + '<p>ETF（Exchange Traded Fund，<strong>交易所交易基金</strong>）是一种<strong>在证券交易所上市、可以像股票一样实时买卖</strong>的基金。它跟踪某个指数（如沪深300、创业板指）或某个行业、主题，买入一份ETF，就等于同时买入了它背后<strong>一篮子股票</strong>。</p>'
+    + '<div class="kb-tip"><strong>一句话理解：</strong>ETF = 一篮子股票打包成"一只股票"，你可以像买卖股票一样买卖它，但它内含几十上百只股票，天然分散风险。</div>'
+
+    + '<h2>ETF vs 普通基金 vs 股票</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:7px;border:1px solid #ddd;">对比项</th><th style="padding:7px;border:1px solid #ddd;">单只股票</th><th style="padding:7px;border:1px solid #ddd;">ETF（场内基金）</th><th style="padding:7px;border:1px solid #ddd;">普通基金（场外）</th></tr>'
+    + '<tr><td style="padding:7px;border:1px solid #ddd;">交易场所</td><td style="padding:7px;border:1px solid #ddd;">证券交易所</td><td style="padding:7px;border:1px solid #ddd;">证券交易所</td><td style="padding:7px;border:1px solid #ddd;">基金公司/平台</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:7px;border:1px solid #ddd;">交易时间</td><td style="padding:7px;border:1px solid #ddd;">交易时段实时</td><td style="padding:7px;border:1px solid #ddd;">交易时段实时</td><td style="padding:7px;border:1px solid #ddd;">当日收盘后撮合</td></tr>'
+    + '<tr><td style="padding:7px;border:1px solid #ddd;">风险</td><td style="padding:7px;border:1px solid #ddd;">高（单只暴雷）</td><td style="padding:7px;border:1px solid #ddd;">中（分散一篮子）</td><td style="padding:7px;border:1px solid #ddd;">中（分散）</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:7px;border:1px solid #ddd;">费用</td><td style="padding:7px;border:1px solid #ddd;">佣金</td><td style="padding:7px;border:1px solid #ddd;"><strong>佣金低、无印花税</strong></td><td style="padding:7px;border:1px solid #ddd;">申购费/赎回费/管理费</td></tr>'
+    + '<tr><td style="padding:7px;border:1px solid #ddd;">门槛</td><td style="padding:7px;border:1px solid #ddd;">100股起</td><td style="padding:7px;border:1px solid #ddd;"><strong>100份起（几十~几百元）</strong></td><td style="padding:7px;border:1px solid #ddd;">10元起</td></tr>'
+    + '</table>'
+
+    + '<h2>ETF 的两大类型</h2>'
+
+    + '<h3>1. 宽基 ETF（跟踪大盘指数）</h3>'
+    + '<p>覆盖整个市场、不分行业的ETF，是最基础的配置工具：</p>'
+    + '<ul>'
+    + '<li><strong>沪深300 ETF</strong>（510300等）：A股最大300家公司，代表大盘蓝筹。</li>'
+    + '<li><strong>中证500 ETF</strong>（510500等）：中等市值500家，代表中盘成长。</li>'
+    + '<li><strong>创业板 ETF</strong>（159915等）：创业板50只龙头，高成长高波动。</li>'
+    + '<li><strong>上证50 ETF</strong>（510050等）：沪市最大50家，超级蓝筹。</li>'
+    + '<li><strong>科创50 ETF</strong>（588000等）：科创板核心科技股。</li>'
+    + '</ul>'
+    + '<p>宽基ETF适合<strong>看好A股整体、不想选股</strong>的投资者，相当于"买国运"。</p>'
+
+    + '<h3>2. 行业/主题 ETF（跟踪特定方向）</h3>'
+    + '<p>聚焦某个行业或投资主题，弹性更大：</p>'
+    + '<ul>'
+    + '<li><strong>行业ETF</strong>：券商ETF、半导体ETF、医药ETF、新能源ETF、消费ETF、银行ETF。</li>'
+    + '<li><strong>主题ETF</strong>：人工智能ETF、碳中和ETF、芯片ETF、黄金ETF。</li>'
+    + '</ul>'
+    + '<p>行业/主题ETF适合<strong>看好某个方向但不知选哪只股</strong>的投资者——比如看好AI，买AI ETF就一网打尽所有AI概念股，不怕踩中个别暴雷股。</p>'
+
+    + '<h2>ETF 的核心优势</h2>'
+    + '<ol>'
+    + '<li><strong>分散风险</strong>：一只ETF内含几十上百只股票，单只暴雷影响有限，不会"一损俱损"。</li>'
+    + '<li><strong>费用低廉</strong>：交易仅收佣金（与股票同），<strong>免印花税</strong>，管理费也远低于主动基金。</li>'
+    + '<li><strong>交易灵活</strong>：像股票一样实时买卖，T+1交收，流动性好（主流ETF成交活跃）。</li>'
+    + '<li><strong>透明度高</strong>：持仓每天公布，你知道自己买的是什么。</li>'
+    + '<li><strong>门槛低</strong>：100份起买，几十到几百元就能投资整个行业或指数。</li>'
+    + '</ol>'
+
+    + '<h2>新手怎么选 ETF</h2>'
+    + '<ul>'
+    + '<li><strong>看规模</strong>：选规模大的（>10亿），流动性好、跟踪误差小，避免清盘风险。</li>'
+    + '<li><strong>看成交额</strong>：日均成交额高，买卖不愁，别选日成交几百万的冷门ETF。</li>'
+    + '<li><strong>看跟踪误差</strong>：ETF净值与指数走势的偏差越小越好。</li>'
+    + '<li><strong>看费率</strong>：管理费+托管费，越低越省（主流宽基已低至0.15%/年+0.05%/年）。</li>'
+    + '<li><strong>同指数多选一</strong>：跟踪同一指数（如沪深300）有多只ETF，选规模最大、流动性最好的那只。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>新手首选：</strong>不熟悉选股的新手，从<strong>宽基ETF（沪深300/中证500）</strong>开始，等于一键买入A股核心资产，省心省力。等熟悉了，再用少量资金尝试行业/主题ETF。</div>'
+
+    + '<h2>ETF 与 LOF 的区别</h2>'
+    + '<p>两者都在交易所上市，但：</p>'
+    + '<ul>'
+    + '<li><strong>ETF</strong>：跟踪指数为主，被动管理，申赎用"一篮子股票"换份额，费率更低。</li>'
+    + '<li><strong>LOF</strong>（上市开放式基金）：既可场内交易也可场外申赎，主动/被动都有，用现金申赎，费率略高。</li>'
+    + '</ul>'
+
+    + '<div class="kb-warn"><strong>风险提示：</strong>ETF分散的是<strong>个股风险</strong>，不是<strong>系统性风险</strong>——大盘大跌时，宽基ETF照样会跌；行业ETF则会随整个行业波动，弹性甚至大于单只股票。ETF≠保本，投资仍需择时和控仓。</div>'
 },
 
 {
