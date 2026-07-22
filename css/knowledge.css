@@ -800,6 +800,25 @@ body {
 .kb-keywords-banner:hover { border-color: #9b6bff !important; }
 
 /* ---------- 星球页 ---------- */
+/* 首页内嵌的区块标题 */
+.kb-kw-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--brand);
+    text-align: center;
+    margin: 28px 0 4px;
+    letter-spacing: 1px;
+}
+
+/* 首页内嵌的操作提示 */
+.kb-kw-hint {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-light);
+    margin-bottom: 8px;
+    line-height: 1.8;
+}
+
 .kb-kw-header {
     text-align: center;
     padding: 20px 18px 10px;
@@ -865,7 +884,6 @@ body {
     transform-style: preserve-3d;
     will-change: transform;
 }
-
 /* 单个关键词 */
 .kb-kw-item {
     position: absolute;
@@ -875,21 +893,25 @@ body {
     white-space: nowrap;
     font-weight: 600;
     text-decoration: none;
-    padding: 4px 10px;
+    padding: 3px 9px;
     border-radius: 14px;
     /* 让关键词以自身位置为中心 */
     translate: -50% -50% 0;
-    background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    /* 去掉昂贵的 backdrop-filter，改纯色半透明提升性能 */
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* 每帧 JS 更新 transform/opacity，禁用过渡避免卡顿 */
+    transition: none;
+    will-change: transform, opacity;
     user-select: none;
     -webkit-user-select: none;
+    /* 文字不镜像：3D 旋转时背面由 JS 控制 opacity 隐藏 */
+    backface-visibility: visible;
 }
 
 .kb-kw-item:hover {
-    background: rgba(0, 212, 255, 0.2);
-    border-color: rgba(0, 212, 255, 0.6);
+    background: rgba(0, 212, 255, 0.25);
+    border-color: rgba(0, 212, 255, 0.7);
     box-shadow: 0 0 16px rgba(0, 212, 255, 0.4);
     z-index: 10;
 }

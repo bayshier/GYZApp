@@ -345,8 +345,10 @@
     }
 
     /* 关键词星球：生成球体 HTML（首页内嵌 & 星球页共用） */
+    // 缓存关键词数据，供每帧计算 z 坐标用
+    var KW_SPHERE_DATA = null;
+
     function buildKeywordSphereHTML() {
-        // 从所有文章标签提取关键词，统计频次
         var tagCount = {};
         articles.forEach(function (a) {
             (a.tags || []).forEach(function (t) {
@@ -357,26 +359,32 @@
             return { word: k, count: tagCount[k] };
         }).sort(function (a, b) { return b.count - a.count; });
 
+        // 缓存：每个词的初始球面坐标，供每帧旋转计算用
+        KW_SPHERE_DATA = keywords.map(function (kw, i) {
+            var n = keywords.length;
+            var phi = Math.acos(-1 + (2 * i) / n);
+            var theta = Math.sqrt(n * Math.PI) * phi;
+            var r = 42;
+            return {
+                word: kw.word,
+                count: kw.count,
+                x: r * Math.cos(theta) * Math.sin(phi),
+                y: r * Math.sin(theta) * Math.sin(phi),
+                z: r * Math.cos(phi)
+            };
+        });
+
         var html = '<div class="kb-kw-section-title">🔮 关键词星球</div>';
         html += '<div class="kb-kw-scene" id="kb-kw-scene">'
             + '<div class="kb-kw-sphere" id="kb-kw-sphere">';
 
-        var n = keywords.length;
-        keywords.forEach(function (kw, i) {
-            var phi = Math.acos(-1 + (2 * i) / n);
-            var theta = Math.sqrt(n * Math.PI) * phi;
-            var r = 42;
-            var x = r * Math.cos(theta) * Math.sin(phi);
-            var y = r * Math.sin(theta) * Math.sin(phi);
-            var z = r * Math.cos(phi);
-
+        var colors = ['#00d4ff', '#7b61ff', '#f0c75e', '#2ecc71', '#e94560'];
+        KW_SPHERE_DATA.forEach(function (kw, i) {
             var size = 13 + kw.count * 4;
-            var colors = ['#00d4ff', '#7b61ff', '#f0c75e', '#2ecc71', '#e94560'];
             var color = colors[kw.count % colors.length] || colors[0];
-
             html += '<a class="kb-kw-item" '
-                + 'style="transform:translate3d(' + x.toFixed(1) + 'vw,' + y.toFixed(1) + 'vh,' + z.toFixed(1) + 'vh);'
-                + 'font-size:' + size + 'px;color:' + color + '" '
+                + 'data-i="' + i + '" '
+                + 'style="color:' + color + ';font-size:' + size + 'px" '
                 + 'href="#/search/' + encodeURIComponent(kw.word) + '" '
                 + 'title="' + kw.word + '（' + kw.count + '篇）">'
                 + kw.word
@@ -392,18 +400,10 @@
     function renderKeywordWall() {
         var html = '<div class="kb-kw-header">'
             + '<h1>🔮 关键词星球</h1>'
-            + '<p>共 <strong>' + articles.reduce(function(s,a){return s+(a.tags?a.tags.length:0)},0) + '</strong> 个标签关键词 · 点击任意词探索相关知识</p>'
+            + '<p>点击任意关键词探索相关知识 · 拖动星球可旋转</p>'
             + '</div>';
 
-        html += '</div></div>';
-
-        html += '<div class="kb-kw-tip">'
-            + '💡 拖动星球可旋转 · 点击关键词跳转到相关知识<br>'
-            + '<span class="kb-kw-legend">'
-            + '<span style="color:#f0c75e">●</span>高频 &nbsp;'
-            + '<span style="color:#00d4ff">●</span>常用 &nbsp;'
-            + '<span style="color:#7b61ff">●</span>专题'
-            + '</span></div>';
+        html += buildKeywordSphereHTML();
 
         html += '<div class="kb-kw-back"><a href="#/">← 返回知识库首页</a></div>';
 
@@ -411,42 +411,79 @@
         initSphereDrag();
     }
 
-    /* 球体拖拽旋转 */
+    /* 球体拖拽旋转（性能优化版） */
     function initSphereDrag() {
         var scene = document.getElementById('kb-kw-scene');
         var sphere = document.getElementById('kb-kw-sphere');
-        if (!scene || !sphere) return;
+        if (!scene || !sphere || !KW_SPHERE_DATA) return;
 
+        var items = sphere.querySelectorAll('.kb-kw-item');
         var rotX = -15, rotY = 0;
-        var autoSpeed = 0.15;
+        var autoSpeed = 0.12;
         var dragging = false;
         var lastX = 0, lastY = 0;
         var velocityX = 0, velocityY = 0;
+        var rafId = null;
+        var inViewport = true;
 
-        function apply() {
-            sphere.style.transform = 'rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg)';
+        // 预计算 sin/cos，每帧复用
+        function updatePositions() {
+            var radX = rotX * Math.PI / 180;
+            var radY = rotY * Math.PI / 180;
+            var sx = Math.sin(radX), cx = Math.cos(radX);
+            var sy = Math.sin(radY), cy = Math.cos(radY);
+
+            for (var i = 0; i < KW_SPHERE_DATA.length; i++) {
+                var d = KW_SPHERE_DATA[i];
+                // 绕 Y 轴旋转
+                var x1 = d.x * cy + d.z * sy;
+                var z1 = -d.x * sy + d.z * cy;
+                // 绕 X 轴旋转
+                var y1 = d.y * cx - z1 * sx;
+                var z2 = d.y * sx + z1 * cx;
+
+                var el = items[i];
+                // 背面（z<0）降低透明度并禁用点击，正面正常显示
+                if (z2 < 0) {
+                    el.style.opacity = '0.18';
+                    el.style.pointerEvents = 'none';
+                } else {
+                    el.style.opacity = '';
+                    el.style.pointerEvents = '';
+                }
+                el.style.transform = 'translate3d(' + x1.toFixed(1) + 'vw,' + y1.toFixed(1) + 'vh,' + z2.toFixed(1) + 'vh)';
+            }
         }
 
-        // 自动旋转 + 惯性
         function tick() {
+            if (!inViewport) { rafId = null; return; }
             if (!dragging) {
                 rotY += autoSpeed + velocityY;
                 rotX += velocityX;
-                velocityY *= 0.95;
-                velocityX *= 0.95;
-                // 限制X轴避免翻转
+                velocityY *= 0.92;
+                velocityX *= 0.92;
                 if (rotX > 30) rotX = 30;
                 if (rotX < -60) rotX = -60;
             }
-            apply();
-            requestAnimationFrame(tick);
+            sphere.style.transform = 'rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg)';
+            updatePositions();
+            rafId = requestAnimationFrame(tick);
         }
-        tick();
 
-        // 鼠标拖拽
-        function down(x, y) { dragging = true; lastX = x; lastY = y; velocityX = 0; velocityY = 0; }
-        function move(x, y) {
+        // 可视区域检测：离开视口暂停旋转，节省性能
+        if (window.IntersectionObserver) {
+            var io = new IntersectionObserver(function (entries) {
+                inViewport = entries[0].isIntersecting;
+                if (inViewport && !rafId) tick();
+            }, { threshold: 0 });
+            io.observe(scene);
+        }
+
+        // 鼠标/触摸处理：拖拽时才绑定 move，松手即解绑（避免常驻全局监听拖累滚动）
+        function onMove(e) {
             if (!dragging) return;
+            var x = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0].clientX);
+            var y = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0].clientY);
             var dx = x - lastX, dy = y - lastY;
             rotY += dx * 0.5;
             rotX -= dy * 0.5;
@@ -455,17 +492,33 @@
             velocityY = dx * 0.5;
             velocityX = -dy * 0.5;
             lastX = x; lastY = y;
+            if (e.cancelable) e.preventDefault();
         }
-        function up() { dragging = false; }
+        function onUp() {
+            dragging = false;
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            document.removeEventListener('touchend', onUp);
+        }
+        function onDown(e) {
+            dragging = true;
+            var x = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0].clientX);
+            var y = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0].clientY);
+            lastX = x; lastY = y; velocityX = 0; velocityY = 0;
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('touchmove', onMove, { passive: false });
+            document.addEventListener('mouseup', onUp);
+            document.addEventListener('touchend', onUp);
+            if (e.cancelable) e.preventDefault();
+        }
 
-        scene.addEventListener('mousedown', function (e) { down(e.clientX, e.clientY); e.preventDefault(); });
-        document.addEventListener('mousemove', function (e) { move(e.clientX, e.clientY); });
-        document.addEventListener('mouseup', up);
+        scene.addEventListener('mousedown', onDown);
+        scene.addEventListener('touchstart', onDown, { passive: false });
 
-        // 触摸支持
-        scene.addEventListener('touchstart', function (e) { var t = e.touches[0]; down(t.clientX, t.clientY); }, { passive: true });
-        document.addEventListener('touchmove', function (e) { if (dragging) { var t = e.touches[0]; move(t.clientX, t.clientY); } }, { passive: true });
-        document.addEventListener('touchend', up);
+        // 初始定位 + 启动
+        updatePositions();
+        tick();
     }
 
     /* 404 */
