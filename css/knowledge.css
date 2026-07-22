@@ -848,7 +848,6 @@ body {
     margin: 10px 0;
     overflow: hidden;
     cursor: grab;
-    perspective: 1000px;
     background:
         radial-gradient(ellipse at center, rgba(123, 97, 255, 0.12), transparent 65%),
         radial-gradient(ellipse at 30% 40%, rgba(0, 212, 255, 0.08), transparent 50%);
@@ -874,23 +873,19 @@ body {
     pointer-events: none;
 }
 
-/* 球体（旋转中心） */
+/* 球体容器（纯2D，关键词相对此中心定位） */
 .kb-kw-sphere {
     position: absolute;
     top: 50%;
     left: 50%;
     width: 0;
     height: 0;
-    transform-style: preserve-3d;
-    will-change: transform;
 }
 /* 单个关键词 */
 .kb-kw-item {
     position: absolute;
-    top: 0;
-    left: 0;
-    transform-style: preserve-3d;
-    transform-origin: center center;
+    top: 50%;
+    left: 50%;
     white-space: nowrap;
     font-weight: 600;
     text-decoration: none;
@@ -904,8 +899,7 @@ body {
     will-change: transform, opacity;
     user-select: none;
     -webkit-user-select: none;
-    /* 背面不隐藏，由 JS 翻转180°纠正镜像，保持文字始终可读 */
-    backface-visibility: visible;
+    /* 纯2D定位，文字永不旋转，杜绝镜像 */
 }
 
 .kb-kw-item:hover {
