@@ -427,6 +427,7 @@
         var inViewport = true;
 
         // 预计算 sin/cos，每帧复用
+        // 关键：每个元素自己定位到旋转后的球面位置，并反向旋转抵消，保证文字始终正对屏幕（无镜像）
         function updatePositions() {
             var radX = rotX * Math.PI / 180;
             var radY = rotY * Math.PI / 180;
@@ -443,15 +444,22 @@
                 var z2 = d.y * sx + z1 * cx;
 
                 var el = items[i];
-                // 背面（z<0）降低透明度并禁用点击，正面正常显示
-                if (z2 < 0) {
-                    el.style.opacity = '0.18';
-                    el.style.pointerEvents = 'none';
-                } else {
-                    el.style.opacity = '';
-                    el.style.pointerEvents = '';
-                }
-                el.style.transform = 'translate3d(' + x1.toFixed(1) + 'vw,' + y1.toFixed(1) + 'vh,' + z2.toFixed(1) + 'vh)';
+                // 核心思路：文字始终正对屏幕，绝不镜像、绝不隐藏
+                // - 平移到旋转后的球面位置
+                // - translate(-50%,-50%) 以自身中心定位
+                // - 反向旋转抵消球体旋转（让文字朝向观察者）
+                // - 当 z<0（转到背面）时，额外翻转180°把镜像文字纠正回正向
+                var flipZ = z2 < 0 ? ' rotateY(180deg)' : '';
+                el.style.transform =
+                    'translate3d(' + x1.toFixed(1) + 'vw,' + y1.toFixed(1) + 'vh,' + z2.toFixed(1) + 'vh)' +
+                    ' translate(-50%,-50%)' +
+                    ' rotateY(' + (-rotY).toFixed(1) + 'deg)' +
+                    ' rotateX(' + (-rotX).toFixed(1) + 'deg)' +
+                    flipZ;
+                // 背面稍微淡化体现深度层次，但保持完全可读可点击
+                el.style.opacity = z2 < 0 ? '0.45' : '1';
+                el.style.pointerEvents = '';
+                el.style.zIndex = z2 < 0 ? '1' : '10';
             }
         }
 
@@ -465,7 +473,7 @@
                 if (rotX > 30) rotX = 30;
                 if (rotX < -60) rotX = -60;
             }
-            sphere.style.transform = 'rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg)';
+            // 父容器不再旋转（改为子元素各自旋转定位），保持原点稳定
             updatePositions();
             rafId = requestAnimationFrame(tick);
         }

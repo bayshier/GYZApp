@@ -890,13 +890,12 @@ body {
     top: 0;
     left: 0;
     transform-style: preserve-3d;
+    transform-origin: center center;
     white-space: nowrap;
     font-weight: 600;
     text-decoration: none;
     padding: 3px 9px;
     border-radius: 14px;
-    /* 让关键词以自身位置为中心 */
-    translate: -50% -50% 0;
     /* 去掉昂贵的 backdrop-filter，改纯色半透明提升性能 */
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -905,7 +904,7 @@ body {
     will-change: transform, opacity;
     user-select: none;
     -webkit-user-select: none;
-    /* 文字不镜像：3D 旋转时背面由 JS 控制 opacity 隐藏 */
+    /* 背面不隐藏，由 JS 翻转180°纠正镜像，保持文字始终可读 */
     backface-visibility: visible;
 }
 
