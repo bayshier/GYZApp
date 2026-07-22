@@ -364,13 +364,14 @@
             var n = keywords.length;
             var phi = Math.acos(-1 + (2 * i) / n);
             var theta = Math.sqrt(n * Math.PI) * phi;
-            var r = 42;
+            var r = 38;
             return {
                 word: kw.word,
                 count: kw.count,
-                x: r * Math.cos(theta) * Math.sin(phi),
-                y: r * Math.sin(theta) * Math.sin(phi),
-                z: r * Math.cos(phi)
+                // 统一用 vmin 单位，保证球体在任何宽高比下都是正圆（不压扁）
+                x: (r * Math.cos(theta) * Math.sin(phi)),   // 存数值，渲染时拼 vmin
+                y: (r * Math.sin(theta) * Math.sin(phi)),
+                z: (r * Math.cos(phi))
             };
         });
 
@@ -445,14 +446,15 @@
                 var z2 = d.y * sx + z1 * cx;
 
                 var el = items[i];
-                // z 归一化到 0~1（用于缩放和透明度）
-                var depth = (z2 + 42) / 84;  // r=42，z范围-42~42
+                // z 归一化到 0~1（用于缩放和透明度），r=38
+                var depth = (z2 + 38) / 76;  // z范围-38~38
                 // 越靠前（z大）字越大越清晰，越靠后字越小越淡
                 var scale = 0.6 + depth * 0.5;       // 0.6 ~ 1.1
                 var opacity = 0.3 + depth * 0.7;      // 0.3 ~ 1.0
                 // 纯 2D 定位：只 translate，不 rotate，文字方向永远不变
+                // x/y 统一用 vmin，保证球体在任意宽高比下都是正圆
                 el.style.transform =
-                    'translate(' + x1.toFixed(1) + 'vw,' + y1.toFixed(1) + 'vh)' +
+                    'translate(' + x1.toFixed(1) + 'vmin,' + y1.toFixed(1) + 'vmin)' +
                     ' translate(-50%,-50%)' +
                     ' scale(' + scale.toFixed(2) + ')';
                 el.style.opacity = opacity.toFixed(2);
