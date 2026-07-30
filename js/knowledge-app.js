@@ -13,6 +13,7 @@
 
     var cats = window.KB_CATEGORIES || [];
     var articles = window.KB_ARTICLES || [];
+    var glossary = window.KB_GLOSSARY || [];
 
     /* ---------- 工具函数 ---------- */
 
@@ -79,6 +80,16 @@
         html += '<div class="kb-home-title">选择分类开始学习</div>';
         html += '<div class="kb-cats">';
 
+        // 名词解释分类卡片（权重最高，排在所有分类之前）
+        if (glossary.length) {
+            html += '<a class="kb-cat-card kb-cat-glossary" href="#/glossary">'
+                + '<div class="kb-cat-icon">📖</div>'
+                + '<div class="kb-cat-name">名词解释</div>'
+                + '<div class="kb-cat-desc">换手率、主力净额等最基础的股市名词</div>'
+                + '<div class="kb-cat-count">' + glossary.length + ' 个名词</div>'
+                + '</a>';
+        }
+
         cats.forEach(function (cat) {
             var count = getArticlesByCat(cat.id).length;
             html += '<a class="kb-cat-card" href="#/cat/' + cat.id + '">'
@@ -92,6 +103,7 @@
         html += '</div>';
 
         // 关键词星球（内嵌，分类下、入门推荐上）
+        // 性能优化：每帧写入去重 + translate3d GPU 合成 + 30fps 限帧
         html += buildKeywordSphereHTML();
 
         // 推荐入门
@@ -149,6 +161,75 @@
             + '<h3>' + a.title + '<span class="arrow">›</span></h3>'
             + '<p>' + a.summary + '</p>'
             + '</li>';
+    }
+
+    /* 名词解释板块（首页最高权重，白话解释最基础的股市名词） */
+    function buildGlossaryHTML() {
+        if (!glossary.length) return '';
+        var html = '<div class="kb-glossary">'
+            + '<div class="kb-glossary-head">'
+            + '<span class="kb-glossary-emoji">📖</span>'
+            + '<div>'
+            + '<div class="kb-glossary-title">名词解释</div>'
+            + '<div class="kb-glossary-sub">最基础的股市名词 · 一句话看懂</div>'
+            + '</div></div>';
+
+        html += '<div class="kb-glossary-list">';
+        glossary.forEach(function (g) {
+            html += '<div class="kb-glossary-item">'
+                + '<div class="kb-glossary-term">' + esc(g.term) + '</div>'
+                + '<div class="kb-glossary-def">' + esc(g.def) + '</div>';
+            if (g.detail) {
+                html += '<div class="kb-glossary-detail">' + esc(g.detail) + '</div>';
+            }
+            if (g.link && getArticle(g.link)) {
+                html += '<a class="kb-glossary-link" href="#/article/' + g.link + '">查看详解 →</a>';
+            }
+            html += '</div>';
+        });
+        html += '</div></div>';
+        return html;
+    }
+
+    /* 名词解释页（分类入口 · 展示全部基础名词） */
+    function renderGlossaryPage() {
+        var html = '<div class="kb-section-title">'
+            + '<span class="icon">📖</span>'
+            + '<span>名词解释</span>'
+            + '</div>';
+
+        html += '<div class="kb-search-wrap">'
+            + '<input type="text" class="kb-search" id="kb-search-input" '
+            + 'placeholder="在本知识库中搜索..." /></div>';
+
+        if (!glossary.length) {
+            html += '<div class="kb-empty"><div class="icon">📝</div><p>暂无名词</p></div>';
+            document.getElementById('kb-view').innerHTML = html;
+            return;
+        }
+
+        html += '<p style="color:#7f8c8d;font-size:13px;margin-bottom:12px;">'
+            + glossary.length + ' 个最基础的股市名词 · 一句话看懂，点击「查看详解」可深入学习</p>';
+
+        html += '<div class="kb-glossary">';
+        html += '<div class="kb-glossary-list">';
+        glossary.forEach(function (g) {
+            html += '<div class="kb-glossary-item">'
+                + '<div class="kb-glossary-term">' + esc(g.term) + '</div>'
+                + '<div class="kb-glossary-def">' + esc(g.def) + '</div>';
+            if (g.detail) {
+                html += '<div class="kb-glossary-detail">' + esc(g.detail) + '</div>';
+            }
+            if (g.link && getArticle(g.link)) {
+                html += '<a class="kb-glossary-link" href="#/article/' + g.link + '">查看详解 →</a>';
+            }
+            html += '</div>';
+        });
+        html += '</div></div>';
+
+        document.getElementById('kb-view').innerHTML = html;
+        bindSearch();
+        window.scrollTo(0, 0);
     }
 
     /* 文章详情页 */
@@ -344,11 +425,12 @@
         document.getElementById('kb-view').innerHTML = html;
     }
 
-    /* 关键词星球：生成球体 HTML（首页内嵌 & 星球页共用） */
+    /* 关键词星球：生成球体 HTML（首页内嵌 & 星球页共用）
+       limit: 限制关键词数量（首页传 24 减少每帧 DOM 写入、大幅降低卡顿） */
     // 缓存关键词数据，供每帧计算 z 坐标用
     var KW_SPHERE_DATA = null;
 
-    function buildKeywordSphereHTML() {
+    function buildKeywordSphereHTML(limit) {
         var tagCount = {};
         articles.forEach(function (a) {
             (a.tags || []).forEach(function (t) {
@@ -358,6 +440,11 @@
         var keywords = Object.keys(tagCount).map(function (k) {
             return { word: k, count: tagCount[k] };
         }).sort(function (a, b) { return b.count - a.count; });
+
+        // 首页只取最热门的 N 个，避免每帧更新上百个 DOM 元素造成卡顿
+        if (limit && keywords.length > limit) {
+            keywords = keywords.slice(0, limit);
+        }
 
         // 缓存：每个词的初始球面坐标，供每帧旋转计算用
         KW_SPHERE_DATA = keywords.map(function (kw, i) {
@@ -393,7 +480,13 @@
         });
 
         html += '</div></div>';
-        html += '<div class="kb-kw-hint">💡 拖动旋转 · 点击关键词探索 · 共 ' + keywords.length + ' 个知识点</div>';
+        if (limit) {
+            // 首页版：提示这是热门词，可进入完整星球页
+            html += '<div class="kb-kw-hint">💡 拖动旋转 · 点击关键词探索'
+                + ' · <a href="#/keywords" style="color:#7b61ff;">查看完整关键词星球 →</a></div>';
+        } else {
+            html += '<div class="kb-kw-hint">💡 拖动旋转 · 点击关键词探索 · 共 ' + keywords.length + ' 个知识点</div>';
+        }
         return html;
     }
 
@@ -420,12 +513,17 @@
 
         var items = sphere.querySelectorAll('.kb-kw-item');
         var rotX = -15, rotY = 0;
-        var autoSpeed = 0.12;
+        var autoSpeed = 0.1;
         var dragging = false;
         var lastX = 0, lastY = 0;
         var velocityX = 0, velocityY = 0;
-        var rafId = null;
+        var rafId = null;   // requestAnimationFrame 句柄
+        var timerId = null; // 节流 setTimeout 句柄
         var inViewport = true;
+
+        // 每个元素上一次写入的值，用于跳过无变化的写入（减少样式重算/重排）
+        // 关键优化：自动旋转时大部分元素位置变化极小或 zIndex 不变，跳过可大幅减负
+        var cache = KW_SPHERE_DATA.map(function () { return { tf: '', op: '', z: -1 }; });
 
         // 预计算 sin/cos，每帧复用
         // 纯 2D 投影方案：文字永远不旋转（只用 translate 定位），从根本上杜绝镜像
@@ -446,24 +544,28 @@
                 var z2 = d.y * sx + z1 * cx;
 
                 var el = items[i];
+                var c = cache[i];
                 // z 归一化到 0~1（用于缩放和透明度），r=38
                 var depth = (z2 + 38) / 76;  // z范围-38~38
                 // 越靠前（z大）字越大越清晰，越靠后字越小越淡
                 var scale = 0.6 + depth * 0.5;       // 0.6 ~ 1.1
                 var opacity = 0.3 + depth * 0.7;      // 0.3 ~ 1.0
-                // 纯 2D 定位：只 translate，不 rotate，文字方向永远不变
-                // x/y 统一用 vmin，保证球体在任意宽高比下都是正圆
-                el.style.transform =
-                    'translate(' + x1.toFixed(1) + 'vmin,' + y1.toFixed(1) + 'vmin)' +
-                    ' translate(-50%,-50%)' +
-                    ' scale(' + scale.toFixed(2) + ')';
-                el.style.opacity = opacity.toFixed(2);
-                el.style.zIndex = Math.round(depth * 100);
+                // translate3d 触发 GPU 合成层，避免主线程重排；x/y 用 vmin 保证任意宽高比下是正圆
+                var tf = 'translate3d(' + x1.toFixed(1) + 'vmin,' + y1.toFixed(1) + 'vmin,0)'
+                    + ' translate(-50%,-50%)'
+                    + ' scale(' + scale.toFixed(2) + ')';
+                if (tf !== c.tf) { el.style.transform = tf; c.tf = tf; }
+                var op2 = opacity.toFixed(2);
+                if (op2 !== c.op) { el.style.opacity = op2; c.op = op2; }
+                // zIndex 分桶到 0~10，相邻深度合并，减少 z 翻转带来的频繁写回
+                var z = Math.round(depth * 10);
+                if (z !== c.z) { el.style.zIndex = z; c.z = z; }
             }
         }
 
         function tick() {
-            if (!inViewport) { rafId = null; return; }
+            rafId = null;
+            if (!inViewport) return;
             if (!dragging) {
                 rotY += autoSpeed + velocityY;
                 rotX += velocityX;
@@ -474,14 +576,23 @@
             }
             // 父容器不再旋转（改为子元素各自旋转定位），保持原点稳定
             updatePositions();
-            rafId = requestAnimationFrame(tick);
+            // 限帧 ~33ms（约30fps）：球体旋转对流畅度要求不高，减半渲染负担缓解卡顿
+            timerId = setTimeout(function () {
+                timerId = null;
+                rafId = requestAnimationFrame(tick);
+            }, 33);
         }
 
         // 可视区域检测：离开视口暂停旋转，节省性能
         if (window.IntersectionObserver) {
             var io = new IntersectionObserver(function (entries) {
                 inViewport = entries[0].isIntersecting;
-                if (inViewport && !rafId) tick();
+                if (inViewport && !rafId && !timerId) tick();
+                if (!inViewport) {
+                    // 彻底停掉排队的回调
+                    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+                    if (timerId) { clearTimeout(timerId); timerId = null; }
+                }
             }, { threshold: 0 });
             io.observe(scene);
         }
@@ -572,6 +683,8 @@
             renderLinks();
         } else if (hash === 'keywords') {
             renderKeywordWall();
+        } else if (hash === 'glossary') {
+            renderGlossaryPage();
         } else if (hash.indexOf('cat/') === 0) {
             var catId = hash.substring(4);
             renderCatList(catId);

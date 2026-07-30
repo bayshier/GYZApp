@@ -427,6 +427,120 @@ body {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-thumb { background: #cfd8dc; border-radius: 3px; }
 
+/* 名词解释分类卡片：强调（权重最高） */
+.kb-cat-glossary {
+    background: linear-gradient(135deg, #faf6ec 0%, #fff 100%);
+    border-color: var(--accent);
+    box-shadow: 0 2px 12px rgba(212, 166, 68, 0.18);
+}
+.kb-cat-glossary:hover {
+    border-color: var(--accent);
+    box-shadow: 0 6px 20px rgba(212, 166, 68, 0.3);
+}
+.kb-cat-glossary .kb-cat-name {
+    color: #b8860b;
+}
+
+/* ============================================================
+   名词解释板块（分类页）
+   ============================================================ */
+.kb-glossary {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 16px 6px;
+    margin: 16px 0 20px;
+    box-shadow: var(--shadow);
+}
+
+.kb-glossary-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(212, 166, 68, 0.25);
+}
+
+.kb-glossary-emoji {
+    font-size: 28px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.kb-glossary-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--brand);
+    letter-spacing: 1px;
+}
+
+.kb-glossary-sub {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 2px;
+}
+
+.kb-glossary-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.kb-glossary-item {
+    background: linear-gradient(135deg, #faf6ec 0%, #fff 100%);
+    border: 1px solid rgba(212, 166, 68, 0.25);
+    border-radius: 12px;
+    padding: 12px 13px;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.kb-glossary-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(212, 166, 68, 0.2);
+    border-color: var(--accent);
+}
+
+.kb-glossary-term {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--brand);
+    margin-bottom: 6px;
+}
+
+.kb-glossary-def {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 6px;
+}
+
+.kb-glossary-detail {
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.6;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(0, 0, 0, 0.08);
+}
+
+.kb-glossary-link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.kb-glossary-link:hover {
+    text-decoration: underline;
+}
+
+/* 移动端：名词卡片单列 */
+@media (max-width: 560px) {
+    .kb-glossary-list { grid-template-columns: 1fr; }
+}
+
 /* ============================================================
    小白入口 & 学习路线
    ============================================================ */
