@@ -157,6 +157,52 @@ body::before {
 .hero-motto::before { content: '" '; color: var(--green); }
 .hero-motto::after { content: ' "'; color: var(--green); }
 
+/* ---------- Hero 吉祥物 noko ---------- */
+.hero-mascot {
+    margin: 32px auto 0;
+    max-width: 240px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+}
+
+.hero-mascot:hover {
+    transform: translateY(-3px);
+    border-color: var(--green);
+    box-shadow: 0 12px 40px var(--green-glow);
+}
+
+.hero-mascot img {
+    display: block;
+    width: 100%;
+    height: auto;
+    background:
+        radial-gradient(circle at 50% 40%, rgba(61, 220, 132, 0.12), transparent 60%),
+        var(--bg-elev);
+}
+
+.hero-mascot-cap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: "SF Mono", monospace;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+}
+
+.hero-mascot-cap .prompt { color: var(--green); }
+
+.hero-mascot-cap .cursor {
+    color: var(--green);
+    animation: blink 1s infinite;
+}
+
 /* ---------- 区块标题 ---------- */
 .section { margin-bottom: 32px; }
 
