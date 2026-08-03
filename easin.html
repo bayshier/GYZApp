@@ -181,6 +181,106 @@
         </footer>
 
     </div>
+
+    <!-- 角落常驻 noko 吉祥物（眼神追踪） -->
+    <div class="noko-float" id="noko-float" aria-hidden="true">
+        <img src="image/noko.png" alt="noko">
+    </div>
+
+    <!-- 胶片噪点 overlay -->
+    <div class="noise-overlay" aria-hidden="true"></div>
+
+    <script>
+    (function () {
+        'use strict';
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        /* ---------- 1. noko 眼神/头部追踪 ---------- */
+        var noko = document.getElementById('noko-float');
+        if (noko && !reduceMotion && window.matchMedia('(pointer:fine)').matches) {
+            var targetRX = 0, targetRY = 0, curRX = 0, curRY = 0, rafId = null;
+            var hovering = false;
+
+            window.addEventListener('mousemove', function (e) {
+                var r = noko.getBoundingClientRect();
+                var cx = r.left + r.width / 2;
+                var cy = r.top + r.height / 2;
+                // 鼠标相对 noko 中心的角度，映射到 ±8° 转动
+                var dx = (e.clientX - cx) / window.innerWidth;
+                var dy = (e.clientY - cy) / window.innerHeight;
+                targetRY = Math.max(-1, Math.min(1, dx * 3)) * 8;   // 水平转头
+                targetRX = Math.max(-1, Math.min(1, dy * 3)) * -6;  // 俯仰
+                if (!rafId) tick();
+            }, { passive: true });
+
+            noko.addEventListener('mouseenter', function () { hovering = true; });
+            noko.addEventListener('mouseleave', function () { hovering = false; });
+
+            function tick() {
+                // 缓动逼近目标角度，平滑自然
+                curRX += (targetRX - curRX) * 0.12;
+                curRY += (targetRY - curRY) * 0.12;
+                var s = hovering ? 1.12 : 1;
+                noko.style.transform =
+                    'translateY(' + (hovering ? -3 : 0) + 'px)' +
+                    ' rotateX(' + curRX.toFixed(2) + 'deg)' +
+                    ' rotateY(' + curRY.toFixed(2) + 'deg)' +
+                    ' scale(' + s + ')';
+                if (Math.abs(targetRX - curRX) > 0.05 || Math.abs(targetRY - curRY) > 0.05 || hovering) {
+                    rafId = requestAnimationFrame(tick);
+                } else {
+                    rafId = null;
+                }
+            }
+        }
+
+        /* ---------- 2. 滚动入场动画（IntersectionObserver） ---------- */
+        if (!reduceMotion && 'IntersectionObserver' in window) {
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (en) {
+                    if (en.isIntersecting) {
+                        en.target.classList.add('in-view');
+                        io.unobserve(en.target); // 一次性
+                    }
+                });
+            }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+            // 监听每个 section 及其直接子元素组
+            document.querySelectorAll('.section').forEach(function (sec) {
+                sec.classList.add('reveal');
+                // 给子项按顺序错开延迟
+                var children = sec.querySelectorAll('.stat, .tech-item, .project, .tl-item, .social');
+                children.forEach(function (c, i) {
+                    c.classList.add('reveal-child');
+                    c.style.transitionDelay = (i % 8) * 60 + 'ms';
+                });
+                io.observe(sec);
+            });
+        }
+
+        /* ---------- 3. 背景视差（相机感） ---------- */
+        if (!reduceMotion) {
+            var bg = document.body; // body::before 承载背景
+            var heroMascot = document.querySelector('.hero-mascot');
+            var ticking = false;
+            window.addEventListener('scroll', function () {
+                if (!ticking) {
+                    window.requestAnimationFrame(function () {
+                        var y = window.scrollY;
+                        // 背景网格纵向位移（视差：动得比前景慢）
+                        bg.style.setProperty('--bg-shift', (y * 0.15) + 'px');
+                        // Hero 吉祥物轻微视差（不碰 .hero-avatar，避免与 hover 动画冲突）
+                        if (heroMascot && y < 600) {
+                            heroMascot.style.transform = 'translateY(' + (y * 0.15) + 'px)';
+                        }
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            }, { passive: true });
+        }
+    })();
+    </script>
 </body>
 
 </html>
