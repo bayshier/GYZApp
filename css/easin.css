@@ -158,10 +158,36 @@ body::before {
 .hero-motto::before { content: '" '; color: var(--green); }
 .hero-motto::after { content: ' "'; color: var(--green); }
 
-/* ---------- Hero 吉祥物 noko ---------- */
-.hero-mascot {
-    margin: 32px auto 0;
-    max-width: 240px;
+/* ---------- Hero 吉祥物 + Logo 星球 合体 ---------- */
+.hero-galaxy {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    height: 320px;
+    margin: 24px auto 0;
+}
+
+/* 球体场景覆盖整个 galaxy 容器 */
+.hero-galaxy .logo-sphere-scene {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    min-height: unset;
+    max-height: unset;
+    border-radius: 50%;
+    background:
+        radial-gradient(ellipse at center, rgba(61, 220, 132, 0.08), transparent 60%);
+    border: none;
+}
+
+/* noko 居中浮在球体上方 */
+.hero-mascot-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    max-width: 140px;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -170,13 +196,13 @@ body::before {
     transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
 }
 
-.hero-mascot:hover {
-    transform: translateY(-3px);
+.hero-mascot-inner:hover {
+    transform: translate(-50%, -50%) translateY(-3px);
     border-color: var(--green);
     box-shadow: 0 12px 40px var(--green-glow);
 }
 
-.hero-mascot img {
+.hero-mascot-inner img {
     display: block;
     width: 100%;
     height: auto;
@@ -185,23 +211,131 @@ body::before {
         var(--bg-elev);
 }
 
-.hero-mascot-cap {
+.hero-mascot-inner .hero-mascot-cap {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 14px;
-    font-size: 12px;
+    padding: 6px 10px;
+    font-size: 11px;
     color: var(--text-dim);
     font-family: "SF Mono", monospace;
     background: var(--bg-card);
     border-top: 1px solid var(--border);
 }
 
-.hero-mascot-cap .prompt { color: var(--green); }
-
-.hero-mascot-cap .cursor {
+.hero-mascot-inner .hero-mascot-cap .prompt { color: var(--green); }
+.hero-mascot-inner .hero-mascot-cap .cursor {
     color: var(--green);
     animation: blink 1s infinite;
+}
+
+/* galaxy 内 logo 图标尺寸略小 */
+.hero-galaxy .logo-sphere-item {
+    width: 36px;
+    height: 36px;
+    padding: 6px;
+    border-radius: 10px;
+}
+
+/* ---------- Logo 星球（3D 旋转技术图标） ---------- */
+.logo-sphere-scene {
+    position: relative;
+    width: 100%;
+    height: 50vh;
+    min-height: 340px;
+    max-height: 480px;
+    margin: 10px 0;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    background:
+        radial-gradient(ellipse at center, rgba(61, 220, 132, 0.10), transparent 65%),
+        radial-gradient(ellipse at 30% 40%, rgba(88, 166, 255, 0.06), transparent 50%);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+}
+
+.logo-sphere-scene:active { cursor: grabbing; }
+
+/* 星空背景点 */
+.logo-sphere-scene::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 80% 20%, rgba(61,220,132,0.5), transparent),
+        radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.3), transparent),
+        radial-gradient(2px 2px at 90% 50%, rgba(240,199,94,0.4), transparent),
+        radial-gradient(1px 1px at 10% 60%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 70% 90%, rgba(61,220,132,0.5), transparent);
+    pointer-events: none;
+}
+
+/* 球体容器 */
+.logo-sphere {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+}
+
+/* 单个 logo 图标 */
+.logo-sphere-item {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(61, 220, 132, 0.15);
+    padding: 8px;
+    transition: none;
+    will-change: transform, opacity;
+    user-select: none;
+    -webkit-user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: brightness(0) invert(1) saturate(0.5);
+    opacity: 0.85;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.logo-sphere-item:hover {
+    background: rgba(61, 220, 132, 0.2);
+    border-color: rgba(61, 220, 132, 0.7);
+    box-shadow: 0 0 16px var(--green-glow);
+    z-index: 10 !important;
+    filter: brightness(0) invert(1) saturate(1);
+}
+
+.logo-sphere-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+/* logo 星球提示 */
+.logo-sphere-hint {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    line-height: 1.8;
+}
+
+/* 响应式：小屏降低球体高度 */
+@media (max-width: 480px) {
+    .logo-sphere-scene { height: 45vh; min-height: 280px; }
 }
 
 /* ---------- 区块标题 ---------- */
@@ -556,9 +690,11 @@ body::before {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ---------- 移动端：隐藏角落 noko（避免遮挡） ---------- */
+/* ---------- 移动端：隐藏角落 noko + 缩小 galaxy ---------- */
 @media (max-width: 600px) {
     .noko-float { display: none; }
+    .hero-galaxy { height: 260px; max-width: 320px; }
+    .hero-mascot-inner { max-width: 110px; }
 }
 
 /* ---------- 无障碍：减少动效时关闭所有增强动画 ---------- */
@@ -570,5 +706,5 @@ body::before {
         transition: none !important;
     }
     .noise-overlay { display: none; }
-    .hero-avatar, .hero-mascot { transform: none !important; }
+    .hero-avatar, .hero-galaxy { transform: none !important; }
 }

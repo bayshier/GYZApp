@@ -31,11 +31,17 @@
             </div>
             <p class="hero-motto">不再是单纯的代码编写者，而是与 AI 协同进化的应用架构师。</p>
 
-            <!-- 吉祥物 noko -->
-            <div class="hero-mascot">
-                <img src="image/noko.png" alt="noko · 页面吉祥物">
-                <div class="hero-mascot-cap"><span class="prompt">$</span> cat noko.png <span class="cursor">|</span></div>
+            <!-- noko + Logo 星球 合体 -->
+            <div class="hero-galaxy" id="hero-galaxy">
+                <div class="hero-galaxy-scene" id="logo-sphere-scene">
+                    <div class="logo-sphere" id="logo-sphere"></div>
+                </div>
+                <div class="hero-mascot-inner">
+                    <img src="image/noko.png" alt="noko · 页面吉祥物">
+                    <div class="hero-mascot-cap"><span class="prompt">$</span> cat noko.png <span class="cursor">|</span></div>
+                </div>
             </div>
+            <div class="logo-sphere-hint">💡 拖动旋转 · 点击 logo 跳转官网</div>
         </section>
 
         <!-- ===== 数据成就墙 ===== -->
@@ -187,6 +193,205 @@
         <img src="image/noko.png" alt="noko">
     </div>
 
+    <!-- Logo 星球 3D 旋转 -->
+    <script>
+    (function () {
+        'use strict';
+        var ICON_CDN = 'https://cdn.simpleicons.org/';
+        var LOGOS = [
+            // AI 大模型
+            { name: 'ChatGPT',    icon: 'chatbot',      color: '#74AA9C', url: 'https://chat.openai.com' },
+            { name: 'Claude',     icon: 'anthropic',    color: '#D97757', url: 'https://claude.ai' },
+            { name: 'DeepSeek',   icon: 'deepseek',     color: '#4D6BFE', url: 'https://www.deepseek.com' },
+            { name: 'Gemini',     icon: 'googlegemini', color: '#8E75B9', url: 'https://gemini.google.com' },
+            { name: 'TensorFlow', icon: 'tensorflow',   color: '#FF6F00', url: 'https://www.tensorflow.org' },
+            { name: 'PyTorch',    icon: 'pytorch',      color: '#EE4C2C', url: 'https://pytorch.org' },
+            // 语言
+            { name: 'Kotlin',     icon: 'kotlin',       color: '#7F52FF', url: 'https://kotlinlang.org' },
+            { name: 'Java',       icon: 'openjdk',      color: '#ED8B00', url: 'https://dev.java' },
+            { name: 'Python',     icon: 'python',       color: '#3776AB', url: 'https://www.python.org' },
+            { name: 'TypeScript', icon: 'typescript',   color: '#3178C6', url: 'https://www.typescriptlang.org' },
+            { name: 'Swift',      icon: 'swift',        color: '#F05138', url: 'https://www.swift.org' },
+            { name: 'Rust',       icon: 'rust',         color: '#CE422B', url: 'https://www.rust-lang.org' },
+            { name: 'Go',         icon: 'go',           color: '#00ADD8', url: 'https://go.dev' },
+            // 移动 & 前端
+            { name: 'Android',    icon: 'android',      color: '#3DDC84', url: 'https://developer.android.com' },
+            { name: 'Compose',    icon: 'jetpackcompose', color: '#4285F4', url: 'https://developer.android.com/jetpack/compose' },
+            { name: 'React',      icon: 'react',        color: '#61DAFB', url: 'https://react.dev' },
+            { name: 'Vue.js',     icon: 'vuedotjs',     color: '#4FC08D', url: 'https://vuejs.org' },
+            { name: 'Node.js',    icon: 'nodedotjs',    color: '#5FA04E', url: 'https://nodejs.org' },
+            // 后端 & 工具
+            { name: 'Spring',     icon: 'spring',       color: '#6DB33F', url: 'https://spring.io' },
+            { name: 'Docker',     icon: 'docker',       color: '#2496ED', url: 'https://www.docker.com' },
+            { name: 'Git',        icon: 'git',          color: '#F05032', url: 'https://git-scm.com' },
+            { name: 'MongoDB',    icon: 'mongodb',      color: '#47A248', url: 'https://www.mongodb.com' },
+            { name: 'PostgreSQL', icon: 'postgresql',   color: '#4169E1', url: 'https://www.postgresql.org' },
+        ];
+
+        var sphere = document.getElementById('logo-sphere');
+        var scene  = document.getElementById('logo-sphere-scene');
+        if (!sphere || !scene) return;
+
+        /* 生成 logo 元素（<a> 标签，点击跳转官网） */
+        var items = [];
+        var dragMoved = false; // 区分拖拽和点击
+
+        LOGOS.forEach(function (logo) {
+            var el = document.createElement('a');
+            el.className = 'logo-sphere-item';
+            el.title = logo.name + ' ↗';
+            el.href = logo.url || '#';
+            el.target = '_blank';
+            el.rel = 'noopener noreferrer';
+            var img = document.createElement('img');
+            img.src = ICON_CDN + logo.icon;
+            img.alt = logo.name;
+            img.onerror = function () {
+                this.style.display = 'none';
+                el.textContent = logo.name.charAt(0);
+                el.style.fontSize = '18px';
+                el.style.fontWeight = '700';
+                el.style.color = logo.color;
+            };
+            el.appendChild(img);
+            sphere.appendChild(el);
+            items.push(el);
+        });
+
+        /* Fibonacci 球面分布 */
+        var n = LOGOS.length;
+        var r = 22; // 球半径（vmin）— 适配 hero 紧凑布局
+        var sphereData = LOGOS.map(function (_, i) {
+            var phi = Math.acos(-1 + (2 * i) / n);
+            var theta = Math.sqrt(n * Math.PI) * phi;
+            return {
+                x: r * Math.cos(theta) * Math.sin(phi),
+                y: r * Math.sin(theta) * Math.sin(phi),
+                z: r * Math.cos(phi)
+            };
+        });
+
+        /* 拖拽旋转（复刻 knowledge-app.js 的球体交互） */
+        var rotX = -15, rotY = 0;
+        var autoSpeed = 0.4;
+        var dragging = false;
+        var lastX = 0, lastY = 0;
+        var velocityX = 0, velocityY = 0;
+        var cache = sphereData.map(function () { return { tf: '', op: '', z: -1 }; });
+
+        function updatePositions() {
+            var radX = rotX * Math.PI / 180;
+            var radY = rotY * Math.PI / 180;
+            var sx = Math.sin(radX), cx = Math.cos(radX);
+            var sy = Math.sin(radY), cy = Math.cos(radY);
+
+            for (var i = 0; i < sphereData.length; i++) {
+                var d = sphereData[i];
+                // 绕 Y 轴
+                var x1 = d.x * cy + d.z * sy;
+                var z1 = -d.x * sy + d.z * cy;
+                // 绕 X 轴
+                var y1 = d.y * cx - z1 * sx;
+                var z2 = d.y * sx + z1 * cx;
+
+                var el = items[i];
+                var c = cache[i];
+                var depth = (z2 + r) / (2 * r); // 归一化 0~1
+                var scale = 0.55 + depth * 0.55;  // 0.55 ~ 1.1
+                var opacity = 0.25 + depth * 0.75; // 0.25 ~ 1.0
+
+                var tf = 'translate3d(' + x1.toFixed(1) + 'vmin,' + y1.toFixed(1) + 'vmin,0)'
+                    + ' translate(-50%,-50%)'
+                    + ' scale(' + scale.toFixed(2) + ')';
+                if (tf !== c.tf) { el.style.transform = tf; c.tf = tf; }
+                var op2 = opacity.toFixed(2);
+                if (op2 !== c.op) { el.style.opacity = op2; c.op = op2; }
+                var z = Math.round(depth * 10);
+                if (z !== c.z) { el.style.zIndex = z; c.z = z; }
+            }
+        }
+
+        function tick() {
+            if (!dragging) {
+                rotY += autoSpeed + velocityY;
+                rotX += velocityX;
+                velocityY *= 0.92;
+                velocityX *= 0.92;
+                if (rotX > 30) rotX = 30;
+                if (rotX < -60) rotX = -60;
+            }
+            // 标签页不可见时跳过渲染，但循环永不中断
+            if (!document.hidden) {
+                updatePositions();
+            }
+            // 限帧 ~33ms（约30fps）
+            setTimeout(tick, 33);
+        }
+
+        /* 鼠标拖拽 + 点击跳转 */
+        scene.addEventListener('mousedown', function (e) {
+            dragging = true;
+            dragMoved = false;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            velocityX = 0;
+            velocityY = 0;
+        });
+        window.addEventListener('mousemove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX;
+            var dy = e.clientY - lastY;
+            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved = true;
+            rotY += dx * 0.4;
+            rotX -= dy * 0.4;
+            if (rotX > 30) rotX = 30;
+            if (rotX < -60) rotX = -60;
+            velocityY = dx * 0.15;
+            velocityX = -dy * 0.15;
+            lastX = e.clientX;
+            lastY = e.clientY;
+        });
+        window.addEventListener('mouseup', function () { dragging = false; });
+
+        /* 阻止拖拽后触发链接跳转 */
+        sphere.addEventListener('click', function (e) {
+            if (dragMoved) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        /* 触摸拖拽 */
+        scene.addEventListener('touchstart', function (e) {
+            if (e.touches.length !== 1) return;
+            dragging = true;
+            dragMoved = false;
+            lastX = e.touches[0].clientX;
+            lastY = e.touches[0].clientY;
+            velocityX = 0;
+            velocityY = 0;
+        }, { passive: true });
+        scene.addEventListener('touchmove', function (e) {
+            if (!dragging || e.touches.length !== 1) return;
+            var dx = e.touches[0].clientX - lastX;
+            var dy = e.touches[0].clientY - lastY;
+            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved = true;
+            rotY += dx * 0.4;
+            rotX -= dy * 0.4;
+            if (rotX > 30) rotX = 30;
+            if (rotX < -60) rotX = -60;
+            velocityY = dx * 0.15;
+            velocityX = -dy * 0.15;
+            lastX = e.touches[0].clientX;
+            lastY = e.touches[0].clientY;
+        }, { passive: true });
+        scene.addEventListener('touchend', function () { dragging = false; });
+
+        /* 启动 — 循环永不中断，仅用 document.hidden 节省资源 */
+        tick();
+    })();
+    </script>
+
     <!-- 胶片噪点 overlay -->
     <div class="noise-overlay" aria-hidden="true"></div>
 
@@ -261,7 +466,7 @@
         /* ---------- 3. 背景视差（相机感） ---------- */
         if (!reduceMotion) {
             var bg = document.body; // body::before 承载背景
-            var heroMascot = document.querySelector('.hero-mascot');
+            var heroMascot = document.querySelector('.hero-galaxy');
             var ticking = false;
             window.addEventListener('scroll', function () {
                 if (!ticking) {
