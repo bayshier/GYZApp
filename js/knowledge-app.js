@@ -82,7 +82,7 @@
             + '<div class="kb-newbie-icon">✍️</div>'
             + '<div class="kb-newbie-text">'
             + '<div class="kb-newbie-title">证券从业考试学习</div>'
-            + '<div class="kb-newbie-desc">法律法规 64 题 + 基础知识 73 题 · 学习 / 模拟考试 / 错题本 →</div>'
+            + '<div class="kb-newbie-desc">137 题题库 + 24 篇知识点 · 学习 / 练习 / 模拟考试 →</div>'
             + '</div></div>';
 
         html += '<div class="kb-home-title">选择分类开始学习</div>';

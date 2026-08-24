@@ -68,7 +68,7 @@
     var timerEl = document.getElementById('q-timer');
 
     /* ============================================================
-       路由：#/  #/practice/law/order  #/practice/law/random  #/practice/law/wrong  #/exam/law
+       路由：#/  #/practice/...  #/exam/...  #/learn/{subject}[/{docId}]
        ============================================================ */
     function route() {
         stopTimer();
@@ -79,6 +79,8 @@
             renderPractice(parts[1], parts[2] || 'order');
         } else if (parts[0] === 'exam' && parts[1]) {
             renderExam(parts[1]);
+        } else if (parts[0] === 'learn' && parts[1]) {
+            renderLearn(parts[1], parts[2] || null);
         } else if (parts[0] === 'result' && examState.lastResult) {
             renderResult(examState.lastResult);
         } else {
@@ -93,7 +95,7 @@
     function renderHome() {
         var html = '<section class="q-hero">'
             + '<h1>证券从业考试<span>学习</span></h1>'
-            + '<p>法律法规 + 金融基础知识 · ' + BANK.length + ' 题 · 真题 / 练习 / 章节例题</p>'
+            + '<p>题库 ' + BANK.length + ' 题 + 知识点 24 篇 · 学习 / 练习 / 模拟考试 / 错题本</p>'
             + '</section><div class="q-subjects">';
 
         ['law', 'basics'].forEach(function (s) {
@@ -104,14 +106,15 @@
                 + '<div class="qsc-head"><h2>' + esc(SUBJECTS[s].name) + '</h2>'
                 + '<span class="qsc-count">' + st.total + ' 题</span></div>'
                 + '<div class="qsc-stats">'
-                +   '<div class="qsc-stat"><b>' + pct + '%</b><i>已刷</i></div>'
+                +   '<div class="qsc-stat"><b>' + pct + '%</b><i>已练</i></div>'
                 +   '<div class="qsc-stat"><b>' + acc + '%</b><i>正确率</i></div>'
                 +   '<div class="qsc-stat"><b>' + st.wrong + '</b><i>错题</i></div>'
                 + '</div>'
                 + '<div class="qsc-bar"><i style="width:' + pct + '%"></i></div>'
                 + '<div class="qsc-actions">'
-                +   '<a href="#/practice/' + s + '/order">顺序学习</a>'
-                +   '<a href="#/practice/' + s + '/random">随机练习</a>'
+                +   '<a href="#/learn/' + s + '">📖 知识点学习</a>'
+                +   '<a href="#/practice/' + s + '/order">顺序练习</a>'
+                +   '<a href="#/practice/' + s + '/random">随机</a>'
                 +   '<a href="#/practice/' + s + '/wrong">错题本' + (st.wrong ? ' (' + st.wrong + ')' : '') + '</a>'
                 +   '<a class="primary" href="#/exam/' + s + '">模拟考试</a>'
                 + '</div></div>';
@@ -431,6 +434,137 @@
 
         view.innerHTML = html;
         timerEl.hidden = true;
+    }
+
+    /* ============================================================
+       知识点学习（懒加载 js/learn-data-{subject}.js）
+       ============================================================ */
+    var LEARN = { law: null, basics: null };
+
+    function loadLearn(subject, cb) {
+        if (LEARN[subject]) { cb(LEARN[subject]); return; }
+        var varName = subject === 'law' ? 'LEARN_DATA_LAW' : 'LEARN_DATA_BASICS';
+        if (window[varName]) {
+            LEARN[subject] = window[varName];
+            cb(LEARN[subject]);
+            return;
+        }
+        view.innerHTML = '<div class="q-empty"><div class="icon">⏳</div><p>知识点库加载中...</p></div>';
+        var s = document.createElement('script');
+        s.src = 'js/learn-data-' + subject + '.js';
+        s.onload = function () {
+            LEARN[subject] = window[varName] || [];
+            cb(LEARN[subject]);
+        };
+        s.onerror = function () {
+            view.innerHTML = '<div class="q-empty"><div class="icon">📦</div><p>知识点库加载失败，请刷新重试</p></div>';
+        };
+        document.head.appendChild(s);
+    }
+
+    var LEARN_CAT_ORDER = ['章节讲义', '考点精讲', '考点速记', '应试笔记', '对照表', '大纲'];
+
+    function renderLearn(subject, docId) {
+        if (!SUBJECTS[subject]) { location.hash = '#/'; return; }
+        loadLearn(subject, function (docs) {
+            if (docId) renderReader(subject, docs, docId);
+            else renderDocList(subject, docs);
+        });
+    }
+
+    function renderDocList(subject, docs) {
+        var byCat = {};
+        docs.forEach(function (d) { (byCat[d.cat] = byCat[d.cat] || []).push(d); });
+
+        var html = '<div class="q-topbar">'
+            + '<a class="btn ghost" href="#/">← 退出</a>'
+            + '<span class="q-meta">知识点学习 · ' + esc(SUBJECTS[subject].name) + '</span>'
+            + '<span class="q-progress-text">' + docs.length + ' 篇</span></div>';
+
+        LEARN_CAT_ORDER.forEach(function (cat) {
+            var list = byCat[cat];
+            if (!list) return;
+            html += '<div class="q-learn-cat"><h3>' + esc(cat) + '</h3>';
+            list.forEach(function (d) {
+                html += '<a class="q-doc-card" href="#/learn/' + subject + '/' + d.id + '">'
+                    + '<div class="qd-main"><div class="qd-title">' + esc(d.title) + '</div>'
+                    + '<div class="qd-meta">' + d.sections.length + ' 节 · ' + (d.chars / 10000).toFixed(1) + ' 万字</div></div>'
+                    + '<span class="qd-arrow">→</span></a>';
+            });
+            html += '</div>';
+        });
+        view.innerHTML = html;
+    }
+
+    function renderReader(subject, docs, docId) {
+        var doc = null, idx = -1;
+        docs.forEach(function (d, i) { if (d.id === docId) { doc = d; idx = i; } });
+        if (!doc) { renderDocList(subject, docs); return; }
+
+        var prev = docs[idx - 1], next = docs[idx + 1];
+        var LIMIT = 80; // 超长文档先渲染前 80 节
+        var shown = doc.sections.length > LIMIT;
+        var secs = shown ? doc.sections.slice(0, LIMIT) : doc.sections;
+
+        var html = '<div class="q-topbar">'
+            + '<a class="btn ghost" href="#/learn/' + subject + '">← 目录</a>'
+            + '<span class="q-meta">' + esc(doc.cat) + ' · ' + esc(SUBJECTS[subject].short) + '</span>'
+            + '<span class="q-progress-text">' + doc.sections.length + ' 节</span></div>'
+            + '<article class="q-reader"><h1>' + esc(doc.title) + '</h1>'
+            + '<nav class="q-toc"><select id="q-toc-sel">';
+        secs.forEach(function (sArr, i) {
+            html += '<option value="' + i + '">' + esc(sArr[0]) + '</option>';
+        });
+        html += '</select></nav><div class="q-reader-body">';
+
+        secs.forEach(function (sArr, i) {
+            var paras = sArr[1].split('\n').filter(function (l) { return l.trim(); });
+            html += '<section class="q-sec" id="sec-' + i + '"><h3>' + esc(sArr[0]) + '</h3>';
+            paras.forEach(function (p) {
+                html += '<p>' + esc(p) + '</p>';
+            });
+            html += '</section>';
+        });
+
+        if (shown) {
+            html += '<div class="q-more" id="q-more"><button class="btn primary">显示全部 ' + doc.sections.length + ' 节 ↓</button></div>';
+        }
+
+        html += '</div></article><div class="q-nav">'
+            + (prev ? '<a class="btn" href="#/learn/' + subject + '/' + prev.id + '">← ' + esc(prev.title.slice(0, 12)) + '</a>' : '<span></span>')
+            + (next ? '<a class="btn" href="#/learn/' + subject + '/' + next.id + '">' + esc(next.title.slice(0, 12)) + ' →</a>' : '<span></span>')
+            + '</div>';
+
+        view.innerHTML = html;
+
+        var tocSel = document.getElementById('q-toc-sel');
+        tocSel.addEventListener('change', function () {
+            var el = document.getElementById('sec-' + tocSel.value);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        var more = document.getElementById('q-more');
+        if (more) {
+            more.querySelector('button').addEventListener('click', function () {
+                renderReaderFull(subject, doc);
+            });
+        }
+    }
+
+    function renderReaderFull(subject, doc) {
+        var html = '<div class="q-topbar">'
+            + '<a class="btn ghost" href="#/learn/' + subject + '">← 目录</a>'
+            + '<span class="q-meta">' + esc(doc.cat) + ' · ' + esc(SUBJECTS[subject].short) + '</span>'
+            + '<span class="q-progress-text">' + doc.sections.length + ' 节</span></div>'
+            + '<article class="q-reader"><h1>' + esc(doc.title) + '</h1><div class="q-reader-body">';
+        doc.sections.forEach(function (sArr, i) {
+            var paras = sArr[1].split('\n').filter(function (l) { return l.trim(); });
+            html += '<section class="q-sec"><h3>' + esc(sArr[0]) + '</h3>';
+            paras.forEach(function (p) { html += '<p>' + esc(p) + '</p>'; });
+            html += '</section>';
+        });
+        html += '</div></article>';
+        view.innerHTML = html;
     }
 
     /* ---------- 启动 ---------- */
