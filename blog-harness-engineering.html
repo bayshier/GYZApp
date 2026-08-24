@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Harness Engineering 企业级多Agent协同项目实战：Multi-Agent + Sandbox + 自我进化的 Skill。Kotlin 参考实现：OODA 循环、沙箱接缝、git 版本化的技能进化、任务 DAG、预算护栏。">
+    <meta name="theme-color" content="#0a0e16">
+    <title>Harness Engineering：企业级多Agent协同实战 — Easin's Blog</title>
+    <link rel="shortcut icon" href="icon_logo.png" type="image/png">
+    <link rel="stylesheet" href="css/blog.css">
+</head>
+
+<body>
+    <div class="article-wrap">
+
+        <a class="back-home" href="easin.html">← 返回主页</a>
+
+        <div class="article-meta">
+            <span class="tag hot">Harness Engineering</span>
+            <span class="tag">Multi-Agent</span>
+            <span class="tag">Sandbox</span>
+            <span class="tag">自我进化 Skill</span>
+            <span class="tag">Kotlin</span>
+        </div>
+
+        <h1 class="article-title">Harness Engineering：企业级多Agent协同项目实战——Multi-Agent + Sandbox + 自我进化的 Skill</h1>
+        <div class="article-date">
+            2026.08 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a>
+        </div>
+
+        <blockquote>
+            <p>Framework 是你 import 的代码结构；Harness 是围绕一个模型循环的<strong>生产运行时产品</strong>。这五个组件，缺一个都别上生产。</p>
+        </blockquote>
+
+        <h2>这个词从哪来</h2>
+
+        <p>2026 年 2 月，OpenAI 发了篇工程博文《<strong>Harness Engineering: Leveraging Codex in an Agent-First World</strong>》（Ryan Lopopolo），第一次把这个行业暗语钉在了明面上：harness 是<strong>连接模型与工具、权限、环境的那一层</strong>，用 OODA 循环（Observe / Orient / Decide / Act）刻画。往前追溯，Anthropic 的《Effective Harnesses for Long-Running Agents》是它的思想前身；往后，Lilian Weng 写了《Harness Engineering for Self-Improvement》，martinfowler.com 和 Addy Osmani 跟进同题——半年内它从暗语变成了正式学科。</p>
+
+        <p>头部格局：DSH 189k★（TS）、LangGraph 40k★（Python）、autoresearch 94k★（Python）、microsandbox（Rust）、E2B/Daytona（Go）。<strong>Kotlin 空无一人</strong>——所以我用 Kotlin 写了一个参考实现：<a href="https://github.com/bayshier/harness-engineering" target="_blank" rel="noopener">bayshier/harness-engineering</a>，五个组件全部可运行，demo 离线可跑（不需要 LLM key）。</p>
+
+        <h2>组件一：显式 Agent 循环 + token 记账</h2>
+
+        <p>OpenAI 那篇文章有个狠词：非结构化的工具输出是<strong>"上下文腐烂"</strong>。所以工具事件必须是结构化的（ToolStart/ToolFinish/ToolDenied），每一步记账。</p>
+
+        <p>更狠的是 Anthropic 的生产数据：多 Agent 系统比单 Agent 好 <strong>90.2%</strong>，代价是 <strong>15 倍 token</strong>——且 token 预算解释了 80% 的结果方差。<strong>预算不是监控指标，是一等旋钮</strong>，超限就该大声爆炸，而不是月底看账单。</p>
+
+        <h2>组件二：Sandbox 接缝，fail-closed</h2>
+
+        <p>沙箱谱系从轻到重：Seatbelt/bwrap/Landlock（进程级，Claude Code 和 Codex 生产在用）→ microsandbox/Firecracker（microVM）→ E2B/Daytona（云，Daytona 已 71.9k★）。</p>
+
+        <p>关键认知：<strong>JVM 没有原生安全沙箱</strong>（Security Manager 随 JEP 486 永久禁用）。正确姿势和 DSH 一样——在 <code>confine(argv, policy)</code> 接缝后面 spawn OS 级运行器，配 deny-then-escalate：<strong>被拒的动作只有一次用户批准的升级机会，第二次终拒</strong>。</p>
+
+        <h3>独家踩坑：macOS 26 的 sandbox-exec 已经废了</h3>
+
+        <p>实测发现：macOS 26 上 <code>sandbox-exec</code> 语法照常解析，但真实 exec 直接 SIGABRT。逐条排查（<code>posixshm-read*</code> 语法不存在、补 <code>file-read-metadata</code> 无济于事）后确认不可救。于是实现里加了<strong>功能自检</strong>：probe 一个 <code>/bin/echo</code>，失败则所有调用返回 <code>SANDBOX_UNAVAILABLE</code> 明确拒绝——demo 里那句 "execution DENIED (fail-closed)" 就是本机真实状态。<strong>fail-closed 不是退化，是设计：沙箱不可用时，唯一正确的答案是拒绝执行，而不是假装隔离。</strong></p>
+
+        <h2>组件三：自我进化的 Skill——git 是所有人都缺的那块</h2>
+
+        <p>三个蓝本拼出完整闭环：</p>
+
+        <ul>
+            <li><strong>ECC（24 万★）</strong>：hook 捕捉观察 → "本能"（带置信度 0.3–0.9、证据计数）→ 聚类进化成技能</li>
+            <li><strong>skill-creator（官方）</strong>：eval 门控——改写后的技能必须在盲测中打赢基线才能发布</li>
+            <li><strong>seed（91★）</strong>：唯一用 <strong>git</strong> 做版本化的小仓库——而这正是前面所有大牌都缺的</li>
+        </ul>
+
+        <p>我的实现把三者合一：观察失败 → 蒸馏本能（两次以上观察才成熟）→ eval 门控 → <strong>真实 git commit</strong> → 可 revert 回滚。demo 里你能看到技能在 <code>2ed1d67</code> 提交、在回滚后回到 <code>22262a6</code>——<strong>进化是可审计的，不是破坏</strong>。</p>
+
+        <p>另一个来自论文的警告（autoresearch/MCE 数据）：给生成的技能加过严的过滤测试，反而降低了下游性能。<strong>别过度过滤自我改进。</strong></p>
+
+        <h2>组件四：Orchestrator-Worker + 任务 DAG + 文件工件</h2>
+
+        <p>Anthropic 明确否决了共享内存黑板和全自主蜂群，生产形态是编排者-工人。两个工程细节值千金：</p>
+
+        <ul>
+            <li><strong>原子认领</strong>：任务依赖未完成不可认领，认领用 <code>compareAndSet</code>——一行代码的互斥</li>
+            <li><strong>工件落盘</strong>：工人之间不传话（"电话游戏"是已命名的失败模式），结果写文件系统，编排者读文件</li>
+        </ul>
+
+        <p>已命名的翻车现场还有：任务描述含糊导致重复劳动、Agent 互相打扰、为不存在的信息无限搜索、<strong>简单问题爆出 50 个 subagent</strong>。Faros AI 的报告更扎心：Agent 普及后每 PR 事故率 +242.7%（相关性，非因果）。</p>
+
+        <h2>组件五：诚实的边界</h2>
+
+        <p>必须把反方观点刻在墙上——HumanLayer 那篇 394 分的《harness engineering is not enough》：测试的反馈以秒计，而坏架构的代价以月计，<strong>你无法把事故率反向传播回决策</strong>。所以这个项目定位是 harness 的工程演示，不是"harness 解决质量"的宣言。</p>
+
+        <h2>跑起来</h2>
+
+        <pre><code>git clone https://github.com/bayshier/harness-engineering.git
+cd harness-engineering
+./gradlew installDist
+./build/install/harness-engineering/bin/harness-engineering</code></pre>
+
+        <p>五分钟内你会看到：DAG 认领 → 沙箱判定 → deny-then-escalate 的一次与终拒 → 技能进化的 commit 与回滚 → token 预算面板。9/9 单测覆盖每条规则。</p>
+
+        <h2>写在最后</h2>
+
+        <p>这是我 Agent 工具链的第六块拼图：<a href="https://github.com/bayshier/kline-mcp" target="_blank" rel="noopener">kline-mcp</a> 喂数据、<a href="https://github.com/bayshier/kline-vision" target="_blank" rel="noopener">kline-vision</a> 管视觉、<a href="https://github.com/bayshier/t1-replay" target="_blank" rel="noopener">t1-replay</a> 管规则、<a href="https://github.com/bayshier/android-mcp" target="_blank" rel="noopener">android-mcp</a> 管设备——而 harness-engineering 是把它们串成生产系统的<strong>那层运行时</strong>。Kotlin 在这个赛道是空白，空白的另一面是机会。</p>
+
+        <div class="article-end">
+            <span>Easin's Code Lab</span>
+            <span><a href="easin.html">← 返回主页</a> · <a href="blog-kline-vision.html">上一篇：AI 看K线猜形态</a> · <a href="https://github.com/bayshier" target="_blank" rel="noopener">GitHub ↗</a></span>
+        </div>
+
+    </div>
+</body>
+
+</html>
