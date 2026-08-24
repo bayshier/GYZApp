@@ -249,7 +249,7 @@ body::before {
 }
 
 /* ============================================================
-   Résumé — 时间线条目
+   Works — 时间线作品（标题可点击跳转）
    ============================================================ */
 .entry {
     display: grid;
@@ -276,57 +276,7 @@ body::before {
     margin-bottom: 6px;
 }
 
-.entry-tag {
-    display: inline-block;
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    color: var(--accent);
-    text-transform: uppercase;
-    margin-bottom: 14px;
-}
-
-.entry-body ul {
-    list-style: none;
-}
-
-.entry-body li {
-    font-size: 14px;
-    color: var(--ink-dim);
-    line-height: 2;
-}
-
-/* ============================================================
-   Works — 编号作品
-   ============================================================ */
-.work {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 28px;
-    padding: 40px 0;
-    border-top: 1px solid var(--line);
-    transition: background 0.3s;
-}
-
-.work:last-child { border-bottom: 1px solid var(--line); }
-
-.work-num {
-    font-size: 15px;
-    font-variant-numeric: tabular-nums;
-    color: var(--ink-faint);
-    letter-spacing: 0.1em;
-    padding-top: 8px;
-    transition: color 0.3s;
-}
-
-.work:hover .work-num { color: var(--accent); }
-
-.work-body h3 {
-    font-size: clamp(20px, 3vw, 26px);
-    font-weight: 600;
-    margin-bottom: 6px;
-}
-
-.work-body h3 a {
+.entry-body h3 a {
     color: var(--ink);
     text-decoration: none;
     background-image: linear-gradient(var(--accent), var(--accent));
@@ -336,19 +286,20 @@ body::before {
     transition: background-size 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-.work-body h3 a:hover {
+.entry-body h3 a:hover {
     background-size: 100% 1px;
 }
 
-.work-tag {
+.entry-tag {
+    display: inline-block;
     font-size: 11px;
     letter-spacing: 0.12em;
-    color: var(--ink-faint);
+    color: var(--accent);
     text-transform: uppercase;
     margin-bottom: 12px;
 }
 
-.work-body p {
+.entry-body p {
     font-size: 14px;
     color: var(--ink-dim);
     max-width: 560px;
