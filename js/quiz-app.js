@@ -69,6 +69,20 @@
         return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
+    /* 重点高亮：数字考点红显 · 执法术语金底线 · 口诀荧光笔（作用于已转义文本） */
+    function hl(escaped) {
+        var s = escaped;
+        // 数字 + 单位（考试最易丢分的记忆点）
+        s = s.replace(/(\d+(?:\.\d+)?(?:%|‰|万元|元|亿|万|个?月|日|周年|年|人|倍|次|个|份|家|只|条|笔|个工作日))/g,
+                      '<span class="hl-num">$1</span>');
+        // 高频执法/监管术语
+        s = s.replace(/(罚款|处以|罚没|取消从业资格|责令改正|责令|警告|暂停.{0,3}业务|吊销|终身.{0,4}禁入|市场禁入|刑事责任|行政监管措施|纪律处分|撤销任职资格)/g,
+                      '<span class="hl-term">$1</span>');
+        // 口诀整句荧光
+        s = s.replace(/(口诀[:：][^　]+)/g, '<span class="hl-kj">$1</span>');
+        return s;
+    }
+
     /* ---------- 视图容器 ---------- */
     var view = document.getElementById('q-view');
     var timerEl = document.getElementById('q-timer');
@@ -542,14 +556,18 @@
         cats.forEach(function (c) {
             html += '<option value="' + esc(c) + '"' + (memoFilter.cat === c ? ' selected' : '') + '>' + esc(c) + '</option>';
         });
-        html += '</select></div><div class="q-memo-grid">';
+        html += '</select></div>'
+            + '<div class="q-hl-legend"><span class="hl-num">数字考点</span>必背数值 · '
+            + '<span class="hl-term">执法术语</span>高频考点 · '
+            + '<span class="hl-kj">口诀</span>速记锚点</div>'
+            + '<div class="q-memo-grid">';
 
         list.slice(0, 400).forEach(function (c) {
             html += '<div class="q-memo-card cat-' + (c.cat.indexOf('数字') === 0 ? 'num' : (c.cat === '百条考点' ? 'bai' : 'kou')) + '">'
                 + '<div class="qm-tag">' + esc(c.cat) + ' · ' + (c.subject === 'law' ? '法规' : '基础') + '</div>'
                 + (c.cat === '百条考点'
-                    ? '<div class="qm-body">' + esc(c.content) + '</div>'
-                    : '<div class="qm-title">' + esc(c.title) + '</div><div class="qm-body">' + esc(c.content) + '</div>')
+                    ? '<div class="qm-body">' + hl(esc(c.content)) + '</div>'
+                    : '<div class="qm-title">' + hl(esc(c.title)) + '</div><div class="qm-body">' + hl(esc(c.content)) + '</div>')
                 + '</div>';
         });
         html += '</div>';
