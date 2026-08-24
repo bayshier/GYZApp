@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="把K线渲染成图喂给视觉大模型，它不仅认出了头肩顶，还主动指出了颈线。kline-vision：零竞争的空白 + 标签由构造保证的评测集。">
+    <meta name="theme-color" content="#0a0e16">
+    <title>我让 AI 看K线图猜形态，它连颈线都找到了 — Easin's Blog</title>
+    <link rel="shortcut icon" href="icon_logo.png" type="image/png">
+    <link rel="icon" href="icon_logo.png" type="image/png">
+    <link rel="stylesheet" href="css/blog.css">
+</head>
+
+<body>
+    <div class="article-wrap">
+
+        <a class="back-home" href="easin.html">← 返回主页</a>
+
+        <div class="article-meta">
+            <span class="tag hot">多模态 AI</span>
+            <span class="tag">K线形态</span>
+            <span class="tag">Kotlin</span>
+            <span class="tag">评测集</span>
+        </div>
+
+        <h1 class="article-title">我让 AI 看K线图猜形态，它连颈线都找到了</h1>
+        <div class="article-date">
+            2026.08 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a>
+        </div>
+
+        <blockquote>
+            <p>所有"AI 炒股"项目都在把数字喂给大模型。但K线形态是视觉概念——人类交易者是怎么读图的，就应该怎么交给 AI。</p>
+        </blockquote>
+
+        <p>上一篇文章（《<a href="blog-kotlin-mcp.html">我给 AI 写了两个 Kotlin MCP 服务器</a>》）发布后，我继续挖 MCP 生态的空白，发现了一件奇怪的事：<strong>把渲染好的K线图喂给视觉大模型做形态识别，这个方向全网几乎没有认真做过</strong>——搜遍 GitHub，同类项目全部低于 2 Star，而最接近的 AI-Kline（341★）只做数值计算。连 31k Star 的 Vibe-Trading，视觉工具也只拿来 OCR。</p>
+
+        <p>于是我做了 <a href="https://github.com/bayshier/kline-vision" target="_blank" rel="noopener">kline-vision</a>。先看结果——</p>
+
+        <h2>三张图，三次盲测</h2>
+
+        <p>下面三张K线图由程序<strong>合成</strong>（稍后解释为什么），我把它们交给视觉大模型，<strong>不给任何提示</strong>，只问"这是什么形态"：</p>
+
+        <figure>
+            <img src="image/pattern-has.png" alt="头肩顶形态K线图" class="wide">
+            <figcaption>测试一：AI 的回答——<strong>"头肩顶形态"</strong>，并主动补充："连接左肩与头部之间的低点以及头部与右肩之间的低点，形成一条近似水平的支撑线（<strong>颈线</strong>）"</figcaption>
+        </figure>
+
+        <figure>
+            <img src="image/pattern-w.png" alt="双底形态K线图" class="wide">
+            <figcaption>测试二：AI 的回答——<strong>"DOUBLE_BOTTOM（双底 / W 底）"</strong>，还指出了形态含义："当价格突破颈线时，形态完成，预示下跌趋势可能结束"</figcaption>
+        </figure>
+
+        <figure>
+            <img src="image/pattern-flag.png" alt="上升旗形K线图" class="wide">
+            <figcaption>测试三：AI 的回答——<strong>"ASCENDING_FLAG（上升旗形）"</strong>，识别出了"近乎垂直上涨的旗杆"和"向下倾斜的窄幅整理旗面"</figcaption>
+        </figure>
+
+        <p><strong>3/3 全对</strong>。而且它给出的不是分类标签，是带结构的分析——颈线位置、W 形成因、旗杆旗面关系。这正是人类交易员读图的方式。</p>
+
+        <h2>关键技巧：标签由构造保证的评测集</h2>
+
+        <p>做形态识别，最大的难题是<strong>没有标注数据</strong>。真实K线的形态标注主观且昂贵，公开数据集不存在。</p>
+
+        <p>kline-vision 反过来解决：它内置一个<strong>参数化形态生成器</strong>——先画出形态的几何骨架（头肩顶就是"左肩高点 → 颈线低点 → 更高的头部 → 颈线低点 → 与左肩等高的右肩 → 向下突破"），再叠加真实感的噪声（影线、抖动、量能变化）。</p>
+
+        <pre><code>// 头肩顶的骨架：数值本身就是标签
+val anchors = listOf(
+    base, base - 1.2,        // 上涨铺垫
+    base + 1.8,              // 左肩
+    base - 0.6, base + 3.2,  // 颈线低点、头部（最高）
+    base - 0.6, base + 1.7,  // 颈线低点、右肩
+    base - 1.9,              // 向下突破
+)</code></pre>
+
+        <p><strong>标签不是标的，是构造出来的——所以是精确的。</strong>一条命令就能生成任意规模的评测集（6 种形态 × N 个变体 + manifest），给任何视觉模型打分。想比较 GPT-4o、GLM-4V、Qwen-VL 谁更会读K线？跑一遍评测集就有答案。</p>
+
+        <h2>渲染器：零依赖的 Java2D</h2>
+
+        <p>图表渲染没有用任何库——纯 Java2D 手绘：红涨绿跌（A股惯例）、蜡烛实体与影线、MA5/MA10 均线、量能面板、深色终端风格。确定性输入 = 确定性输出，同一份数据永远渲染出同一张图，评测才有意义。</p>
+
+        <figure>
+            <img src="image/pattern-real.png" alt="平安银行真实日K渲染图" class="wide">
+            <figcaption>真实数据同样能渲染：平安银行（000001）最近 90 个交易日，MCP 工具 <code>analyze_stock</code> 一条链路完成"拉行情 → 渲染 → 识别"</figcaption>
+        </figure>
+
+        <h2>MCP 封装：完整闭环</h2>
+
+        <p>整个能力封装成了 4 个 MCP 工具，Claude / Cursor 直接调用：</p>
+
+        <pre><code>render_synthetic   渲染带标签的演示形态图（无需 API key）
+generate_eval      生成完整评测集
+classify_chart     图片 → 视觉模型 → 形态 JSON
+analyze_stock      股票代码 → 真实行情 → 渲染 → 识别（完整闭环）</code></pre>
+
+        <p>视觉模型走 OpenAI 兼容协议，GPT-4o / GLM-4V / Qwen-VL / 本地 vLLM 换个环境变量就切换。没配 key 时优雅降级：照常渲染出图，返回配置指引。</p>
+
+        <h2>顺手又做了一个：T+1 回放引擎</h2>
+
+        <p>调研时发现另一个空白：交易 Agent 框架爆火，但<strong>没人做 A股规则的模拟器</strong>——让 Agent 回测A股策略，它会愉快地把早上买的股票下午卖掉，因为没有东西强制 T+1。</p>
+
+        <p>于是同一天写了 <a href="https://github.com/bayshier/t1-replay" target="_blank" rel="noopener">t1-replay</a>：确定性规则引擎（T+1 锁定、涨跌停 ±10%/±20%、整手、佣金印花税过户费全模型）暴露成 4 个 MCP 工具。11 个规则单测全绿，真实行情 e2e 里 Agent 试图当日卖出被当场拒绝——然后次日用更高的价格卖出，<strong>每分钱都对账</strong>。</p>
+
+        <h2>写在最后</h2>
+
+        <p>这一轮的三件套已经形成闭环：<a href="https://github.com/bayshier/kline-mcp" target="_blank" rel="noopener">kline-mcp</a> 喂数据和指标，kline-vision 负责视觉形态识别，t1-replay 负责规则约束下的训练与评分。任何一个 MCP 客户端（Claude、Cursor、Vibe-Trading……）都能把它们组装成自己的A股研究工作台。</p>
+
+        <div class="repo-cards">
+            <a class="repo-card" href="https://github.com/bayshier/kline-vision" target="_blank" rel="noopener">
+                <div class="repo-name">bayshier/kline-vision</div>
+                <div class="repo-desc">K线图 → VLM 形态识别（含评测集）</div>
+            </a>
+            <a class="repo-card" href="https://github.com/bayshier/t1-replay" target="_blank" rel="noopener">
+                <div class="repo-name">bayshier/t1-replay</div>
+                <div class="repo-desc">A股 T+1 纸面交易回放引擎（MCP）</div>
+            </a>
+            <a class="repo-card" href="https://github.com/bayshier/kline-mcp" target="_blank" rel="noopener">
+                <div class="repo-name">bayshier/kline-mcp</div>
+                <div class="repo-desc">A股 K线与指标 MCP 服务器</div>
+            </a>
+        </div>
+
+        <p>数据来自公开接口，形态识别仅供研究学习，<strong>不构成投资建议</strong>。</p>
+
+        <div class="article-end">
+            <span>Easin's Code Lab</span>
+            <span><a href="easin.html">← 返回主页</a> · <a href="blog-kotlin-mcp.html">上一篇：两个 Kotlin MCP 服务器</a> · <a href="https://github.com/bayshier" target="_blank" rel="noopener">GitHub ↗</a></span>
+        </div>
+
+    </div>
+</body>
+
+</html>
