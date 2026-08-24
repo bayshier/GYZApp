@@ -25,6 +25,44 @@
     };
 
     /* 知识点库统计（数据懒加载，首页用静态摘要） */
+    /* 题目模块分类：法律法规按关键词，基础知识按章 */
+    var LAW_MODULES = [
+        ['期货交易管理条例', ['期货']],
+        ['基金法', ['基金', '私募', '募集', '托管']],
+        ['证券公司监督管理', ['证券公司', '自营', '经纪', '资产管理', '融资融券', '两融', 'IB', '保荐', '承销', '合规']],
+        ['从业资格与执业行为', ['从业', '执业', '诚信', '职业道德', '从业人员', '胜任能力', '后续培训']],
+        ['公司法', ['股东', '董事', '监事', '有限责任', '股份有限', '注册资本', '清算', '破产', '合伙', '公司债券', '股东大会', '公司治理']],
+        ['证券法', ['证券发行', '上市', '交易', '信息披露', '内幕', '操纵市场', '虚假陈述', '收购', '退市', '注册制', '欺诈', '证券']]
+    ];
+    var BAS_MODULE_NAMES = {
+        1: '金融市场体系', 2: '金融体系与多层次资本市场', 3: '证券市场主体',
+        4: '股票', 5: '债券', 6: '证券投资基金', 7: '金融衍生工具', 8: '金融风险管理'
+    };
+    function moduleOf(q) {
+        if (q.subject === 'basics') {
+            return BAS_MODULE_NAMES[q.chapter] || '其他';
+        }
+        for (var i = 0; i < LAW_MODULES.length; i++) {
+            var kws = LAW_MODULES[i][1];
+            for (var k = 0; k < kws.length; k++) {
+                if (q.q.indexOf(kws[k]) !== -1) return LAW_MODULES[i][0];
+            }
+        }
+        return '法律法规综合';
+    }
+
+    /* 模块 → 知识点文档直达 */
+    var LAW_MODULE_DOC = {
+        '公司法': 'law-2', '证券法': 'law-3', '基金法': 'law-4',
+        '期货交易管理条例': 'law-5', '证券公司监督管理': 'law-6',
+        '从业资格与执业行为': 'law-7', '法律法规综合': 'law-0'
+    };
+    function docIdOf(q) {
+        if (q.subject === 'basics') return 'basics-' + (q.chapter - 1);
+        var m = moduleOf(q);
+        return LAW_MODULE_DOC[m] || 'law-0';
+    }
+
     var LEARN_SUMMARY = {
         law:    { docs: 14, sections: 1088, chars: 34.9 },
         basics: { docs: 10, sections: 2068, chars: 55.4 }
@@ -38,11 +76,49 @@
     try { store = JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
     catch (e) { store = {}; }
     store.done   = store.done   || {};  // id -> {pick, right, ts}
-    store.wrong  = store.wrong  || {};  // id -> true（错题本）
+    store.wrong  = store.wrong  || {};  // id -> {wrongCount, stage, nextReview}
     store.exams  = store.exams  || [];  // 模拟考试记录
+
+    /* 旧格式迁移：wrong[id] === true → 调度对象（立即到期） */
+    Object.keys(store.wrong).forEach(function (id) {
+        if (store.wrong[id] === true) {
+            store.wrong[id] = { wrongCount: 1, stage: 0, nextReview: 0 };
+        }
+    });
 
     function save() {
         try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {}
+    }
+
+    /* 艾宾浩斯间隔：1天 → 3天 → 7天 → 14天 → 移出错题本 */
+    var REVIEW_INTERVALS = [1, 3, 7, 14];
+    var DAY_MS = 24 * 60 * 60 * 1000;
+
+    function recordResult(q, isRight) {
+        store.done[q.id] = { pick: store.done[q.id] && store.done[q.id].pick, right: isRight, ts: Date.now() };
+        var w = store.wrong[q.id];
+        if (!isRight) {
+            var wc = w ? w.wrongCount + 1 : 1;
+            // 答错：重置到第一阶段（1 天后复习）
+            store.wrong[q.id] = { wrongCount: wc, stage: 0, nextReview: Date.now() + REVIEW_INTERVALS[0] * DAY_MS };
+        } else if (w) {
+            // 复习答对：进入下一阶段
+            if (w.stage + 1 >= REVIEW_INTERVALS.length) {
+                delete store.wrong[q.id]; // 四个阶段全过 → 已巩固
+            } else {
+                store.wrong[q.id] = { wrongCount: w.wrongCount, stage: w.stage + 1, nextReview: Date.now() + REVIEW_INTERVALS[w.stage + 1] * DAY_MS };
+            }
+        }
+        save();
+    }
+
+    function dueReviews(subject) {
+        var now = Date.now();
+        return BANK.filter(function (q) {
+            if (q.subject !== subject) return false;
+            var w = store.wrong[q.id];
+            return w && w.nextReview <= now;
+        });
     }
 
     function stats(subject) {
@@ -105,6 +181,17 @@
             renderPapers(parts[1] || null);
         } else if (parts[0] === 'memento') {
             renderMemento();
+        } else if (parts[0] === 'review' && parts[1]) {
+            renderReview(parts[1]);
+        } else if (parts[0] === 'radar' && parts[1]) {
+            renderRadar(parts[1]);
+        } else if (parts[0] === 'drill' && parts[1]) {
+            var drillIds = parts[1].split(',').map(Number).filter(function (i) { return BANK[i]; });
+            practice.list = drillIds.map(function (i) { return BANK[i]; });
+            practice.idx = 0; practice.picks = {}; practice.mode = 'order';
+            practice.title = '薄弱专项 · ' + drillIds.length + ' 题';
+            practice.backHash = '#/';
+            renderPracticeQuestion();
         } else if (parts[0] === 'result' && examState.lastResult) {
             renderResult(examState.lastResult);
         } else {
@@ -152,6 +239,12 @@
             var st = stats(s);
             var pct = st.total ? Math.round(st.done / st.total * 100) : 0;
             var acc = st.done ? Math.round(st.right / st.done * 100) : 0;
+            var due = dueReviews(s).length;
+            if (due) {
+                html += '<a class="q-review-banner" href="#/review/' + s + '">⏰ '
+                    + esc(SUBJECTS[s].short) + '：今日待复习 <b>' + due + '</b> 题'
+                    + '<span>按遗忘曲线到期 · 点击开刷 →</span></a>';
+            }
             html += '<div class="q-subject-card" data-subject="' + s + '">'
                 + '<div class="qsc-head"><h2>' + esc(SUBJECTS[s].name) + '</h2>'
                 + '<span class="qsc-count">' + st.total + ' 题</span></div>'
@@ -165,6 +258,7 @@
                 +   '<a href="#/practice/' + s + '/order">顺序练习</a>'
                 +   '<a href="#/practice/' + s + '/random">随机</a>'
                 +   '<a href="#/practice/' + s + '/wrong">错题本' + (st.wrong ? ' (' + st.wrong + ')' : '') + '</a>'
+                +   '<a href="#/radar/' + s + '">📊 薄弱分析</a>'
                 +   '<a class="primary" href="#/exam/' + s + '">模拟考试</a>'
                 + '</div></div>';
         });
@@ -265,6 +359,10 @@
             if (q.explain) {
                 html += '<div class="q-explain"><b>解析</b>' + esc(q.explain) + '</div>';
             }
+            var docId = docIdOf(q);
+            var docTitle = '';
+            (LEARN[q.subject] || []).forEach(function (d) { if (d.id === docId) docTitle = d.title; });
+            html += '<a class="q-knowledge-link" href="#/learn/' + q.subject + '/' + docId + '">📖 查看对应知识点' + (docTitle ? '：' + esc(docTitle) : '') + ' →</a>';
         }
 
         html += '</article><div class="q-nav">'
@@ -280,11 +378,7 @@
                 if (practice.picks[q.id] !== undefined) return;
                 var L = btn.dataset.pick;
                 practice.picks[q.id] = L;
-                var isRight = L === q.answer;
-                store.done[q.id] = { pick: L, right: isRight, ts: Date.now() };
-                if (isRight) delete store.wrong[q.id];
-                else store.wrong[q.id] = true;
-                save();
+                recordResult(q, L === q.answer);
                 renderPracticeQuestion();
             });
         });
@@ -427,11 +521,9 @@
         examState.list.forEach(function (q) {
             var pick = examState.picks[q.id];
             var isRight = pick === q.answer;
-            if (pick !== undefined) {
-                store.done[q.id] = { pick: pick, right: isRight, ts: Date.now() };
-            }
-            if (isRight) { right++; delete store.wrong[q.id]; }
-            else { wrongIds.push(q.id); if (pick !== undefined) store.wrong[q.id] = true; }
+            if (pick !== undefined) recordResult(q, isRight);
+            if (isRight) { right++; }
+            else { wrongIds.push(q.id); }
         });
         var score = Math.round(right / total * 100);
         var d = new Date();
@@ -484,6 +576,70 @@
 
         view.innerHTML = html;
         timerEl.hidden = true;
+    }
+
+    /* ============================================================
+       今日复习（艾宾浩斯到期错题）
+       ============================================================ */
+    function renderReview(subject) {
+        var due = dueReviews(subject);
+        if (!due.length) {
+            view.innerHTML = '<div class="q-empty-box"><div class="icon">🎉</div>'
+                + '<h3>当前没有到期复习题</h3>'
+                + '<p>错题会按 1 / 3 / 7 / 14 天间隔自动安排复习，到点出现在这里</p>'
+                + '<a class="btn" href="#/">返回首页</a></div>';
+            return;
+        }
+        practice.list = due;
+        practice.idx = 0;
+        practice.picks = {};
+        practice.mode = 'review';
+        practice.title = '今日复习 · ' + SUBJECTS[subject].short + '（' + due.length + ' 题到期）';
+        practice.backHash = '#/';
+        renderPracticeQuestion();
+    }
+
+    /* ============================================================
+       薄弱章节雷达（模块正确率热力条）
+       ============================================================ */
+    function renderRadar(subject) {
+        var mods = {};
+        bySubject(subject).forEach(function (q) {
+            var m = moduleOf(q);
+            mods[m] = mods[m] || { total: 0, done: 0, right: 0, qIds: [] };
+            mods[m].total++;
+            mods[m].qIds.push(q.id);
+            var d = store.done[q.id];
+            if (d) { mods[m].done++; if (d.right) mods[m].right++; }
+        });
+        var arr = Object.keys(mods).map(function (k) {
+            var m = mods[k];
+            m.name = k;
+            m.acc = m.done ? Math.round(m.right / m.done * 100) : -1;
+            return m;
+        }).sort(function (a, b) { return (a.acc === -1 ? 999 : a.acc) - (b.acc === -1 ? 999 : b.acc); });
+
+        var html = '<div class="q-topbar">'
+            + '<a class="btn ghost" href="#/">← 退出</a>'
+            + '<span class="q-meta">薄弱分析 · ' + esc(SUBJECTS[subject].name) + '（正确率升序，红=短板）</span>'
+            + '<span class="q-progress-text">' + arr.length + ' 个模块</span></div>'
+            + '<div class="q-radar">';
+
+        arr.forEach(function (m) {
+            var cls = m.acc === -1 ? 'na' : (m.acc >= 80 ? 'good' : (m.acc >= 60 ? 'mid' : 'bad'));
+            var accTxt = m.acc === -1 ? '未刷' : m.acc + '%';
+            var idsParam = m.qIds.join(',');
+            html += '<div class="qr-row ' + cls + '">'
+                + '<div class="qr-info"><b>' + esc(m.name) + '</b>'
+                + '<span>已练 ' + m.done + ' / ' + m.total + ' 题</span></div>'
+                + '<div class="qr-bar"><i style="width:' + (m.acc === -1 ? 0 : m.acc) + '%"></i></div>'
+                + '<span class="qr-acc">' + accTxt + '</span>'
+                + '<a class="btn ghost" href="#/drill/' + idsParam + '">练这块 →</a>'
+                + '</div>';
+        });
+        html += '</div>'
+            + '<div class="q-note">※ 按模块正确率升序排列：<b style="color:var(--up)">红 &lt;60%</b> 为重点补强，<b style="color:var(--accent)">金 60-80%</b> 需巩固，绿 ≥80% 已掌握。练完在对应模块的题目里刷新正确率。</div>';
+        view.innerHTML = html;
     }
 
     /* ============================================================

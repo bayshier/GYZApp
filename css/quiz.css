@@ -152,6 +152,66 @@ body {
 .qq-txt b { display: block; color: var(--brand); font-size: 15px; }
 .qq-txt i { display: block; font-style: normal; color: var(--text-light); font-size: 11.5px; margin-top: 2px; }
 
+/* ---------- 今日复习横幅 ---------- */
+.q-review-banner {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    background: linear-gradient(135deg, #8a5a12 0%, #c98f2e 100%);
+    color: #fff; text-decoration: none;
+    border-radius: 10px; padding: 10px 16px;
+    margin-bottom: 10px; font-size: 13.5px; font-weight: 600;
+    transition: transform .2s, box-shadow .2s;
+}
+.q-review-banner:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(201, 143, 46, 0.35); }
+.q-review-banner b {
+    font-family: "SF Mono", Menlo, monospace; font-size: 16px;
+    background: rgba(255,255,255,0.22); padding: 1px 8px; border-radius: 10px;
+}
+.q-review-banner span { font-size: 11.5px; font-weight: 400; opacity: 0.85; margin-left: auto; }
+
+/* ---------- 薄弱雷达 ---------- */
+.q-radar {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 8px 16px;
+}
+.qr-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 4px; border-bottom: 1px solid var(--border);
+}
+.qr-row:last-child { border-bottom: none; }
+.qr-info { width: 170px; flex-shrink: 0; }
+.qr-info b { display: block; font-size: 13.5px; color: var(--brand); }
+.qr-info span { font-size: 11px; color: var(--text-light); }
+.qr-bar {
+    flex: 1; height: 8px; border-radius: 4px;
+    background: var(--border); overflow: hidden;
+}
+.qr-bar i { display: block; height: 100%; border-radius: 4px; transition: width .4s; }
+.qr-row.good .qr-bar i { background: var(--down); }
+.qr-row.mid  .qr-bar i { background: var(--accent); }
+.qr-row.bad  .qr-bar i { background: var(--up); }
+.qr-row.na   .qr-bar i { background: var(--border); }
+.qr-acc {
+    width: 44px; text-align: right; flex-shrink: 0;
+    font-family: "SF Mono", Menlo, monospace; font-size: 14px; font-weight: 700;
+}
+.qr-row.good .qr-acc { color: var(--down); }
+.qr-row.mid  .qr-acc { color: var(--accent); }
+.qr-row.bad  .qr-acc { color: var(--up); }
+.qr-row.na   .qr-acc { color: var(--text-light); font-weight: 400; font-size: 12px; }
+
+/* ---------- 知识点直达链接 ---------- */
+.q-knowledge-link {
+    display: inline-block; margin-top: 12px;
+    font-size: 12.5px; color: var(--brand-light); text-decoration: none;
+    padding: 6px 12px; border: 1px dashed rgba(45, 74, 122, 0.45);
+    border-radius: 16px; transition: all .2s;
+}
+.q-knowledge-link:hover {
+    color: var(--accent); border-color: var(--accent); border-style: solid;
+    background: #fdf9ef;
+}
+
 /* ---------- 科目分栏 tab（重点速记） ---------- */
 .q-sub-tabs {
     display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
