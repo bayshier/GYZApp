@@ -528,7 +528,7 @@
     /* ============================================================
        重点速记（考点卡片墙）
        ============================================================ */
-    var memoFilter = { subject: 'all', cat: 'all' };
+    var memoFilter = { subject: 'law', cat: 'all' };
 
     function renderMemento() {
         var CARDS = window.MEMENTO_CARDS || [];
@@ -548,10 +548,11 @@
             + '<a class="btn ghost" href="#/">← 退出</a>'
             + '<span class="q-meta">重点速记 · 备考100条 + 口诀 + 数字考点</span>'
             + '<span class="q-progress-text">' + list.length + ' 张</span></div>'
+            + '<div class="q-sub-tabs">'
+            + '<button class="q-sub-tab' + (memoFilter.subject === 'law' ? ' on' : '') + '" data-sub="law">📜 证券市场基本法律法规</button>'
+            + '<button class="q-sub-tab' + (memoFilter.subject === 'basics' ? ' on' : '') + '" data-sub="basics">📈 金融市场基础知识</button>'
+            + '</div>'
             + '<div class="q-memo-filters">'
-            + '<select id="mf-sub"><option value="all">全部科目</option>'
-            + '<option value="law"' + (memoFilter.subject === 'law' ? ' selected' : '') + '>法律法规</option>'
-            + '<option value="basics"' + (memoFilter.subject === 'basics' ? ' selected' : '') + '>基础知识</option></select>'
             + '<select id="mf-cat"><option value="all">全部类型</option>';
         cats.forEach(function (c) {
             html += '<option value="' + esc(c) + '"' + (memoFilter.cat === c ? ' selected' : '') + '>' + esc(c) + '</option>';
@@ -573,8 +574,13 @@
         html += '</div>';
         view.innerHTML = html;
 
-        document.getElementById('mf-sub').addEventListener('change', function () {
-            memoFilter.subject = this.value; renderMemento();
+        view.querySelectorAll('.q-sub-tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (memoFilter.subject === btn.dataset.sub) return;
+                memoFilter.subject = btn.dataset.sub;
+                memoFilter.cat = 'all'; // 切科目时重置类型，避免选项不存在
+                renderMemento();
+            });
         });
         document.getElementById('mf-cat').addEventListener('change', function () {
             memoFilter.cat = this.value; renderMemento();
