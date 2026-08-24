@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="把K线渲染成图喂给视觉大模型，它不仅认出了头肩顶，还主动指出了颈线。kline-vision：零竞争的空白 + 标签由构造保证的评测集。">
+    <meta name="description" content="宇树上市4天腰斩，我让 AI 读了读它的K线——它回了四个字：瀑布线。kline-vision：渲染K线图喂给视觉大模型，3/3 盲测全对，附标签由构造保证的评测集。">
     <meta name="theme-color" content="#0a0e16">
-    <title>我让 AI 看K线图猜形态，它连颈线都找到了 — Easin's Blog</title>
+    <title>宇树腰斩这4天，我让 AI 读了读它的K线 — Easin's Blog</title>
     <link rel="shortcut icon" href="icon_logo.png" type="image/png">
     <link rel="icon" href="icon_logo.png" type="image/png">
     <link rel="stylesheet" href="css/blog.css">
@@ -24,7 +24,7 @@
             <span class="tag">评测集</span>
         </div>
 
-        <h1 class="article-title">我让 AI 看K线图猜形态，它连颈线都找到了</h1>
+        <h1 class="article-title">宇树腰斩这4天，我让 AI 读了读它的K线——它回了四个字：瀑布线</h1>
         <div class="article-date">
             2026.08 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a>
         </div>
@@ -100,6 +100,28 @@ analyze_stock      股票代码 → 真实行情 → 渲染 → 识别（完整�
         <p>调研时发现另一个空白：交易 Agent 框架爆火，但<strong>没人做 A股规则的模拟器</strong>——让 Agent 回测A股策略，它会愉快地把早上买的股票下午卖掉，因为没有东西强制 T+1。</p>
 
         <p>于是同一天写了 <a href="https://github.com/bayshier/t1-replay" target="_blank" rel="noopener">t1-replay</a>：确定性规则引擎（T+1 锁定、涨跌停 ±10%/±20%、整手、佣金印花税过户费全模型）暴露成 4 个 MCP 工具。11 个规则单测全绿，真实行情 e2e 里 Agent 试图当日卖出被当场拒绝——然后次日用更高的价格卖出，<strong>每分钱都对账</strong>。</p>
+
+        <h2>实战：宇树上市这 4 天</h2>
+
+        <p>热点送上门了。宇树科技（688836）上市 4 个交易日，<strong>1100 元开盘 → 608.11 元收盘，-44.7%，技术性腰斩、深度破发</strong>。我把它喂给了自己的工具链：<code>analyze_stock 688836</code> 一条命令完成"拉行情 → 渲染 → 识别"。</p>
+
+        <pre><code>8/19  开1100.00 收845.00   首日 -23.1%
+8/20  开 790.00 收687.00   -18.7%
+8/21  开 659.00 收672.41   +2.1%（弱反弹）
+8/24  开 640.26 收608.11   -9.6%（今日）</code></pre>
+
+        <figure>
+            <img src="image/pattern-unitree.png" alt="宇树科技 688836 上市4日K线渲染图" class="wide">
+            <figcaption>宇树科技上市以来全部 4 根日K（kline-vision 渲染自真实行情）</figcaption>
+        </figure>
+
+        <p>视觉大模型的判读原文：</p>
+
+        <blockquote>
+            <p>"呈现典型的<strong>断头铡刀式单边下跌</strong>形态（Cascade Down / 瀑布线）。4 根K线构成连续下杀结构，无有效反弹，形似自由落体，属于极端弱势形态。首日巨阴线（-23.1%）高开后单边下行，全天几无反抽……"</p>
+        </blockquote>
+
+        <p>注意它用的词：<strong>"断头铡刀""瀑布线"</strong>——这是中文股民的黑话，不是教科书术语。你喂给它一张图，它用交易员的语言回答你。这就是视觉路线和数字路线的差别：<strong>形态本来就是视觉概念</strong>。</p>
 
         <h2>写在最后</h2>
 
