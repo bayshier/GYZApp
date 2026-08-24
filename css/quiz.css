@@ -132,6 +132,58 @@ body {
     color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
 }
 
+/* ---------- 历年真题 + 重点速记 快捷入口 ---------- */
+.q-quick-strip {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin: 0 0 22px;
+}
+.qq-card {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: var(--shadow);
+    padding: 14px 16px; text-decoration: none;
+    transition: border-color .2s, transform .2s, box-shadow .2s;
+}
+.qq-card:hover {
+    border-color: var(--accent); transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(26, 43, 74, 0.15);
+}
+.qq-ico { font-size: 26px; line-height: 1; }
+.qq-txt b { display: block; color: var(--brand); font-size: 15px; }
+.qq-txt i { display: block; font-style: normal; color: var(--text-light); font-size: 11.5px; margin-top: 2px; }
+
+/* ---------- 重点速记卡片墙 ---------- */
+.q-memo-filters { display: flex; gap: 10px; margin-bottom: 14px; }
+.q-memo-filters select {
+    font-family: inherit; font-size: 13px;
+    color: var(--text); background: var(--card);
+    border: 1px solid var(--border); border-radius: 18px;
+    padding: 6px 14px; cursor: pointer; outline: none;
+}
+.q-memo-filters select:focus { border-color: var(--accent); }
+.q-memo-grid {
+    display: grid; grid-template-columns: 1fr; gap: 10px;
+}
+@media (min-width: 680px) { .q-memo-grid { grid-template-columns: 1fr 1fr; } }
+.q-memo-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; box-shadow: var(--shadow);
+    padding: 13px 15px;
+}
+.q-memo-card.cat-bai { border-left: 3px solid var(--brand); }
+.q-memo-card.cat-kou { border-left: 3px solid var(--accent); }
+.q-memo-card.cat-num { border-left: 3px solid var(--up); }
+.qm-tag { font-size: 10.5px; color: var(--text-light); letter-spacing: 0.08em; margin-bottom: 6px; }
+.qm-title { font-size: 14px; font-weight: 700; color: var(--brand); margin-bottom: 5px; line-height: 1.5; }
+.qm-body { font-size: 13px; line-height: 1.8; color: var(--text); text-align: justify; }
+
+.q-note {
+    font-size: 12px; color: var(--text-light); line-height: 1.7;
+    padding: 12px 14px; background: #fdf9ef;
+    border: 1px solid rgba(212, 166, 68, 0.3); border-radius: 8px;
+    margin-top: 16px;
+}
+
 /* ---------- 科目卡片 ---------- */
 .q-subjects { display: grid; grid-template-columns: 1fr; gap: 16px; }
 @media (min-width: 680px) { .q-subjects { grid-template-columns: 1fr 1fr; } }

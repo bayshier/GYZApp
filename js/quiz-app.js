@@ -87,6 +87,10 @@
             renderExam(parts[1]);
         } else if (parts[0] === 'learn' && parts[1]) {
             renderLearn(parts[1], parts[2] || null);
+        } else if (parts[0] === 'papers') {
+            renderPapers(parts[1] || null);
+        } else if (parts[0] === 'memento') {
+            renderMemento();
         } else if (parts[0] === 'result' && examState.lastResult) {
             renderResult(examState.lastResult);
         } else {
@@ -116,6 +120,17 @@
                 + '<span class="qls-go">进入学习 →</span></a>';
         });
         html += '</div></section>';
+
+        /* 历年真题 + 重点速记 快捷入口 */
+        var nPapers = (window.EXAM_PAPERS || []).length;
+        var nPaperQ = (window.EXAM_PAPERS || []).reduce(function (a, p) { return a + p.count; }, 0);
+        var nCards = (window.MEMENTO_CARDS || []).length;
+        html += '<section class="q-quick-strip">'
+            + '<a class="qq-card" href="#/papers"><span class="qq-ico">📜</span>'
+            + '<span class="qq-txt"><b>历年真题</b><i>' + nPapers + ' 套 · ' + nPaperQ + ' 题 · 按套刷</i></span></a>'
+            + '<a class="qq-card" href="#/memento"><span class="qq-ico">⚡</span>'
+            + '<span class="qq-txt"><b>重点速记</b><i>' + nCards + ' 张卡片 · 百条/口诀/数字考点</i></span></a>'
+            + '</section>';
 
         html += '<div class="q-subjects">';
 
@@ -203,9 +218,10 @@
         var pick = practice.picks[q.id];
         var subName = SUBJECTS[q.subject].short;
 
+        var backH = practice.backHash || '#/';
         var html = '<div class="q-topbar">'
-            + '<a class="btn ghost" href="#/">← 退出</a>'
-            + '<span class="q-meta">' + esc(subName) + ' · ' + esc(q.source) + '</span>'
+            + '<a class="btn ghost" href="' + backH + '">← 退出</a>'
+            + '<span class="q-meta">' + (practice.title ? esc(practice.title) : esc(subName) + ' · ' + esc(q.source)) + '</span>'
             + '<span class="q-progress-text">' + n + ' / ' + total + '</span></div>'
             + '<div class="q-progress"><i style="width:' + (n / total * 100) + '%"></i></div>'
             + '<article class="q-card">'
@@ -266,7 +282,7 @@
             if (practice.idx < practice.list.length - 1) {
                 practice.idx++; renderPracticeQuestion();
             } else {
-                location.hash = '#/';
+                location.hash = practice.backHash || '#/';
             }
         });
     }
@@ -454,6 +470,97 @@
 
         view.innerHTML = html;
         timerEl.hidden = true;
+    }
+
+    /* ============================================================
+       历年真题（试卷归档 · 复用练习引擎）
+       ============================================================ */
+    function renderPapers(pid) {
+        var PAPERS = window.EXAM_PAPERS || [];
+        if (pid) {
+            var p = null;
+            PAPERS.forEach(function (x) { if (x.id === pid) p = x; });
+            if (!p) { renderPapers(null); return; }
+            practice.list = p.qIds.map(function (i) { return BANK[i]; });
+            practice.idx = 0;
+            practice.picks = {};
+            practice.mode = 'order';
+            practice.title = '历年真题 · ' + p.name;
+            practice.backHash = '#/papers';
+            renderPracticeQuestion();
+            return;
+        }
+        var types = [['真题', '📜'], ['冲刺卷', '⚡']];
+        var html = '<div class="q-topbar">'
+            + '<a class="btn ghost" href="#/">← 退出</a>'
+            + '<span class="q-meta">历年真题归档 · 按套练习</span>'
+            + '<span class="q-progress-text">' + PAPERS.length + ' 套</span></div>';
+        types.forEach(function (tp) {
+            var list = PAPERS.filter(function (p) { return p.type === tp[0]; });
+            if (!list.length) return;
+            html += '<div class="q-learn-cat"><h3>' + tp[1] + ' ' + tp[0] + '</h3>';
+            list.forEach(function (p) {
+                html += '<a class="q-doc-card" href="#/papers/' + p.id + '">'
+                    + '<div class="qd-main"><div class="qd-title">' + esc(p.name) + '</div>'
+                    + '<div class="qd-meta">' + esc(SUBJECTS[p.subject].short) + ' · ' + p.count + ' 题 · 即时对错反馈</div></div>'
+                    + '<span class="qd-arrow">→</span></a>';
+            });
+            html += '</div>';
+        });
+        html += '<div class="q-note">※ 2021.12 两场机考真题原文归档；冲刺卷为考前精选套题。后续拿到新真题 PDF，放入「证券从业考试」文件夹即可自动入库。</div>';
+        view.innerHTML = html;
+    }
+
+    /* ============================================================
+       重点速记（考点卡片墙）
+       ============================================================ */
+    var memoFilter = { subject: 'all', cat: 'all' };
+
+    function renderMemento() {
+        var CARDS = window.MEMENTO_CARDS || [];
+        var cats = [];
+        CARDS.forEach(function (c) {
+            if (cats.indexOf(c.cat) === -1) cats.push(c.cat);
+        });
+        var order = ['百条考点', '记忆口诀', '数字考点·罚款金额', '数字考点·时间期限', '数字考点·比例阈值', '数字考点·数字规定'];
+        cats = order.filter(function (c) { return cats.indexOf(c) !== -1; });
+
+        var list = CARDS.filter(function (c) {
+            return (memoFilter.subject === 'all' || c.subject === memoFilter.subject)
+                && (memoFilter.cat === 'all' || c.cat === memoFilter.cat);
+        });
+
+        var html = '<div class="q-topbar">'
+            + '<a class="btn ghost" href="#/">← 退出</a>'
+            + '<span class="q-meta">重点速记 · 备考100条 + 口诀 + 数字考点</span>'
+            + '<span class="q-progress-text">' + list.length + ' 张</span></div>'
+            + '<div class="q-memo-filters">'
+            + '<select id="mf-sub"><option value="all">全部科目</option>'
+            + '<option value="law"' + (memoFilter.subject === 'law' ? ' selected' : '') + '>法律法规</option>'
+            + '<option value="basics"' + (memoFilter.subject === 'basics' ? ' selected' : '') + '>基础知识</option></select>'
+            + '<select id="mf-cat"><option value="all">全部类型</option>';
+        cats.forEach(function (c) {
+            html += '<option value="' + esc(c) + '"' + (memoFilter.cat === c ? ' selected' : '') + '>' + esc(c) + '</option>';
+        });
+        html += '</select></div><div class="q-memo-grid">';
+
+        list.slice(0, 400).forEach(function (c) {
+            html += '<div class="q-memo-card cat-' + (c.cat.indexOf('数字') === 0 ? 'num' : (c.cat === '百条考点' ? 'bai' : 'kou')) + '">'
+                + '<div class="qm-tag">' + esc(c.cat) + ' · ' + (c.subject === 'law' ? '法规' : '基础') + '</div>'
+                + (c.cat === '百条考点'
+                    ? '<div class="qm-body">' + esc(c.content) + '</div>'
+                    : '<div class="qm-title">' + esc(c.title) + '</div><div class="qm-body">' + esc(c.content) + '</div>')
+                + '</div>';
+        });
+        html += '</div>';
+        view.innerHTML = html;
+
+        document.getElementById('mf-sub').addEventListener('change', function () {
+            memoFilter.subject = this.value; renderMemento();
+        });
+        document.getElementById('mf-cat').addEventListener('change', function () {
+            memoFilter.cat = this.value; renderMemento();
+        });
     }
 
     /* ============================================================
