@@ -1,281 +1,163 @@
 /* ============================================================
-   Easin's Code Lab - 个人主页
-   暗色极客风 · Android 绿主题 · 终端美学
+   Easin — Code · Craft · AI
+   编辑部风格 · 参考 about.senbuzy.com
+   深夜蓝底 + 暖白大字 · 无卡片纯排版 · 3D Logo 星球
    ============================================================ */
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-    --green: #3DDC84;
-    --green-dim: #2bb56e;
-    --green-glow: rgba(61, 220, 132, 0.4);
-    --bg: #0d1117;
-    --bg-card: #161b22;
-    --bg-elev: #1c2330;
-    --text: #e6edf3;
-    --text-dim: #8b949e;
-    --text-faint: #484f58;
-    --border: rgba(61, 220, 132, 0.15);
-    --terminal: #58a6ff;
+    --bg: #0a0e16;
+    --bg-elev: rgba(244, 241, 234, 0.04);
+    --ink: #f4f1ea;
+    --ink-dim: rgba(244, 241, 234, 0.55);
+    --ink-faint: rgba(244, 241, 234, 0.28);
+    --line: rgba(244, 241, 234, 0.14);
+    --accent: #3DDC84;
+    --serif-cn: "Chiron GoRound TC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
 }
 
 html { scroll-behavior: smooth; }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Mono", "JetBrains Mono",
-                 "PingFang SC", "Microsoft YaHei", monospace, sans-serif;
+    font-family: "Helvetica Neue", var(--serif-cn);
     background: var(--bg);
-    color: var(--text);
-    line-height: 1.7;
+    color: var(--ink);
+    line-height: 1.75;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
 }
 
-/* 全局背景：网格 + 光晕（随滚动产生视差位移） */
+/* 背景微光 + 视差（极克制） */
 body::before {
     content: "";
     position: fixed;
     inset: 0;
     z-index: -1;
     background:
-        linear-gradient(rgba(61, 220, 132, 0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(61, 220, 132, 0.025) 1px, transparent 1px),
-        radial-gradient(ellipse at 50% 0%, rgba(61, 220, 132, 0.08), transparent 50%);
-    background-size: 32px 32px, 32px 32px, 100% 100%;
-    background-position-y: var(--bg-shift, 0), var(--bg-shift, 0), 0;
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(61, 220, 132, 0.05), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(90, 120, 200, 0.04), transparent 60%);
+    background-position-y: var(--bg-shift, 0);
 }
 
-/* ---------- 主容器 ---------- */
-.container {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 0 20px 60px;
-}
-
-/* ---------- 终端窗口风格 ---------- */
-.terminal {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 20px;
-}
-
-.terminal-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 16px;
-    background: var(--bg-elev);
-    border-bottom: 1px solid var(--border);
-}
-
-.terminal-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-}
-.terminal-dot.r { background: #ff5f56; }
-.terminal-dot.y { background: #ffbd2e; }
-.terminal-dot.g { background: #27c93f; }
-
-.terminal-title {
-    margin-left: 8px;
-    font-size: 12px;
-    color: var(--text-dim);
-    font-family: "SF Mono", monospace;
-}
-
-.terminal-body { padding: 24px 20px; }
-
-/* ---------- Hero 个人介绍 ---------- */
-.hero {
-    text-align: center;
-    padding: 60px 0 40px;
-}
-
-.hero-avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    border: 3px solid var(--green);
-    box-shadow: 0 0 40px var(--green-glow);
-    margin-bottom: 20px;
-    transition: transform 0.3s;
-}
-
-.hero-avatar:hover { transform: scale(1.05) rotate(5deg); }
-
-.hero-greeting {
-    font-size: 14px;
-    color: var(--green);
-    font-family: "SF Mono", monospace;
-    margin-bottom: 8px;
-}
-
-.hero-name {
-    font-size: 36px;
-    font-weight: 800;
-    color: var(--text);
-    margin-bottom: 12px;
-    letter-spacing: 1px;
-}
-
-.hero-name .cursor {
-    color: var(--green);
-    animation: blink 1s infinite;
-}
-
-@keyframes blink { 50% { opacity: 0; } }
-
-.hero-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.hero-tag {
-    font-size: 12px;
-    color: var(--green);
-    background: rgba(61, 220, 132, 0.08);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 5px 14px;
-    font-family: "SF Mono", monospace;
-}
-
-.hero-motto {
-    font-size: 16px;
-    color: var(--text-dim);
-    max-width: 480px;
-    margin: 0 auto;
-    line-height: 1.9;
-    font-style: italic;
-}
-
-.hero-motto::before { content: '" '; color: var(--green); }
-.hero-motto::after { content: ' "'; color: var(--green); }
-
-/* ---------- Hero 吉祥物 + Logo 星球 合体 ---------- */
-.hero-galaxy {
-    position: relative;
-    width: 100%;
-    max-width: 400px;
-    height: 320px;
-    margin: 24px auto 0;
-}
-
-/* 球体场景覆盖整个 galaxy 容器 */
-.hero-galaxy .logo-sphere-scene {
-    position: absolute;
+/* 黑客帝国数字雨（位于渐变之上、内容之下） */
+#matrix-rain {
+    position: fixed;
     inset: 0;
+    z-index: -1;
+    width: 100%;
     height: 100%;
-    min-height: unset;
-    max-height: unset;
-    border-radius: 50%;
-    background:
-        radial-gradient(ellipse at center, rgba(61, 220, 132, 0.08), transparent 60%);
-    border: none;
-}
-
-/* noko 居中浮在球体上方 */
-.hero-mascot-inner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 5;
-    max-width: 140px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
-}
-
-.hero-mascot-inner:hover {
-    transform: translate(-50%, -50%) translateY(-3px);
-    border-color: var(--green);
-    box-shadow: 0 12px 40px var(--green-glow);
-}
-
-.hero-mascot-inner img {
-    display: block;
-    width: 100%;
-    height: auto;
-    background:
-        radial-gradient(circle at 50% 40%, rgba(61, 220, 132, 0.12), transparent 60%),
-        var(--bg-elev);
-}
-
-.hero-mascot-inner .hero-mascot-cap {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    font-size: 11px;
-    color: var(--text-dim);
-    font-family: "SF Mono", monospace;
-    background: var(--bg-card);
-    border-top: 1px solid var(--border);
-}
-
-.hero-mascot-inner .hero-mascot-cap .prompt { color: var(--green); }
-.hero-mascot-inner .hero-mascot-cap .cursor {
-    color: var(--green);
-    animation: blink 1s infinite;
-}
-
-/* galaxy 内 logo 图标尺寸略小 */
-.hero-galaxy .logo-sphere-item {
-    width: 36px;
-    height: 36px;
-    padding: 6px;
-    border-radius: 10px;
-}
-
-/* ---------- Logo 星球（3D 旋转技术图标） ---------- */
-.logo-sphere-scene {
-    position: relative;
-    width: 100%;
-    height: 50vh;
-    min-height: 340px;
-    max-height: 480px;
-    margin: 10px 0;
-    overflow: hidden;
-    cursor: grab;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: none;
-    background:
-        radial-gradient(ellipse at center, rgba(61, 220, 132, 0.10), transparent 65%),
-        radial-gradient(ellipse at 30% 40%, rgba(88, 166, 255, 0.06), transparent 50%);
-    border-radius: 16px;
-    border: 1px solid var(--border);
-}
-
-.logo-sphere-scene:active { cursor: grabbing; }
-
-/* 星空背景点 */
-.logo-sphere-scene::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image:
-        radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.5), transparent),
-        radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.4), transparent),
-        radial-gradient(1px 1px at 80% 20%, rgba(61,220,132,0.5), transparent),
-        radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.3), transparent),
-        radial-gradient(2px 2px at 90% 50%, rgba(240,199,94,0.4), transparent),
-        radial-gradient(1px 1px at 10% 60%, rgba(255,255,255,0.4), transparent),
-        radial-gradient(1px 1px at 70% 90%, rgba(61,220,132,0.5), transparent);
+    opacity: 0.45;
     pointer-events: none;
 }
 
-/* 球体容器 */
+::selection { background: rgba(61, 220, 132, 0.3); }
+
+/* ============================================================
+   角落标签
+   ============================================================ */
+.corner {
+    position: fixed;
+    z-index: 100;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--ink-dim);
+    line-height: 1.5;
+    text-transform: uppercase;
+    pointer-events: none;
+}
+.corner span { color: var(--ink-faint); font-size: 11px; }
+.corner-tl { top: 28px; left: 32px; }
+.corner-tr { top: 28px; right: 32px; text-align: right; }
+.corner-bl { bottom: 28px; left: 32px; }
+.corner-br { bottom: 28px; right: 32px; text-align: right; }
+
+@media (max-width: 768px) {
+    .corner-bl, .corner-br { display: none; }
+    .corner-tl { top: 18px; left: 18px; }
+    .corner-tr { top: 18px; right: 18px; }
+}
+
+/* ============================================================
+   主容器 — 内容列
+   ============================================================ */
+.page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px 120px;
+}
+
+/* ============================================================
+   Hero
+   ============================================================ */
+.s-hero {
+    min-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    padding: 100px 0 60px;
+}
+
+.hero-title {
+    font-size: clamp(64px, 12vw, 110px);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    line-height: 1.05;
+    color: var(--ink);
+    animation: heroIn 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes heroIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-sub {
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--ink-dim);
+    max-width: 460px;
+    line-height: 2;
+    animation: heroIn 1.2s 0.15s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* ---------- 3D Logo 星球 ---------- */
+.hero-galaxy {
+    position: relative;
+    width: min(560px, 92vw);
+    height: min(560px, 92vw);
+    max-height: 68vh;
+    margin-top: 20px;
+    animation: heroIn 1.4s 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.hero-galaxy-scene {
+    position: absolute;
+    inset: 0;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.hero-galaxy-scene:active { cursor: grabbing; }
+
+/* 极淡的中心辉光（星球氛围） */
+.hero-galaxy-scene::before {
+    content: "";
+    position: absolute;
+    inset: 12%;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+        rgba(61, 220, 132, 0.05) 0%,
+        rgba(90, 120, 200, 0.03) 45%,
+        transparent 70%);
+    pointer-events: none;
+}
+
 .logo-sphere {
     position: absolute;
     top: 50%;
@@ -284,37 +166,30 @@ body::before {
     height: 0;
 }
 
-/* 单个 logo 图标 */
 .logo-sphere-item {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
+    padding: 10px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(61, 220, 132, 0.15);
-    padding: 8px;
-    transition: none;
+    background: rgba(244, 241, 234, 0.03);
+    border: 1px solid rgba(244, 241, 234, 0.08);
     will-change: transform, opacity;
-    user-select: none;
-    -webkit-user-select: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    filter: brightness(0) invert(1) saturate(0.5);
-    opacity: 0.85;
+    filter: brightness(0) invert(1);
     text-decoration: none;
-    color: inherit;
     cursor: pointer;
+    transition: background 0.25s, border-color 0.25s, box-shadow 0.25s;
 }
 
 .logo-sphere-item:hover {
-    background: rgba(61, 220, 132, 0.2);
-    border-color: rgba(61, 220, 132, 0.7);
-    box-shadow: 0 0 16px var(--green-glow);
-    z-index: 10 !important;
-    filter: brightness(0) invert(1) saturate(1);
+    background: rgba(61, 220, 132, 0.12);
+    border-color: rgba(61, 220, 132, 0.5);
+    box-shadow: 0 0 24px rgba(61, 220, 132, 0.18);
 }
 
 .logo-sphere-item img {
@@ -324,314 +199,213 @@ body::before {
     pointer-events: none;
 }
 
-/* logo 星球提示 */
-.logo-sphere-hint {
-    text-align: center;
-    font-size: 12px;
-    color: var(--text-dim);
-    margin-bottom: 8px;
-    line-height: 1.8;
-}
-
-/* 响应式：小屏降低球体高度 */
-@media (max-width: 480px) {
-    .logo-sphere-scene { height: 45vh; min-height: 280px; }
-}
-
-/* ---------- 区块标题 ---------- */
-.section { margin-bottom: 32px; }
-
-.section-head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 16px;
-}
-
-.section-head .prompt {
-    color: var(--green);
-    font-family: "SF Mono", monospace;
-    font-size: 14px;
-}
-
-.section-head h2 {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text);
-}
-
-.section-head .line {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, var(--border), transparent);
-}
-
-/* ---------- 数据成就墙 ---------- */
-.stats {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-}
-
-.stat {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px 16px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s, border-color 0.2s;
-}
-
-.stat::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 2px;
-    background: var(--green);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.3s;
-}
-
-.stat:hover {
-    transform: translateY(-3px);
-    border-color: var(--green);
-}
-
-.stat:hover::before { transform: scaleX(1); }
-
-.stat .num {
-    font-size: 32px;
-    font-weight: 800;
-    color: var(--green);
-    line-height: 1;
-    font-family: "SF Mono", monospace;
-}
-
-.stat .num .unit {
-    font-size: 14px;
-    color: var(--text-dim);
-}
-
-.stat .label {
-    font-size: 12px;
-    color: var(--text-dim);
+.galaxy-hint {
     margin-top: 8px;
-    letter-spacing: 1px;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    animation: heroIn 1.2s 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-/* ---------- 技术栈 ---------- */
-.tech-grid {
+/* ---------- SCROLL 指示 ---------- */
+.scroll-ind {
+    position: absolute;
+    bottom: 34px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
     gap: 10px;
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    color: var(--ink-faint);
 }
-
-.tech-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 16px;
-    font-size: 14px;
-    color: var(--text);
-    transition: all 0.2s;
-}
-
-.tech-item:hover {
-    border-color: var(--green);
-    box-shadow: 0 0 12px var(--green-glow);
-}
-
-.tech-item .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--green);
-}
-
-/* ---------- 时间线 ---------- */
-.timeline {
-    position: relative;
-    padding-left: 24px;
-}
-
-.timeline::before {
-    content: "";
-    position: absolute;
-    left: 5px;
-    top: 8px;
-    bottom: 8px;
-    width: 2px;
-    background: linear-gradient(180deg, var(--green), transparent);
-}
-
-.tl-item {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-.tl-item::before {
-    content: "";
-    position: absolute;
-    left: -24px;
-    top: 6px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--bg);
-    border: 2px solid var(--green);
-    box-shadow: 0 0 8px var(--green-glow);
-}
-
-.tl-date {
-    font-size: 12px;
-    color: var(--green);
-    font-family: "SF Mono", monospace;
-    margin-bottom: 2px;
-}
-
-.tl-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 4px;
-}
-
-.tl-desc {
-    font-size: 13px;
-    color: var(--text-dim);
-    line-height: 1.7;
-}
-
-/* ---------- 社交链接 ---------- */
-.socials {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-}
-
-.social {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 20px;
-    color: var(--text);
-    text-decoration: none;
-    font-size: 14px;
-    transition: all 0.2s;
-}
-
-.social:hover {
-    border-color: var(--green);
-    box-shadow: 0 0 16px var(--green-glow);
-    transform: translateY(-2px);
-}
-
-.social .icon { font-size: 20px; }
-
-/* ---------- 项目卡片 ---------- */
-.projects {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-}
-
-.project {
+.scroll-ind i {
     display: block;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 18px;
-    text-decoration: none;
-    color: var(--text);
-    transition: all 0.2s;
+    width: 1px;
+    height: 42px;
+    background: linear-gradient(180deg, var(--ink-faint), transparent);
+    animation: scrollPulse 2.2s ease-in-out infinite;
+    transform-origin: top;
 }
-
-.project:hover {
-    border-color: var(--green);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(61, 220, 132, 0.1);
-}
-
-.project h3 {
-    font-size: 16px;
-    color: var(--green);
-    margin-bottom: 6px;
-}
-
-.project p {
-    font-size: 13px;
-    color: var(--text-dim);
-    line-height: 1.7;
-}
-
-.project .arrow {
-    color: var(--green);
-    font-size: 14px;
-    margin-top: 8px;
-    display: inline-block;
-}
-
-/* ---------- 页脚 ---------- */
-.footer {
-    text-align: center;
-    padding: 40px 0 0;
-    color: var(--text-faint);
-    font-size: 12px;
-    line-height: 1.8;
-    border-top: 1px solid var(--border);
-    margin-top: 20px;
-}
-
-.footer .author {
-    color: var(--green);
-    font-weight: 600;
-    margin-top: 6px;
-}
-
-.footer .author::before { content: "✍  "; }
-
-/* ---------- 响应式 ---------- */
-@media (min-width: 600px) {
-    .stats { grid-template-columns: repeat(4, 1fr); }
-    .projects { grid-template-columns: repeat(2, 1fr); }
-    .hero-name { font-size: 44px; }
-}
-
-/* 打字机光标入场动画 */
-.fade-in {
-    animation: fadeIn 0.8s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes scrollPulse {
+    0%, 100% { transform: scaleY(0.4); opacity: 0.4; }
+    50% { transform: scaleY(1); opacity: 1; }
 }
 
 /* ============================================================
-   3D 简历增强（借鉴 sen-3d-resume，纯 CSS/JS 实现）
+   区块通用 — 编辑部排版
    ============================================================ */
+.s-block { padding: 110px 0 0; }
 
-/* ---------- 角落常驻 noko 吉祥物 ---------- */
+.s-block > h2 {
+    font-size: clamp(40px, 7vw, 56px);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    margin-bottom: 64px;
+    color: var(--ink);
+}
+
+/* ============================================================
+   Résumé — 时间线条目
+   ============================================================ */
+.entry {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 28px;
+    padding: 36px 0;
+    border-top: 1px solid var(--line);
+}
+
+.entry:last-child { border-bottom: 1px solid var(--line); }
+
+.entry-years {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+    padding-top: 8px;
+}
+
+.entry-body h3 {
+    font-size: clamp(20px, 3vw, 26px);
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+}
+
+.entry-tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
+.entry-body ul {
+    list-style: none;
+}
+
+.entry-body li {
+    font-size: 14px;
+    color: var(--ink-dim);
+    line-height: 2;
+}
+
+/* ============================================================
+   Works — 编号作品
+   ============================================================ */
+.work {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 28px;
+    padding: 40px 0;
+    border-top: 1px solid var(--line);
+    transition: background 0.3s;
+}
+
+.work:last-child { border-bottom: 1px solid var(--line); }
+
+.work-num {
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    padding-top: 8px;
+    transition: color 0.3s;
+}
+
+.work:hover .work-num { color: var(--accent); }
+
+.work-body h3 {
+    font-size: clamp(20px, 3vw, 26px);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.work-body h3 a {
+    color: var(--ink);
+    text-decoration: none;
+    background-image: linear-gradient(var(--accent), var(--accent));
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.work-body h3 a:hover {
+    background-size: 100% 1px;
+}
+
+.work-tag {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.work-body p {
+    font-size: 14px;
+    color: var(--ink-dim);
+    max-width: 560px;
+    line-height: 1.9;
+}
+
+/* ============================================================
+   Contact
+   ============================================================ */
+.contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 36px;
+}
+
+.contact-links a {
+    font-size: 17px;
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: color 0.25s, border-color 0.25s;
+    padding-bottom: 2px;
+}
+
+.contact-links a:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.footer {
+    margin-top: 90px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-faint);
+    letter-spacing: 0.06em;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.footer a { color: inherit; text-decoration: none; }
+.footer .author { color: var(--ink-dim); }
+
+/* ============================================================
+   角落 noko
+   ============================================================ */
 .noko-float {
     position: fixed;
     right: 24px;
     bottom: 24px;
-    width: 72px;
-    height: 72px;
+    width: 64px;
+    height: 64px;
     z-index: 200;
     cursor: pointer;
     perspective: 200px;
-    transition: filter 0.3s;
     filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
     will-change: transform;
     animation: noko-bob 4s ease-in-out infinite;
@@ -642,14 +416,9 @@ body::before {
     height: 100%;
     object-fit: contain;
     border-radius: 50%;
-    border: 2px solid var(--green);
-    background: radial-gradient(circle at 50% 40%, rgba(61, 220, 132, 0.18), transparent 65%), var(--bg-elev);
-    box-shadow: 0 0 24px var(--green-glow);
+    border: 1px solid var(--line);
+    background: rgba(244, 241, 234, 0.04);
     pointer-events: none;
-}
-
-.noko-float:hover {
-    filter: drop-shadow(0 6px 20px var(--green-glow));
 }
 
 @keyframes noko-bob {
@@ -657,54 +426,62 @@ body::before {
     50% { translate: 0 -6px; }
 }
 
-/* ---------- 滚动入场动画 ---------- */
-.reveal {
-    opacity: 0;
-    transform: translateY(40px) scale(0.96);
-    transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.3, 1),
-                transform 0.7s cubic-bezier(0.2, 0.7, 0.3, 1);
-}
-.reveal.in-view {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-}
+@media (max-width: 600px) { .noko-float { display: none; } }
 
-.reveal-child {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-}
-.reveal.in-view .reveal-child {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* ---------- 胶片噪点 overlay ---------- */
+/* ============================================================
+   胶片噪点 + 暗角
+   ============================================================ */
 .noise-overlay {
     position: fixed;
     inset: 0;
     z-index: 9999;
     pointer-events: none;
-    opacity: 0.04;
+    opacity: 0.035;
     mix-blend-mode: overlay;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ---------- 移动端：隐藏角落 noko + 缩小 galaxy ---------- */
-@media (max-width: 600px) {
-    .noko-float { display: none; }
-    .hero-galaxy { height: 260px; max-width: 320px; }
-    .hero-mascot-inner { max-width: 110px; }
+.vignette {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(4, 6, 10, 0.35) 100%);
 }
 
-/* ---------- 无障碍：减少动效时关闭所有增强动画 ---------- */
+/* ============================================================
+   滚动入场
+   ============================================================ */
+.reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1),
+                transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.reveal.in-view {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width: 640px) {
+    .entry { grid-template-columns: 1fr; gap: 8px; padding: 28px 0; }
+    .entry-years { padding-top: 0; }
+    .work { grid-template-columns: 1fr; gap: 8px; padding: 30px 0; }
+    .work-num { padding-top: 0; font-size: 13px; }
+    .s-block { padding-top: 80px; }
+    .footer { flex-direction: column; }
+}
+
+/* ============================================================
+   无障碍
+   ============================================================ */
 @media (prefers-reduced-motion: reduce) {
     .noko-float { animation: none; }
-    .reveal, .reveal-child {
-        opacity: 1 !important;
-        transform: none !important;
-        transition: none !important;
-    }
-    .noise-overlay { display: none; }
-    .hero-avatar, .hero-galaxy { transform: none !important; }
+    .hero-title, .hero-sub, .hero-galaxy, .galaxy-hint { animation: none; }
+    .scroll-ind i { animation: none; }
+    .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .noise-overlay, .vignette, #matrix-rain { display: none; }
 }

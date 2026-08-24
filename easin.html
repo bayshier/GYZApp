@@ -4,194 +4,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Easin's Code Lab - Android Engineer · Kotlin ✦ Compose ✦ KMP">
-    <meta name="theme-color" content="#0d1117">
-    <title>Easin's Code Lab</title>
+    <meta name="description" content="Easin — Android Engineer · Kotlin ✦ Compose · AI-Powered">
+    <meta name="theme-color" content="#0a0e16">
+    <title>Easin — Code · Craft · AI</title>
     <link rel="shortcut icon" href="icon_logo.png" type="image/png">
     <link rel="icon" href="icon_logo.png" type="image/png">
     <link rel="stylesheet" href="css/easin.css">
 </head>
 
 <body>
-    <div class="container">
+    <!-- ===== 黑客帝国数字雨背景（canvas 2D，参考经典 matrix rain 实现） ===== -->
+    <canvas id="matrix-rain" aria-hidden="true"></canvas>
 
-        <!-- ===== Hero 个人介绍 ===== -->
-        <section class="hero fade-in">
-            <img class="hero-avatar"
-                 src="https://avatars.githubusercontent.com/u/7632161?v=4"
-                 alt="Easin">
-            <div class="hero-greeting">$ whoami</div>
-            <h1 class="hero-name">Easin<span class="cursor">|</span></h1>
-            <div class="hero-tags">
-                <span class="hero-tag">Android Engineer</span>
-                <span class="hero-tag">Kotlin ✦ Compose</span>
-                <span class="hero-tag">KMP</span>
-                <span class="hero-tag">Material 3</span>
-                <span class="hero-tag">AI-Powered</span>
-            </div>
-            <p class="hero-motto">不再是单纯的代码编写者，而是与 AI 协同进化的应用架构师。</p>
+    <!-- ===== 角落标签（编辑风格） ===== -->
+    <div class="corner corner-tl" aria-hidden="true">Easin<br><span>Android Engineer</span></div>
+    <div class="corner corner-tr" aria-hidden="true">Portfolio<br><span>2026</span></div>
+    <div class="corner corner-bl" aria-hidden="true">Code · Craft · AI</div>
+    <div class="corner corner-br" aria-hidden="true">财富在线<br><span>Since 1999</span></div>
 
-            <!-- noko + Logo 星球 合体 -->
-            <div class="hero-galaxy" id="hero-galaxy">
-                <div class="hero-galaxy-scene" id="logo-sphere-scene">
-                    <div class="logo-sphere" id="logo-sphere"></div>
-                </div>
-                <div class="hero-mascot-inner">
-                    <img src="image/noko.png" alt="noko · 页面吉祥物">
-                    <div class="hero-mascot-cap"><span class="prompt">$</span> cat noko.png <span class="cursor">|</span></div>
-                </div>
-            </div>
-            <div class="logo-sphere-hint">💡 拖动旋转 · 点击 logo 跳转官网</div>
-        </section>
-
-        <!-- ===== 数据成就墙 ===== -->
-        <section class="section">
-            <div class="section-head">
-                <span class="prompt">$</span>
-                <h2>数据成就</h2>
-                <span class="line"></span>
-            </div>
-            <div class="stats">
-                <div class="stat">
-                    <div class="num">33<span class="unit">篇</span></div>
-                    <div class="label">知识库文章</div>
-                </div>
-                <div class="stat">
-                    <div class="num">27<span class="unit">年</span></div>
-                    <div class="label">财富在线历程</div>
-                </div>
-                <div class="stat">
-                    <div class="num">2<span class="unit">款</span></div>
-                    <div class="label">核心产品</div>
-                </div>
-                <div class="stat">
-                    <div class="num">∞</div>
-                    <div class="label">学习热情</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== 技术栈 ===== -->
-        <section class="section">
-            <div class="section-head">
-                <span class="prompt">$</span>
-                <h2>技术栈</h2>
-                <span class="line"></span>
-            </div>
-            <div class="tech-grid">
-                <div class="tech-item"><span class="dot"></span>Kotlin</div>
-                <div class="tech-item"><span class="dot"></span>Android</div>
-                <div class="tech-item"><span class="dot"></span>Jetpack Compose</div>
-                <div class="tech-item"><span class="dot"></span>Gradle</div>
-                <div class="tech-item"><span class="dot"></span>Hilt</div>
-                <div class="tech-item"><span class="dot"></span>Coroutines</div>
-                <div class="tech-item"><span class="dot"></span>Room</div>
-                <div class="tech-item"><span class="dot"></span>Git</div>
-            </div>
-        </section>
-
-        <!-- ===== 项目作品 ===== -->
-        <section class="section">
-            <div class="section-head">
-                <span class="prompt">$</span>
-                <h2>项目作品</h2>
-                <span class="line"></span>
-            </div>
-            <div class="projects">
-                <a class="project" href="knowledge.html">
-                    <h3>股宇宙知识库</h3>
-                    <p>股票基础教学百科，涵盖 K线、均线、技术指标、基本面、港美股、玄学板块等 33 篇教程。</p>
-                    <span class="arrow">访问知识库 →</span>
-                </a>
-                <a class="project" href="https://bayshier.github.io/GYZApp/cfzx2027.html" target="_blank" rel="noopener">
-                    <h3>财富在线 27周年庆</h3>
-                    <p>庆祝财富在线成立 27 周年的专题页面，含周年视频、发展历程、留影墙。</p>
-                    <span class="arrow">查看页面 →</span>
-                </a>
-                <a class="project" href="https://sj.qq.com/appdetail/com.stock.universe" target="_blank" rel="noopener">
-                    <h3>股宇宙 APP</h3>
-                    <p>财富在线旗下的股票投资工具，提供专业行情与资讯服务。</p>
-                    <span class="arrow">下载 APP →</span>
-                </a>
-                <a class="project" href="https://github.com/bayshier" target="_blank" rel="noopener">
-                    <h3>GitHub 开源</h3>
-                    <p>个人开源项目与代码仓库，持续更新中。</p>
-                    <span class="arrow">访问 GitHub →</span>
-                </a>
-            </div>
-        </section>
-
-        <!-- ===== 时间线 ===== -->
-        <section class="section">
-            <div class="section-head">
-                <span class="prompt">$</span>
-                <h2>时间线</h2>
-                <span class="line"></span>
-            </div>
-            <div class="timeline">
-                <div class="tl-item">
-                    <div class="tl-date">2026.07</div>
-                    <div class="tl-title">关键词星球 & 财经黄页上线</div>
-                    <div class="tl-desc">知识库新增 3D 关键词星球、25 个财经网站导航、玄学板块。</div>
-                </div>
-                <div class="tl-item">
-                    <div class="tl-date">2026.07</div>
-                    <div class="tl-title">股宇宙知识库发布</div>
-                    <div class="tl-desc">股票基础教学百科上线，覆盖 K线、均线、指标、基本面、港美股等模块。</div>
-                </div>
-                <div class="tl-item">
-                    <div class="tl-date">2026.07</div>
-                    <div class="tl-title">财富在线 27 周年庆</div>
-                    <div class="tl-desc">制作周年庆专题页面，记录公司 27 年发展历程。</div>
-                </div>
-                <div class="tl-item">
-                    <div class="tl-date">2026</div>
-                    <div class="tl-title">股宇宙 APP 持续迭代</div>
-                    <div class="tl-desc">Android 端基于 Kotlin + Compose 构建，持续优化用户体验。</div>
-                </div>
-                <div class="tl-item">
-                    <div class="tl-date">1999</div>
-                    <div class="tl-title">财富在线启航</div>
-                    <div class="tl-desc">专业 · 进取 · 务实，27 年深耕金融信息服务。</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== 社交链接 ===== -->
-        <section class="section">
-            <div class="section-head">
-                <span class="prompt">$</span>
-                <h2>联系我</h2>
-                <span class="line"></span>
-            </div>
-            <div class="socials">
-                <a class="social" href="https://github.com/bayshier" target="_blank" rel="noopener">
-                    <span class="icon">🐙</span> GitHub
-                </a>
-                <a class="social" href="https://deng.codexradar.com/" target="_blank" rel="noopener">
-                    <span class="icon">🌐</span> CodexRadar
-                </a>
-                <a class="social" href="mailto:Easinex@gmail.com">
-                    <span class="icon">✉️</span> Email
-                </a>
-                <a class="social" href="https://sj.qq.com/appdetail/com.stock.universe" target="_blank" rel="noopener">
-                    <span class="icon">📱</span> 股宇宙 APP
-                </a>
-            </div>
-        </section>
-
-        <!-- ===== 页脚 ===== -->
-        <footer class="footer">
-            <div>Easin's Code Lab · Built with ❤️ & AI</div>
-            <div class="author"><a href="https://github.com/bayshier" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">作者：Easin</a></div>
-        </footer>
-
-    </div>
+    <!-- 胶片噪点 + 暗角 -->
+    <div class="noise-overlay" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
 
     <!-- 角落常驻 noko 吉祥物（眼神追踪） -->
     <div class="noko-float" id="noko-float" aria-hidden="true">
         <img src="image/noko.png" alt="noko">
     </div>
+
+    <main class="page">
+
+        <!-- ===== Hero ===== -->
+        <section class="s-hero" id="hero">
+            <h1 class="hero-title">Easin</h1>
+            <p class="hero-sub">Android Engineer — 与 AI 协同进化的应用架构师。<br>
+                不再是单纯的代码编写者，而是把工程、创意与智能织进产品里。</p>
+
+            <!-- 3D Logo 星球（页面唯一的主角视觉） -->
+            <div class="hero-galaxy" id="hero-galaxy">
+                <div class="hero-galaxy-scene" id="logo-sphere-scene">
+                    <div class="logo-sphere" id="logo-sphere"></div>
+                </div>
+            </div>
+            <div class="galaxy-hint">拖动旋转 · 点击 logo 跳转官网</div>
+
+            <div class="scroll-ind" aria-hidden="true"><span>SCROLL</span><i></i></div>
+        </section>
+
+        <!-- ===== Résumé 时间线 ===== -->
+        <section class="s-block" id="resume">
+            <h2>Résumé</h2>
+
+            <article class="entry">
+                <div class="entry-years">2026 — Now</div>
+                <div class="entry-body">
+                    <h3>Android Engineer · 财富在线</h3>
+                    <div class="entry-tag">股宇宙 APP</div>
+                    <ul>
+                        <li>— Kotlin + Jetpack Compose 构建，Material 3 设计体系</li>
+                        <li>— 探索 KMP 跨端与 AI 能力在投资工具中的落地</li>
+                        <li>— 持续迭代优化用户体验与工程质量</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="entry">
+                <div class="entry-years">2026.08</div>
+                <div class="entry-body">
+                    <h3>两个 Kotlin MCP 服务器 · 开源发布</h3>
+                    <ul>
+                        <li>— <a href="blog-kotlin-mcp.html">kline-mcp：A股 K线与技术指标 MCP</a>（双数据源容灾 + 本地指标计算）</li>
+                        <li>— android-mcp：Android 设备自动化 MCP（真图截图 + token 友好 UI 树）</li>
+                        <li>— 附 android-agent-skills：从实战蒸馏的 5 个 Agent 技能</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="entry">
+                <div class="entry-years">2026.07</div>
+                <div class="entry-body">
+                    <h3>股宇宙知识库 · 发布</h3>
+                    <ul>
+                        <li>— 33 篇股票教学百科：K线、均线、指标、基本面、港美股、玄学板块</li>
+                        <li>— 3D 关键词星球、25 个财经网站导航、30 条术语表</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="entry">
+                <div class="entry-years">2026.07</div>
+                <div class="entry-body">
+                    <h3>财富在线 27 周年庆 · 专题页</h3>
+                    <ul>
+                        <li>— 周年视频、发展历程、留影墙</li>
+                        <li>— 记录公司 27 年金融信息服务历程</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="entry">
+                <div class="entry-years">1999</div>
+                <div class="entry-body">
+                    <h3>财富在线 · 启航</h3>
+                    <ul>
+                        <li>— 专业 · 进取 · 务实，27 年深耕金融信息服务</li>
+                    </ul>
+                </div>
+            </article>
+        </section>
+
+        <!-- ===== Works 作品 ===== -->
+        <section class="s-block" id="works">
+            <h2>Works</h2>
+
+            <article class="work">
+                <div class="work-num">01</div>
+                <div class="work-body">
+                    <h3><a href="blog-kotlin-mcp.html">我给 AI 写了两个 Kotlin MCP 服务器</a></h3>
+                    <div class="work-tag">Blog · MCP × Kotlin</div>
+                    <p>看懂 A股的 kline-mcp + 操控安卓的 android-mcp：架构决策，和那些搜索引擎搜不到的坑——TLS 指纹拦截、会撒谎的容灾、11 字节的截图。</p>
+                </div>
+            </article>
+
+            <article class="work">
+                <div class="work-num">02</div>
+                <div class="work-body">
+                    <h3><a href="knowledge.html">股宇宙知识库</a></h3>
+                    <div class="work-tag">Web · 教学百科</div>
+                    <p>股票基础教学百科，33 篇教程覆盖 K线、均线、技术指标、基本面、港美股与玄学板块，附 3D 关键词星球与财经黄页。</p>
+                </div>
+            </article>
+
+            <article class="work">
+                <div class="work-num">03</div>
+                <div class="work-body">
+                    <h3><a href="https://sj.qq.com/appdetail/com.stock.universe" target="_blank" rel="noopener">股宇宙 APP</a></h3>
+                    <div class="work-tag">Android · 投资工具</div>
+                    <p>财富在线旗下的股票投资工具，Kotlin + Compose 构建，提供专业行情与资讯服务。</p>
+                </div>
+            </article>
+
+            <article class="work">
+                <div class="work-num">04</div>
+                <div class="work-body">
+                    <h3><a href="https://bayshier.github.io/GYZApp/cfzx2027.html" target="_blank" rel="noopener">财富在线 27 周年庆</a></h3>
+                    <div class="work-tag">Web · 专题页</div>
+                    <p>庆祝财富在线成立 27 周年的专题页面，含周年视频、发展历程、留影墙。</p>
+                </div>
+            </article>
+
+            <article class="work">
+                <div class="work-num">05</div>
+                <div class="work-body">
+                    <h3><a href="https://github.com/bayshier" target="_blank" rel="noopener">GitHub 开源</a></h3>
+                    <div class="work-tag">Open Source</div>
+                    <p>个人开源项目与代码仓库，持续更新中。</p>
+                </div>
+            </article>
+        </section>
+
+        <!-- ===== Contact ===== -->
+        <section class="s-block s-contact" id="contact">
+            <h2>Contact</h2>
+            <div class="contact-links">
+                <a href="https://github.com/bayshier" target="_blank" rel="noopener">GitHub ↗</a>
+                <a href="https://deng.codexradar.com/" target="_blank" rel="noopener">CodexRadar ↗</a>
+                <a href="mailto:Easinex@gmail.com">Email ↗</a>
+                <a href="https://sj.qq.com/appdetail/com.stock.universe" target="_blank" rel="noopener">股宇宙 APP ↗</a>
+            </div>
+            <footer class="footer">
+                <div>Easin's Code Lab · Built with ❤️ & AI</div>
+                <div class="author"><a href="https://github.com/bayshier" target="_blank" rel="noopener">作者：Easin</a></div>
+            </footer>
+        </section>
+
+    </main>
+
+    <!-- 黑客帝国数字雨 -->
+    <script>
+    (function () {
+        'use strict';
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        var canvas = document.getElementById('matrix-rain');
+        if (!canvas || !canvas.getContext) return;
+        var ctx = canvas.getContext('2d');
+
+        /* 二进制代码雨：只有 0 和 1 */
+        var CHARS = '01'.split('');
+        var BG_FADE = 'rgba(10, 14, 22, 0.09)'; // 与 --bg 同色，制造拖尾
+        var FONT_SIZE = 16;
+
+        var drops = [];       // 每列当前下落位置（以行计）
+        var speeds = [];      // 每列速度（帧间隔）
+        var columns = 0;
+        var W = 0, H = 0;
+
+        function resize() {
+            W = window.innerWidth;
+            H = window.innerHeight;
+            canvas.width = W;
+            canvas.height = H;
+            columns = Math.ceil(W / FONT_SIZE);
+            drops = [];
+            speeds = [];
+            for (var i = 0; i < columns; i++) {
+                // 随机初始位置：让雨幕一开始就是满屏的
+                drops[i] = Math.floor(Math.random() * -60);
+                speeds[i] = 0.5 + Math.random() * 0.8; // 每列速度略有差异
+            }
+            ctx.fillStyle = '#0a0e16';
+            ctx.fillRect(0, 0, W, H);
+        }
+
+        var lastGlyphChange = 0;
+        function draw(ts) {
+            requestAnimationFrame(draw);
+            if (document.hidden) return;
+
+            // 限帧 ~30fps：数字雨不需要 60fps，省一半渲染开销
+            if (ts - lastGlyphChange < 33) return;
+            lastGlyphChange = ts;
+
+            // 半透明背景覆盖 → 上一帧字符逐渐淡出，形成拖尾
+            ctx.fillStyle = BG_FADE;
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.font = FONT_SIZE + 'px monospace';
+
+            for (var i = 0; i < columns; i++) {
+                var x = i * FONT_SIZE;
+                var row = Math.floor(drops[i]);
+                var y = row * FONT_SIZE;
+
+                // 雨头：亮白绿；雨尾：暗绿（只在整数行刷新时绘制，速度<1 时按概率推进）
+                var ch = CHARS[(Math.random() * CHARS.length) | 0];
+                if (row >= 0 && y <= H) {
+                    ctx.fillStyle = 'rgba(180, 255, 210, 0.9)';
+                    ctx.fillText(ch, x, y);
+                }
+
+                // 在雨头后方随机重绘几个字符，让拖尾"闪烁"变化
+                if (row > 4 && Math.random() < 0.28) {
+                    var ty = y - FONT_SIZE * (1 + Math.random() * 6 | 0);
+                    if (ty > 0) {
+                        ctx.fillStyle = 'rgba(61, 220, 132, 0.35)';
+                        ctx.fillText(CHARS[(Math.random() * CHARS.length) | 0], x, ty);
+                    }
+                }
+
+                drops[i] += speeds[i];
+                // 落出屏幕后，小概率重置到顶部（制造错落感）
+                if (y > H && Math.random() > 0.975) {
+                    drops[i] = Math.floor(Math.random() * -30);
+                }
+            }
+        }
+
+        var resizeTimer = null;
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(resize, 200);
+        }, { passive: true });
+
+        resize();
+        requestAnimationFrame(draw);
+    })();
+    </script>
 
     <!-- Logo 星球 3D 旋转 -->
     <script>
@@ -260,7 +338,7 @@
 
         /* Fibonacci 球面分布 */
         var n = LOGOS.length;
-        var r = 22; // 球半径（vmin）— 适配 hero 紧凑布局
+        var r = 30; // 球半径（vmin）
         var sphereData = LOGOS.map(function (_, i) {
             var phi = Math.acos(-1 + (2 * i) / n);
             var theta = Math.sqrt(n * Math.PI) * phi;
@@ -271,7 +349,7 @@
             };
         });
 
-        /* 拖拽旋转（复刻 knowledge-app.js 的球体交互） */
+        /* 拖拽旋转 */
         var rotX = -15, rotY = 0;
         var autoSpeed = 0.4;
         var dragging = false;
@@ -287,18 +365,16 @@
 
             for (var i = 0; i < sphereData.length; i++) {
                 var d = sphereData[i];
-                // 绕 Y 轴
                 var x1 = d.x * cy + d.z * sy;
                 var z1 = -d.x * sy + d.z * cy;
-                // 绕 X 轴
                 var y1 = d.y * cx - z1 * sx;
                 var z2 = d.y * sx + z1 * cx;
 
                 var el = items[i];
                 var c = cache[i];
-                var depth = (z2 + r) / (2 * r); // 归一化 0~1
-                var scale = 0.55 + depth * 0.55;  // 0.55 ~ 1.1
-                var opacity = 0.25 + depth * 0.75; // 0.25 ~ 1.0
+                var depth = (z2 + r) / (2 * r);
+                var scale = 0.55 + depth * 0.55;
+                var opacity = 0.25 + depth * 0.75;
 
                 var tf = 'translate3d(' + x1.toFixed(1) + 'vmin,' + y1.toFixed(1) + 'vmin,0)'
                     + ' translate(-50%,-50%)'
@@ -320,11 +396,9 @@
                 if (rotX > 30) rotX = 30;
                 if (rotX < -60) rotX = -60;
             }
-            // 标签页不可见时跳过渲染，但循环永不中断
             if (!document.hidden) {
                 updatePositions();
             }
-            // 限帧 ~33ms（约30fps）
             setTimeout(tick, 33);
         }
 
@@ -387,13 +461,10 @@
         }, { passive: true });
         scene.addEventListener('touchend', function () { dragging = false; });
 
-        /* 启动 — 循环永不中断，仅用 document.hidden 节省资源 */
+        /* 启动 */
         tick();
     })();
     </script>
-
-    <!-- 胶片噪点 overlay -->
-    <div class="noise-overlay" aria-hidden="true"></div>
 
     <script>
     (function () {
@@ -410,11 +481,10 @@
                 var r = noko.getBoundingClientRect();
                 var cx = r.left + r.width / 2;
                 var cy = r.top + r.height / 2;
-                // 鼠标相对 noko 中心的角度，映射到 ±8° 转动
                 var dx = (e.clientX - cx) / window.innerWidth;
                 var dy = (e.clientY - cy) / window.innerHeight;
-                targetRY = Math.max(-1, Math.min(1, dx * 3)) * 8;   // 水平转头
-                targetRX = Math.max(-1, Math.min(1, dy * 3)) * -6;  // 俯仰
+                targetRY = Math.max(-1, Math.min(1, dx * 3)) * 8;
+                targetRX = Math.max(-1, Math.min(1, dy * 3)) * -6;
                 if (!rafId) tick();
             }, { passive: true });
 
@@ -422,7 +492,6 @@
             noko.addEventListener('mouseleave', function () { hovering = false; });
 
             function tick() {
-                // 缓动逼近目标角度，平滑自然
                 curRX += (targetRX - curRX) * 0.12;
                 curRY += (targetRY - curRY) * 0.12;
                 var s = hovering ? 1.12 : 1;
@@ -439,45 +508,33 @@
             }
         }
 
-        /* ---------- 2. 滚动入场动画（IntersectionObserver） ---------- */
+        /* ---------- 2. 滚动入场动画 ---------- */
         if (!reduceMotion && 'IntersectionObserver' in window) {
             var io = new IntersectionObserver(function (entries) {
                 entries.forEach(function (en) {
                     if (en.isIntersecting) {
                         en.target.classList.add('in-view');
-                        io.unobserve(en.target); // 一次性
+                        io.unobserve(en.target);
                     }
                 });
             }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
 
-            // 监听每个 section 及其直接子元素组
-            document.querySelectorAll('.section').forEach(function (sec) {
-                sec.classList.add('reveal');
-                // 给子项按顺序错开延迟
-                var children = sec.querySelectorAll('.stat, .tech-item, .project, .tl-item, .social');
-                children.forEach(function (c, i) {
-                    c.classList.add('reveal-child');
-                    c.style.transitionDelay = (i % 8) * 60 + 'ms';
-                });
-                io.observe(sec);
+            document.querySelectorAll('.entry, .work, .contact-links, .footer').forEach(function (el, i) {
+                el.classList.add('reveal');
+                el.style.transitionDelay = (i % 4) * 80 + 'ms';
+                io.observe(el);
             });
         }
 
-        /* ---------- 3. 背景视差（相机感） ---------- */
+        /* ---------- 3. 背景视差 ---------- */
         if (!reduceMotion) {
-            var bg = document.body; // body::before 承载背景
-            var heroMascot = document.querySelector('.hero-galaxy');
+            var bg = document.body;
             var ticking = false;
             window.addEventListener('scroll', function () {
                 if (!ticking) {
                     window.requestAnimationFrame(function () {
                         var y = window.scrollY;
-                        // 背景网格纵向位移（视差：动得比前景慢）
-                        bg.style.setProperty('--bg-shift', (y * 0.15) + 'px');
-                        // Hero 吉祥物轻微视差（不碰 .hero-avatar，避免与 hover 动画冲突）
-                        if (heroMascot && y < 600) {
-                            heroMascot.style.transform = 'translateY(' + (y * 0.15) + 'px)';
-                        }
+                        bg.style.setProperty('--bg-shift', (y * 0.12) + 'px');
                         ticking = false;
                     });
                     ticking = true;

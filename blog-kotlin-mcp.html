@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="用 Kotlin + 官方 MCP SDK 写了两个 MCP 服务器：看懂 A股的 kline-mcp 与操控安卓的 android-mcp。架构决策与那些搜索引擎搜不到的坑。">
+    <meta name="theme-color" content="#0a0e16">
+    <title>我给 AI 写了两个 Kotlin MCP 服务器 — Easin's Blog</title>
+    <link rel="shortcut icon" href="icon_logo.png" type="image/png">
+    <link rel="icon" href="icon_logo.png" type="image/png">
+    <link rel="stylesheet" href="css/blog.css">
+</head>
+
+<body>
+    <div class="article-wrap">
+
+        <a class="back-home" href="easin.html">← 返回主页</a>
+
+        <div class="article-meta">
+            <span class="tag hot">MCP</span>
+            <span class="tag">Kotlin</span>
+            <span class="tag">Android</span>
+            <span class="tag">AI Agent</span>
+        </div>
+
+        <h1 class="article-title">我给 AI 写了两个 Kotlin MCP 服务器——看懂 A股 + 操控安卓</h1>
+        <div class="article-date">
+            2026.08 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a>
+        </div>
+
+        <blockquote>
+            <p>当所有 MCP 服务器都是 Python 和 TypeScript 的时候，一个 Android 开发者决定用 Kotlin 试试。</p>
+        </blockquote>
+
+        <h2>起因：两个空白</h2>
+
+        <p>最近给 Claude Code 接 MCP 上瘾了。接多了就手痒想自己写，动手前先做了个调研，结果发现两个很有意思的空白：</p>
+
+        <p><strong>第一个</strong>：搜 "kline mcp"，全 GitHub 只有 <strong>11 个仓库</strong>，星数全部低于 5。但隔壁的需求已经炸了——一个叫 Vibe-Trading 的个人交易 Agent 项目，今年 4 月才建，已经 <strong>31,000+ Star</strong>。金融类 MCP 服务器有约 400 个，但几乎全是美股 API 的包装，A股/中文市场严重缺位。</p>
+
+        <p><strong>第二个</strong>：让 AI 操控安卓设备的 MCP 有一些（mobile-next/mobile-mcp 5.9k Star），但绝大多数是 TypeScript 薄封装，好几个早期项目已经弃坑，<strong>没有一个是 Kotlin 原生的</strong>——这有点讽刺，Android 的亲儿子语言，在 Android 自动化生态里缺席了。</p>
+
+        <p>于是我用 Kotlin + 官方 MCP Java SDK 写了两个：</p>
+
+        <ul>
+            <li><a href="https://github.com/bayshier/kline-mcp" target="_blank" rel="noopener"><strong>kline-mcp</strong></a>：A股 K线与技术指标 MCP 服务器</li>
+            <li><a href="https://github.com/bayshier/android-mcp" target="_blank" rel="noopener"><strong>android-mcp</strong></a>：Android 设备自动化 MCP 服务器</li>
+        </ul>
+
+        <p>两个都是真机/真实数据端到端验证过的。这篇文章记录架构决策和踩过的坑——尤其是那些<strong>搜索引擎搜不到的坑</strong>。</p>
+
+        <hr>
+
+        <h2>一、kline-mcp：不止是数据搬运</h2>
+
+        <p>市面上 90% 的行情 MCP 是这样的：调 API → 返回 JSON → 完事。AI 拿到一坨蜡烛图数据，还得自己算 MA 是什么。</p>
+
+        <p>我把它分成了三层：</p>
+
+        <pre><code>MCP 客户端 (Claude / Cursor)
+      │ stdio · JSON-RPC
+      ▼
+┌─────────────────── kline-mcp ───────────────────┐
+│ ① 数据层   实时快照 / 日周月K线（前复权、后复权）  │
+│ ② 指标层   MA / EMA / MACD / KDJ / BOLL / RSI    │
+│    —— 全部纯函数实现，带完整单元测试              │
+│ ③ 解读层   规则化趋势分析 → 自然语言结论          │
+└─────────────────────────────────────────────────┘</code></pre>
+
+        <p>指标层是纯 Kotlin 函数，无 I/O、确定性、可单测。解读层是我最喜欢的部分——它不是把指标甩给 AI，而是先做了一层<strong>领域语义的翻译</strong>：</p>
+
+        <pre><code>趋势分析：贵州茅台（600519）
+· 均线结构：空头排列（价格 &lt; MA5 &lt; MA10 &lt; MA20）
+· 交叉信号：近 5 根K线无 MA5/MA10 交叉
+· MACD 位于零轴上方，DIF &lt; DEA（偏空）
+· KDJ 超卖（J=8）
+· RSI 中性（61）
+· 量能持平
+· 结论：多信号共振偏空（动量信号 3/3）；短线超卖，存在技术性反弹可能</code></pre>
+
+        <p>注意最后一句的语义设计：<strong>动量信号（均线排列、金叉死叉、MACD 方向）决定多空方向，反向信号（超买超卖）只作为风险提示</strong>。第一版我把 KDJ 超卖也计进了"看多票数"，结果在连跌的股票上输出"多空交织"——逻辑上说不通。趋势向下 + 超卖，正确的解读是"空头趋势，但注意技术性反弹"，而不是左右横跳。</p>
+
+        <p>这个 bug 是单测抓出来的，而抓它的单测本身还教育了我一次——</p>
+
+        <h3>单测教会我的 MACD 知识</h3>
+
+        <p>我写了个测试：<code>macd on monotonically rising series keeps DIF above DEA</code>（单调上涨的序列 DIF 应该大于 DEA）。挂了。</p>
+
+        <p>用 Python 把自己的算法模拟了一遍，发现算法<strong>完全正确</strong>：线性上涨的序列，EMA12 和 EMA26 的差值（DIF）会收敛到一个常数，而 DEA 会追平它——DIF == DEA 是<strong>教科书行为</strong>，不是 bug。我的测试前提错了。</p>
+
+        <p>修法：测试数据改用<strong>加速上涨</strong>（DIF 持续增大，DEA 永远追不上）。这个坑让我意识到：写技术指标的单测，测试数据本身要经得起推敲，否则你是在测一个错误的世界观。</p>
+
+        <figure>
+            <img src="image/kline-app.png" alt="真机上运行的 K线 Demo 应用">
+            <figcaption>顺带写了个 Compose K线 Demo 当试验田：<a href="https://github.com/bayshier/Compose-MVI-KLine" target="_blank" rel="noopener">Compose-MVI-KLine</a>（纯 Canvas 手绘，无图表库）</figcaption>
+        </figure>
+
+        <h3>双源容灾：被 CDN 逼出来的架构</h3>
+
+        <p>这是整个项目最有故事的部分。数据源我选了东方财富的公开接口（量化圈人尽皆知，无需 key）。curl 测试，一切正常：</p>
+
+        <pre><code>$ curl "https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=0.000001&amp;..."
+{"rc":0,...,"data":{"name":"平安银行","klines":["2026-08-21,11.36,11.41,11.46,11.32,869128",...]}}</code></pre>
+
+        <p>程序写完，端到端一跑：</p>
+
+        <pre><code>{"error":"分析失败：HTTP/1.1 header parser received no bytes"}</code></pre>
+
+        <p>curl 通、Java 挂？先怀疑 HTTP/2 协商问题，强制 HTTP/1.1——还是挂。加浏览器 UA——还是挂。写了个独立探针在 JVM 里挨个域名测：</p>
+
+        <pre><code>maven(基线)       -&gt; 200 ✓
+eastmoney无UA     -&gt; FAIL: no bytes
+eastmoney浏览器UA -&gt; FAIL: no bytes
+腾讯行情          -&gt; 200 ✓</code></pre>
+
+        <p>真相：<strong>东财的 CDN 在按 TLS 指纹拦截 Java 客户端</strong>，跟 UA 无关。JVM 的 TLS 握手指纹和浏览器/curl 不一样，被 WAF 识别后直接断连。</p>
+
+        <p>解决方案是双数据源：东财做主源，<strong>腾讯 ifzq 接口做备源</strong>（同样支持前复权）。连接失败自动切换。这个"怪癖"反而变成了仓库的工程亮点——金融数据接口本来就该有容灾。</p>
+
+        <p>但故事没完。备源上线后，中文名搜索还是失败。加诊断日志发现更阴的坑：<strong>东财的搜索接口对 JVM 返回的是 HTTP 200 + 空数据</strong>——不是连接失败，是应用层拦截。我的容灾只 catch 了异常，"正常返回的空结果"根本不触发切换。</p>
+
+        <pre><code>// 修正前：空结果当"没搜到"正常返回
+val data = ...jsonObject["Data"] ?: return emptyList()
+
+// 修正后：空结果也是失败，触发容灾
+val data = ...jsonObject["Data"]
+    ?: throw IllegalStateException("eastmoney returned no search data")</code></pre>
+
+        <p><strong>容灾的教训：失败有两种——异常和撒谎。只防前者的容灾是半成品。</strong></p>
+
+        <p>腾讯系还有两个小坑顺便记录：实时行情接口按 UA 返回<strong>两种格式</strong>（浏览器 UA 有股票名字段，Java 客户端拿到的是精简版，字段整体偏移一位——修法是检测第二个字段是不是 6 位代码，是就偏移）；smartbox 搜索接口的响应带 <code>v_hint="N";</code> 前置标记，真正的数据在<strong>第二个</strong> <code>v_hint=</code> 里，要用 <code>substringAfterLast</code>。</p>
+
+        <hr>
+
+        <h2>二、android-mcp：给 Agent 眼睛和双手</h2>
+
+        <p>调研竞品时发现一个痛点：大多数设备 MCP 返回的是<strong>巨大的原始 XML</strong>（uiautomator dump 的输出动辄几十 KB），Agent 的上下文窗口在燃烧。还有一个遗憾：截图存文件、返回路径——Agent 看不到图。</p>
+
+        <p>所以 android-mcp 的两个核心设计：</p>
+
+        <h3>1. 截图返回真图（MCP ImageContent）</h3>
+
+        <p>MCP 协议支持 <code>ImageContent</code>——截图直接以 base64 PNG 返回，<strong>多模态 Agent 真的能看见屏幕</strong>：</p>
+
+        <pre><code>val png = adb.execOut(serial, "screencap", "-p")   // 二进制
+CallToolResult(
+    listOf(
+        TextContent("""{"size_bytes": ${png.size}}"""),
+        ImageContent(null, Base64.getEncoder().encodeToString(png), "image/png"),
+    ), false, null, null,
+)</code></pre>
+
+        <p>（注意 <code>ImageContent</code> 的构造器是 <code>(annotations, data, mimeType)</code>——<strong>第一个参数不是 data</strong>，这是我从编译错误里学的，后面细说。）</p>
+
+        <figure>
+            <img src="image/android-mcp-shot.png" alt="android-mcp 返回的真机截图">
+            <figcaption>这就是 Agent 通过 <code>screenshot</code> 工具"看到"的画面——100KB 真图，不是文件路径</figcaption>
+        </figure>
+
+        <h3>2. token 友好的 UI 树</h3>
+
+        <p><code>ui_describe</code> 把 XML 压缩成一行一个可交互节点：</p>
+
+        <pre><code>共 13 个可交互节点：
+[1] TextView text="DEMO INDEX(000001)" @(187,24)
+[2] TextView text="11.78" @(121,90)
+[3] TextView text="-0.70%" @(275,98)</code></pre>
+
+        <p>带坐标，Agent 读完直接 <code>tap</code>，不需要二次解析。推荐的使用循环一句话：<strong><code>ui_describe</code> → <code>tap</code> → <code>screenshot</code> 验证</strong>。</p>
+
+        <h3>11 字节的截图</h3>
+
+        <p>真机端到端测试，截图返回了……11 字节。<code>cat</code> 一看内容：</p>
+
+        <pre><code>[B@328d4406</code></pre>
+
+        <p>经典的 Java 事故：<code>ByteArray.toString()</code> 的结果是对象地址。我的 AdbClient 里 binary 分支把字节流塞进了 <code>String</code> 类型的字段，再 <code>toByteArray()</code> 转回来——11 个字符的字节。</p>
+
+        <p>修法是给 Result 加独立的 <code>bytes: ByteArray?</code> 字段。修完重测：<strong>100,714 字节的真实 PNG</strong>。这种 bug 单测抓不到，端到端测试的价值就在这——它测的是<strong>真实现场</strong>。</p>
+
+        <h3>monkey 会撒谎</h3>
+
+        <p>用 <code>monkey -p com.xxx</code> 启动应用，包不存在时它<strong>也可能返回 exit 0</strong>。我在自动化脚本里吃过这个亏：启动命令"成功"，前台却还是桌面。修法是校验输出里必须有 <code>Events injected</code>：</p>
+
+        <pre><code>val out = adb.shell(d, "monkey", "-p", pkg, ...)
+if (!out.contains("Events injected")) throw ToolError("monkey 启动失败")</code></pre>
+
+        <hr>
+
+        <h2>三、MCP Kotlin 开发速查（拿走能用）</h2>
+
+        <p>官方 <a href="https://github.com/modelcontextprotocol/java-sdk" target="_blank" rel="noopener">MCP Java SDK</a> 2.x 的文档还比较分散，这是<strong>编译通过 + 真机验证过</strong>的用法：</p>
+
+        <h3>依赖与最小服务器</h3>
+
+        <pre><code>// build.gradle.kts（Kotlin JVM, JDK 17+）
+implementation("io.modelcontextprotocol.sdk:mcp:2.0.1")
+// 聚合模块，传递引入 mcp-core + jackson3 绑定</code></pre>
+
+        <pre><code>val mapper = JacksonMcpJsonMapper(JsonMapper.builder().build())
+McpServer.sync(StdioServerTransportProvider(mapper))
+    .serverInfo("my-mcp", "0.1.0")
+    .instructions("一句话描述能力——Agent 靠它决定何时调用")
+    .tools(*MyTools.all().toTypedArray())
+    .build()
+// 不要加 latch/await：stdio 传输自己保活，stdin EOF 自然退出</code></pre>
+
+        <p><code>JsonMapper</code> 是 <strong>Jackson 3</strong> 的 <code>tools.jackson.databind.json.JsonMapper</code>——不是老的 <code>com.fasterxml</code> 包名。</p>
+
+        <h3>三个 API 坑</h3>
+
+        <ol>
+            <li><strong><code>Tool</code> 是 7 参 record</strong>：<code>(name, description, title, inputSchema, outputSchema, annotations, meta)</code>，不用 builder 时中间参数传 null。</li>
+            <li><strong>inputSchema 是 Jackson 侧的普通 <code>Map&lt;String, Any&gt;</code></strong>。我在 Kotlin 里顺手写了 <code>buildJsonObject</code>——两套 JSON 体系混用，编译器直接报 <code>JsonElement was expected</code>。schema 用纯 Kotlin <code>buildMap</code> 写。</li>
+            <li><strong><code>ImageContent(annotations, data, mimeType)</code></strong> 第一个参数不是数据，是 annotations。</li>
+        </ol>
+
+        <h3>不依赖任何 MCP 客户端的端到端测试</h3>
+
+        <p>stdio 就是行分隔的 JSON-RPC，管道一怼就能测：</p>
+
+        <pre><code>{
+  printf '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"t","version":"1"}}}\n'
+  printf '{"jsonrpc":"2.0","method":"notifications/initialized"}\n'
+  printf '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"analyze_trend","arguments":{"code":"000001"}}}\n'
+  sleep 20
+} | build/install/my-mcp/bin/my-mcp</code></pre>
+
+        <p>两个细节：每个请求用<strong>不同的 id</strong>（重复 id 可能被去重）；macOS 没有 <code>timeout</code> 命令，用 <code>sleep</code> + EOF 控制时长。</p>
+
+        <h3>API 不确定时的终极手段</h3>
+
+        <p>SDK 文档没写清楚的地方，我直接解包看字节码：</p>
+
+        <pre><code>curl -s -o /tmp/mcp-core.jar https://repo.maven.apache.org/maven2/io/modelcontextprotocol/sdk/mcp-core/2.0.1/mcp-core-2.0.1.jar
+unzip -q mcp-core.jar "io/modelcontextprotocol/spec/McpSchema*.class" -d mcpjar
+javap -classpath mcpjar 'io.modelcontextprotocol.spec.McpSchema$ImageContent'</code></pre>
+
+        <p><strong>不猜 API，看它的真身。</strong>这个习惯帮我省了至少三轮"编译-报错-再猜"的循环。</p>
+
+        <hr>
+
+        <h2>四、把踩坑沉淀成 Skills</h2>
+
+        <p>写完这两个项目，我把过程中可复用的知识抽成了 5 个 Agent Skills，放在 <a href="https://github.com/bayshier/android-agent-skills" target="_blank" rel="noopener">android-agent-skills</a>：</p>
+
+        <ul>
+            <li><code>android-build-doctor</code>：AGP 9 移除 kotlin-android 插件、compileSdk 依赖链、从 Maven metadata 查真实版本</li>
+            <li><code>mcp-kotlin-builder</code>：上面第三节的内容，经编译验证的 SDK 2.x 指南</li>
+            <li><code>crash-triage-adb</code>：logcat 崩溃分诊</li>
+            <li><code>compose-perf-review</code>：Compose 重组性能审查</li>
+            <li><code>kotlin-k2-upgrade</code>：K2 升级清单</li>
+        </ul>
+
+        <p>技能的本质是"踩过坑的人写的提示词"。搬运文档的 skill 一抓一大把，<strong>从真实事故里长出来的</strong>才有壁垒。</p>
+
+        <hr>
+
+        <h2>写在最后</h2>
+
+        <div class="repo-cards">
+            <a class="repo-card" href="https://github.com/bayshier/kline-mcp" target="_blank" rel="noopener">
+                <div class="repo-name">bayshier/kline-mcp</div>
+                <div class="repo-desc">A股 K线与技术指标 MCP 服务器（Kotlin）</div>
+            </a>
+            <a class="repo-card" href="https://github.com/bayshier/android-mcp" target="_blank" rel="noopener">
+                <div class="repo-name">bayshier/android-mcp</div>
+                <div class="repo-desc">Android 设备自动化 MCP 服务器（Kotlin）</div>
+            </a>
+            <a class="repo-card" href="https://github.com/bayshier/android-agent-skills" target="_blank" rel="noopener">
+                <div class="repo-name">bayshier/android-agent-skills</div>
+                <div class="repo-desc">实战蒸馏的 5 个 Agent 技能</div>
+            </a>
+            <a class="repo-card" href="https://github.com/bayshier/Compose-MVI-KLine" target="_blank" rel="noopener">
+                <div class="repo-name">bayshier/Compose-MVI-KLine</div>
+                <div class="repo-desc">手绘 Canvas K线的 Compose 蓝图</div>
+            </a>
+        </div>
+
+        <p>最后说一句感受：MCP 生态现在像 2010 年的 App Store，接口标准已经统一，但<strong>垂直场景的好工具还远远不够</strong>。Python/TS 不是唯一解——你的主语言 + 你的领域知识，可能就是下一个空白。</p>
+
+        <p>数据来自公开接口，仅供研究学习，不构成投资建议。</p>
+
+        <div class="article-end">
+            <span>Easin's Code Lab</span>
+            <span><a href="easin.html">← 返回主页</a> · <a href="https://github.com/bayshier" target="_blank" rel="noopener">GitHub ↗</a></span>
+        </div>
+
+    </div>
+</body>
+
+</html>
