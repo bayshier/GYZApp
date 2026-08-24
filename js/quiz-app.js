@@ -359,10 +359,7 @@
             if (q.explain) {
                 html += '<div class="q-explain"><b>解析</b>' + esc(q.explain) + '</div>';
             }
-            var docId = docIdOf(q);
-            var docTitle = '';
-            (LEARN[q.subject] || []).forEach(function (d) { if (d.id === docId) docTitle = d.title; });
-            html += '<a class="q-knowledge-link" href="#/learn/' + q.subject + '/' + docId + '">📖 查看对应知识点' + (docTitle ? '：' + esc(docTitle) : '') + ' →</a>';
+            html += '<div class="q-knowledge-inline" id="q-ki"></div>';
         }
 
         html += '</article><div class="q-nav">'
@@ -382,6 +379,8 @@
                 renderPracticeQuestion();
             });
         });
+
+        if (pick !== undefined) fillKnowledge(q);
 
         document.getElementById('q-prev').addEventListener('click', function () {
             if (practice.idx > 0) { practice.idx--; renderPracticeQuestion(); }
@@ -748,7 +747,7 @@
        ============================================================ */
     var LEARN = { law: null, basics: null };
 
-    function loadLearn(subject, cb) {
+    function loadLearn(subject, cb, silent) {
         if (LEARN[subject]) { cb(LEARN[subject]); return; }
         var varName = subject === 'law' ? 'LEARN_DATA_LAW' : 'LEARN_DATA_BASICS';
         if (window[varName]) {
@@ -756,7 +755,9 @@
             cb(LEARN[subject]);
             return;
         }
-        view.innerHTML = '<div class="q-empty"><div class="icon">⏳</div><p>知识点库加载中...</p></div>';
+        if (!silent) {
+            view.innerHTML = '<div class="q-empty"><div class="icon">⏳</div><p>知识点库加载中...</p></div>';
+        }
         var s = document.createElement('script');
         s.src = 'js/learn-data-' + subject + '.js';
         s.onload = function () {
@@ -764,9 +765,52 @@
             cb(LEARN[subject]);
         };
         s.onerror = function () {
-            view.innerHTML = '<div class="q-empty"><div class="icon">📦</div><p>知识点库加载失败，请刷新重试</p></div>';
+            if (!silent) {
+                view.innerHTML = '<div class="q-empty"><div class="icon">📦</div><p>知识点库加载失败，请刷新重试</p></div>';
+            }
         };
         document.head.appendChild(s);
+    }
+
+    /* 按题干 2-gram 关键词匹配最相关小节（内联知识点展示） */
+    function relevantSection(doc, q) {
+        var stem = q.q + q.options.join('');
+        var grams = {};
+        for (var i = 0; i + 2 <= stem.length; i++) {
+            var g = stem.substr(i, 2);
+            if (/^[\u4e00-\u9fa5]{2}$/.test(g)) grams[g] = 1;
+        }
+        var keys = Object.keys(grams);
+        var best = null, bestScore = 0;
+        doc.sections.forEach(function (sArr) {
+            var text = sArr[0] + sArr[1];
+            var score = 0;
+            keys.forEach(function (g) { if (text.indexOf(g) !== -1) score++; });
+            if (score > bestScore) { bestScore = score; best = sArr; }
+        });
+        return bestScore >= 3 ? best : null;
+    }
+
+    /* 异步填充内联知识点块 */
+    function fillKnowledge(q) {
+        var box = document.getElementById('q-ki');
+        if (!box) return;
+        loadLearn(q.subject, function (docs) {
+            var el = document.getElementById('q-ki');
+            if (!el) return;
+            var docId = docIdOf(q);
+            var doc = null;
+            docs.forEach(function (d) { if (d.id === docId) doc = d; });
+            if (!doc) return;
+            var sec = relevantSection(doc, q);
+            var body = sec ? sec[1] : (doc.sections[0] && doc.sections[0][1] || '');
+            if (!body) return;
+            var text = body.slice(0, 700);
+            el.innerHTML = '<div class="qki-head">📖 相关知识点 · ' + esc(doc.title)
+                + (sec ? ' / ' + esc(sec[0]) : '') + '</div>'
+                + '<div class="qki-body">' + esc(text) + (body.length > 700 ? ' ……' : '') + '</div>'
+                + '<a class="qki-more" href="#/learn/' + q.subject + '/' + docId + '">查看全文 →</a>';
+        }, true);
     }
 
     var LEARN_CAT_ORDER = ['章节讲义', '考点精讲', '考点速记', '应试笔记', '对照表', '大纲'];
