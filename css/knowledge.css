@@ -783,6 +783,16 @@ body {
     border-color: #2ecc71 !important;
 }
 
+/* 首页证券从业刷题入口横幅（金色调，呼应主题强调色） */
+.kb-quiz-banner {
+    background: linear-gradient(135deg, #7a5c1a 0%, #b8902f 100%) !important;
+    border-color: rgba(212, 166, 68, 0.4) !important;
+}
+
+.kb-quiz-banner:hover {
+    border-color: #d4a644 !important;
+}
+
 /* ---------- 黄页页 ---------- */
 /* 分类区块 */
 .kb-links-cat {

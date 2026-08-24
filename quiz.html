@@ -5,20 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="证券从业资格刷题 · 法律法规 + 金融基础知识 · 顺序刷题 / 随机 / 模拟考试 / 错题本">
-    <meta name="theme-color" content="#0a0e16">
-    <title>证券从业刷题 — Easin's Code Lab</title>
+    <meta name="theme-color" content="#1a2b4a">
+    <title>证券从业刷题 - 股宇宙知识库</title>
     <link rel="shortcut icon" href="icon_logo.png" type="image/png">
     <link rel="icon" href="icon_logo.png" type="image/png">
-    <link rel="stylesheet" href="css/quiz.css?v=20260824">
+    <link rel="stylesheet" href="css/quiz.css?v=20260824-2">
 </head>
 
 <body>
-    <canvas id="matrix-rain" aria-hidden="true"></canvas>
-
+    <!-- 顶部导航（与知识库同款） -->
     <header class="q-header">
-        <a class="q-back" href="easin.html">← 主页</a>
-        <div class="q-brand">证券从业 · 刷题系统</div>
-        <div class="q-timer" id="q-timer" hidden>00:00</div>
+        <div class="q-header-inner">
+            <a class="q-logo" href="knowledge.html">
+                <img src="icon_logo.png" alt="股宇宙">
+                <span>股宇宙 · 刷题系统</span>
+            </a>
+            <a class="q-back-btn" href="knowledge.html">← 返回知识库</a>
+            <div class="q-timer" id="q-timer" hidden>00:00</div>
+        </div>
     </header>
 
     <main class="q-main" id="q-view">
@@ -27,66 +31,6 @@
 
     <script src="js/quiz-data.js"></script>
     <script src="js/quiz-app.js"></script>
-    <script>
-    /* 二进制代码雨（与主页同款） */
-    (function () {
-        'use strict';
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        var canvas = document.getElementById('matrix-rain');
-        if (!canvas || !canvas.getContext) return;
-        var ctx = canvas.getContext('2d');
-        var CHARS = '01'.split('');
-        var BG_FADE = 'rgba(10, 14, 22, 0.09)';
-        var FONT_SIZE = 16;
-        var drops = [], speeds = [], columns = 0, W = 0, H = 0;
-
-        function resize() {
-            W = window.innerWidth; H = window.innerHeight;
-            canvas.width = W; canvas.height = H;
-            columns = Math.ceil(W / FONT_SIZE);
-            drops = []; speeds = [];
-            for (var i = 0; i < columns; i++) {
-                drops[i] = Math.floor(Math.random() * -60);
-                speeds[i] = 0.5 + Math.random() * 0.8;
-            }
-            ctx.fillStyle = '#0a0e16';
-            ctx.fillRect(0, 0, W, H);
-        }
-        var last = 0;
-        function draw(ts) {
-            requestAnimationFrame(draw);
-            if (document.hidden || ts - last < 33) return;
-            last = ts;
-            ctx.fillStyle = BG_FADE;
-            ctx.fillRect(0, 0, W, H);
-            ctx.font = FONT_SIZE + 'px monospace';
-            for (var i = 0; i < columns; i++) {
-                var x = i * FONT_SIZE;
-                var row = Math.floor(drops[i]);
-                var y = row * FONT_SIZE;
-                if (row >= 0 && y <= H) {
-                    ctx.fillStyle = 'rgba(180, 255, 210, 0.9)';
-                    ctx.fillText(CHARS[(Math.random() * CHARS.length) | 0], x, y);
-                }
-                if (row > 4 && Math.random() < 0.28) {
-                    var ty = y - FONT_SIZE * (1 + Math.random() * 6 | 0);
-                    if (ty > 0) {
-                        ctx.fillStyle = 'rgba(61, 220, 132, 0.35)';
-                        ctx.fillText(CHARS[(Math.random() * CHARS.length) | 0], x, ty);
-                    }
-                }
-                drops[i] += speeds[i];
-                if (y > H && Math.random() > 0.975) drops[i] = Math.floor(Math.random() * -30);
-            }
-        }
-        var rt = null;
-        window.addEventListener('resize', function () {
-            clearTimeout(rt); rt = setTimeout(resize, 200);
-        }, { passive: true });
-        resize();
-        requestAnimationFrame(draw);
-    })();
-    </script>
 </body>
 
 </html>

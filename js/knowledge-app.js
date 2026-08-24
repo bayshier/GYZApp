@@ -77,6 +77,14 @@
             + '<div class="kb-newbie-desc">25 个国内外财经网站，一键直达 →</div>'
             + '</div></div>';
 
+        // 证券从业刷题入口
+        html += '<div class="kb-newbie-banner kb-quiz-banner" onclick="location.href=\'quiz.html\'">'
+            + '<div class="kb-newbie-icon">✍️</div>'
+            + '<div class="kb-newbie-text">'
+            + '<div class="kb-newbie-title">证券从业刷题</div>'
+            + '<div class="kb-newbie-desc">法律法规 + 基础知识 126 题 · 刷题 / 模拟考试 / 错题本 →</div>'
+            + '</div></div>';
+
         html += '<div class="kb-home-title">选择分类开始学习</div>';
         html += '<div class="kb-cats">';
 
