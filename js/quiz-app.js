@@ -24,6 +24,12 @@
         basics: { name: '金融市场基础知识',     short: '基础知识' }
     };
 
+    /* 知识点库统计（数据懒加载，首页用静态摘要） */
+    var LEARN_SUMMARY = {
+        law:    { docs: 14, sections: 1088, chars: 34.9 },
+        basics: { docs: 10, sections: 2068, chars: 55.4 }
+    };
+
     function bySubject(s) { return BANK.filter(function (q) { return q.subject === s; }); }
 
     /* ---------- localStorage ---------- */
@@ -96,7 +102,22 @@
         var html = '<section class="q-hero">'
             + '<h1>证券从业考试<span>学习</span></h1>'
             + '<p>题库 ' + BANK.length + ' 题 + 知识点 24 篇 · 学习 / 练习 / 模拟考试 / 错题本</p>'
-            + '</section><div class="q-subjects">';
+            + '</section>';
+
+        /* 醒目的知识点学习入口（含各科知识点/章节统计） */
+        html += '<section class="q-learn-strip">'
+            + '<div class="qls-head">📖 知识点学习 <span>· PDF 全量收录 24 篇 · 3156 个小节 · 90 万字</span></div>'
+            + '<div class="qls-cards">';
+        ['law', 'basics'].forEach(function (s) {
+            var sum = LEARN_SUMMARY[s];
+            html += '<a class="qls-card" href="#/learn/' + s + '">'
+                + '<div class="qls-title">' + esc(SUBJECTS[s].name) + '</div>'
+                + '<div class="qls-meta"><b>' + sum.docs + '</b> 篇文档 · <b>' + sum.sections + '</b> 个小节 · <b>' + sum.chars + '</b> 万字</div>'
+                + '<span class="qls-go">进入学习 →</span></a>';
+        });
+        html += '</div></section>';
+
+        html += '<div class="q-subjects">';
 
         ['law', 'basics'].forEach(function (s) {
             var st = stats(s);
@@ -112,7 +133,6 @@
                 + '</div>'
                 + '<div class="qsc-bar"><i style="width:' + pct + '%"></i></div>'
                 + '<div class="qsc-actions">'
-                +   '<a href="#/learn/' + s + '">📖 知识点学习</a>'
                 +   '<a href="#/practice/' + s + '/order">顺序练习</a>'
                 +   '<a href="#/practice/' + s + '/random">随机</a>'
                 +   '<a href="#/practice/' + s + '/wrong">错题本' + (st.wrong ? ' (' + st.wrong + ')' : '') + '</a>'

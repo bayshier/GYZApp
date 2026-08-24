@@ -91,6 +91,47 @@ body {
 .q-hero h1 span { color: var(--accent); }
 .q-hero p { color: var(--text-light); font-size: 13px; margin-top: 8px; letter-spacing: 0.05em; }
 
+/* ---------- 醒目的知识点学习入口 ---------- */
+.q-learn-strip {
+    margin: 0 0 22px;
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-light) 100%);
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: 0 4px 16px rgba(26, 43, 74, 0.25);
+}
+.qls-head {
+    color: #fff; font-size: 17px; font-weight: 800; letter-spacing: 1px;
+    margin-bottom: 14px;
+}
+.qls-head span {
+    font-size: 12px; font-weight: 400; color: rgba(255, 255, 255, 0.75);
+    letter-spacing: 0.05em;
+}
+.qls-cards { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 680px) { .qls-cards { grid-template-columns: 1fr 1fr; } }
+.qls-card {
+    position: relative;
+    display: block;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+    padding: 14px 16px 12px;
+    text-decoration: none;
+    transition: background .2s, transform .2s, border-color .2s;
+}
+.qls-card:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+.qls-title { color: #fff; font-size: 15px; font-weight: 700; }
+.qls-meta { color: rgba(255, 255, 255, 0.85); font-size: 12.5px; margin-top: 4px; }
+.qls-meta b { color: var(--accent); font-family: "SF Mono", Menlo, monospace; font-size: 14px; }
+.qls-go {
+    display: inline-block; margin-top: 8px;
+    color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+}
+
 /* ---------- 科目卡片 ---------- */
 .q-subjects { display: grid; grid-template-columns: 1fr; gap: 16px; }
 @media (min-width: 680px) { .q-subjects { grid-template-columns: 1fr 1fr; } }
