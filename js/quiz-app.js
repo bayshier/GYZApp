@@ -1,5 +1,5 @@
 /* ============================================================
-   证券从业刷题系统 — 路由 / 刷题 / 模拟考试 / 错题本
+   证券从业考试学习系统 — 路由 / 学习 / 模拟考试 / 错题本
    纯 vanilla JS · localStorage 持久化
    ============================================================ */
 (function () {
@@ -92,7 +92,7 @@
        ============================================================ */
     function renderHome() {
         var html = '<section class="q-hero">'
-            + '<h1>证券从业<span>刷题</span></h1>'
+            + '<h1>证券从业考试<span>学习</span></h1>'
             + '<p>法律法规 + 金融基础知识 · ' + BANK.length + ' 题 · 真题 / 练习 / 章节例题</p>'
             + '</section><div class="q-subjects">';
 
@@ -110,8 +110,8 @@
                 + '</div>'
                 + '<div class="qsc-bar"><i style="width:' + pct + '%"></i></div>'
                 + '<div class="qsc-actions">'
-                +   '<a href="#/practice/' + s + '/order">顺序刷题</a>'
-                +   '<a href="#/practice/' + s + '/random">随机</a>'
+                +   '<a href="#/practice/' + s + '/order">顺序学习</a>'
+                +   '<a href="#/practice/' + s + '/random">随机练习</a>'
                 +   '<a href="#/practice/' + s + '/wrong">错题本' + (st.wrong ? ' (' + st.wrong + ')' : '') + '</a>'
                 +   '<a class="primary" href="#/exam/' + s + '">模拟考试</a>'
                 + '</div></div>';
@@ -153,7 +153,7 @@
         if (mode === 'wrong') {
             list = bySubject(subject).filter(function (q) { return store.wrong[q.id]; });
             if (!list.length) {
-                view.innerHTML = emptyBox('🎉', '错题本是空的', '先去刷题，答错的题会自动收进来', subject);
+                view.innerHTML = emptyBox('🎉', '错题本是空的', '先去学习，答错的题会自动收进来', subject);
                 return;
             }
         } else {
