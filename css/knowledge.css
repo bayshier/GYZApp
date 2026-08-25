@@ -1067,3 +1067,13 @@ body {
     .kb-kw-scene { height: 55vh; min-height: 340px; }
 }
 
+
+/* ---------- AI 学堂入口横幅 ---------- */
+.kb-ai-banner {
+    background: linear-gradient(135deg, #1a2b4a 0%, #2e4a7d 100%) !important;
+    border-color: rgba(122, 138, 168, 0.4) !important;
+}
+
+.kb-ai-banner:hover {
+    border-color: #7a8aa8 !important;
+}

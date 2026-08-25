@@ -85,6 +85,14 @@
             + '<div class="kb-newbie-desc">137 题题库 + 24 篇知识点 · 学习 / 练习 / 模拟考试 →</div>'
             + '</div></div>';
 
+        // AI 学堂入口（learningAI 课程站，独立仓库托管）
+        html += '<div class="kb-newbie-banner kb-ai-banner" onclick="window.open(\'https://bayshier.github.io/learningAI/\', \'_blank\', \'noopener\')">'
+            + '<div class="kb-newbie-icon">🤖</div>'
+            + '<div class="kb-newbie-text">'
+            + '<div class="kb-newbie-title">AI 学堂</div>'
+            + '<div class="kb-newbie-desc">5 讲 AI 课程 · 大模型 / Prompt / RAG / Agent / 产品落地 →</div>'
+            + '</div></div>';
+
         html += '<div class="kb-home-title">选择分类开始学习</div>';
         html += '<div class="kb-cats">';
 
