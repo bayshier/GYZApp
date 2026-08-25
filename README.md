@@ -8,16 +8,16 @@
 
 | 页面 | 入口 | 说明 |
 |------|------|------|
-| 🏠 Easin 主页 | [easin.html](easin.html) | 编辑部风格个人主页：二进制数字雨背景、23 个技术 Logo 组成的 3D 星球（可拖拽/点击跳官网）、Works 时间线（全部可点击直达） |
-| 📚 股宇宙知识库 | [knowledge.html](knowledge.html) | 股票教学百科：33 篇教程（K线/均线/指标/基本面/港美股/玄学）、30 条名词表、25 个财经网址导航、3D 关键词星球、小白 6 步路线 |
-| ✍️ 证券从业考试学习 | [quiz.html](quiz.html) | 两科完整备考系统（见下方详细功能） |
-| 📜 MCP 博客 | [blog-kotlin-mcp.html](blog-kotlin-mcp.html) | 《我给 AI 写了两个 Kotlin MCP 服务器》——kline-mcp + android-mcp 架构与踩坑 |
-| 🤖 Harness 博客 | [blog-harness-engineering.html](blog-harness-engineering.html) | 企业级多 Agent 协同实战：OODA、fail-closed 沙箱、自进化 Skill |
-| 📈 K线视觉博客 | [blog-kline-vision.html](blog-kline-vision.html) | 多模态 AI 判读 K线形态：头肩顶/W底/旗形 3/3 盲测全对 |
-| 🎉 27 周年庆 | [cfzx2027.html](cfzx2027.html) | 财富在线 27 周年专题：视频、历程、留影墙 |
-| 🚪 根入口 | [index.html](index.html) | 站点根地址，统一跳转个人主页 |
+| 🏠 Easin 主页 | [easin.html](https://bayshier.github.io/GYZApp/easin.html) | 编辑部风格个人主页：二进制数字雨背景、23 个技术 Logo 组成的 3D 星球（可拖拽/点击跳官网）、Works 时间线（全部可点击直达） |
+| 📚 股宇宙知识库 | [knowledge.html](https://bayshier.github.io/GYZApp/knowledge.html) | 股票教学百科：33 篇教程（K线/均线/指标/基本面/港美股/玄学）、30 条名词表、25 个财经网址导航、3D 关键词星球、小白 6 步路线 |
+| ✍️ 证券从业考试学习 | [quiz.html](https://bayshier.github.io/GYZApp/quiz.html) | 两科完整备考系统（见下方详细功能） |
+| 📜 MCP 博客 | [blog-kotlin-mcp.html](https://bayshier.github.io/GYZApp/blog-kotlin-mcp.html) | 《我给 AI 写了两个 Kotlin MCP 服务器》——kline-mcp + android-mcp 架构与踩坑 |
+| 🤖 Harness 博客 | [blog-harness-engineering.html](https://bayshier.github.io/GYZApp/blog-harness-engineering.html) | 企业级多 Agent 协同实战：OODA、fail-closed 沙箱、自进化 Skill |
+| 📈 K线视觉博客 | [blog-kline-vision.html](https://bayshier.github.io/GYZApp/blog-kline-vision.html) | 多模态 AI 判读 K线形态：头肩顶/W底/旗形 3/3 盲测全对 |
+| 🎉 27 周年庆 | [cfzx2027.html](https://bayshier.github.io/GYZApp/cfzx2027.html) | 财富在线 27 周年专题：视频、历程、留影墙 |
+| 🚪 根入口 | [index.html](https://bayshier.github.io/GYZApp/index.html) | 站点根地址，统一跳转个人主页 |
 
-APP 下载入口统一在[个人主页 Works](easin.html)（应用宝渠道）。
+APP 下载入口统一在[个人主页 Works](https://bayshier.github.io/GYZApp/easin.html)（应用宝渠道）。
 
 ## 证券从业考试学习系统
 
