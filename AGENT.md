@@ -44,6 +44,7 @@ README 的数字必须与实际数据一致（可 `node -e` 统计）。
 
 ## 其他约定
 
+- **线上入口规则**：所有对外地址入口以 `easin.html`（个人主页）为准；`index.html` 仅做跳转主页。`download.html` 为内部 UA 识别分发页（含渠道地址），**禁止**在任何公开页面、README 或对外材料中直接链接它或其跳转目标。
 - 推送：`git push origin main` 即触发 GitHub Pages 部署（约 1 分钟）。github.com 443 在本机网络下**间歇性被拦截**，推送失败时等待重试即可，切勿改 remote 协议（SSH key 未注册）。
 - 页面底部统一署名「作者：Easin」链接到 `easin.html`（纯跳转页除外）。
 - 入口互链：easin Works → 各站点；knowledge 首页横幅 → quiz；quiz 头部 → knowledge。

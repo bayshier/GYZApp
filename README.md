@@ -15,7 +15,9 @@
 | 🤖 Harness 博客 | [blog-harness-engineering.html](blog-harness-engineering.html) | 企业级多 Agent 协同实战：OODA、fail-closed 沙箱、自进化 Skill |
 | 📈 K线视觉博客 | [blog-kline-vision.html](blog-kline-vision.html) | 多模态 AI 判读 K线形态：头肩顶/W底/旗形 3/3 盲测全对 |
 | 🎉 27 周年庆 | [cfzx2027.html](cfzx2027.html) | 财富在线 27 周年专题：视频、历程、留影墙 |
-| 📲 APP 下载 | [index.html](index.html) | UA 识别跳转蒲公英（Android/iOS 分发） |
+| 🚪 根入口 | [index.html](index.html) | 站点根地址，统一跳转个人主页 |
+
+APP 下载入口统一在[个人主页 Works](easin.html)（应用宝渠道）。
 
 ## 证券从业考试学习系统
 
@@ -71,7 +73,7 @@ python3 -m http.server 8923
 
 ## 历史
 
-本仓库最初（2017）是一个二维码自动识别手机系统的下载跳转页教程（autodownload），`index.html` 保留了该职责并沿用至今；其余站点为 2026 年陆续新增。
+本仓库最初（2017）是一个二维码自动识别手机系统的下载跳转页教程（autodownload），该跳转逻辑现移至内部页保留；根入口已改为统一导向个人主页，其余站点为 2026 年陆续新增。
 
 ---
 

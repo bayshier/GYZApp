@@ -72,3 +72,18 @@
 [2026-08-24 16:22:26.485] [FINE   ] [JuggServer] checkHotUpdate response: [200] {"isNeedUpdate":false,"isNeedReinstall":false,"targetVersion":"","updateInfo":null,"jarFileInfos":[]}
 [2026-08-24 16:22:26.491] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
 [2026-08-24 17:57:33.294] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-24 20:22:26.502] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate
+[2026-08-24 20:22:26.624] [FINE   ] [JuggServer] checkHotUpdate response: [200] {"isNeedUpdate":false,"isNeedReinstall":false,"targetVersion":"","updateInfo":null,"jarFileInfos":[]}
+[2026-08-24 20:22:26.648] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-24 21:57:33.258] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-25 00:22:26.580] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate
+[2026-08-25 00:22:26.676] [FINE   ] [JuggServer] checkHotUpdate response: [200] {"isNeedUpdate":false,"isNeedReinstall":false,"targetVersion":"","updateInfo":null,"jarFileInfos":[]}
+[2026-08-25 00:22:26.705] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-25 01:57:33.350] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-25 04:22:26.694] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate
+[2026-08-25 04:22:26.787] [FINE   ] [JuggServer] checkHotUpdate response: [200] {"isNeedUpdate":false,"isNeedReinstall":false,"targetVersion":"","updateInfo":null,"jarFileInfos":[]}
+[2026-08-25 04:22:26.813] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-25 05:57:33.561] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-25 08:22:26.868] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate
+[2026-08-25 08:22:26.957] [FINE   ] [JuggServer] checkHotUpdate response: [200] {"isNeedUpdate":false,"isNeedReinstall":false,"targetVersion":"","updateInfo":null,"jarFileInfos":[]}
+[2026-08-25 08:22:26.971] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
