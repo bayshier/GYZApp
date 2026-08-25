@@ -79,7 +79,94 @@ body {
 .q-empty, .q-empty-box { text-align: center; padding: 80px 20px; color: var(--text-light); }
 .q-empty .icon, .q-empty-box .icon { font-size: 40px; margin-bottom: 12px; }
 
-/* ---------- 首页 hero ---------- */
+/* ---------- 首页宣传区（特效） ---------- */
+.q-promo {
+    position: relative;
+    text-align: center;
+    padding: 30px 16px 34px;
+    margin-bottom: 20px;
+    border-radius: 16px;
+    background: linear-gradient(125deg, #16264a 0%, #2d4a7a 45%, #1a2b4a 100%);
+    overflow: hidden;
+    box-shadow: 0 8px 28px rgba(26, 43, 74, 0.35);
+}
+/* 扫光特效 */
+.q-promo::before {
+    content: "";
+    position: absolute; top: 0; left: -80%;
+    width: 55%; height: 100%;
+    background: linear-gradient(105deg, transparent, rgba(255,255,255,0.14), transparent);
+    transform: skewX(-22deg);
+    animation: shine 3.4s ease-in-out infinite;
+}
+@keyframes shine { 0% { left: -80%; } 55%, 100% { left: 130%; } }
+/* 底部金色渐变光带 */
+.q-promo::after {
+    content: "";
+    position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent), #f3d98b, var(--accent), transparent);
+    background-size: 200% 100%;
+    animation: goldFlow 3s linear infinite;
+}
+@keyframes goldFlow { to { background-position: -200% 0; } }
+
+/* 徽章弹入 */
+.promo-badges { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.pb {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
+    color: #fff; padding: 5px 13px; border-radius: 14px;
+    opacity: 0; animation: badgeIn .5s cubic-bezier(.2,.9,.3,1.4) forwards;
+}
+.pb:nth-child(1) { animation-delay: .1s; background: linear-gradient(135deg, #c0392b, #e74c3c); box-shadow: 0 3px 10px rgba(231,76,60,.4); }
+.pb:nth-child(2) { animation-delay: .25s; background: linear-gradient(135deg, #8e6d1f, #d4a644); box-shadow: 0 3px 10px rgba(212,166,68,.4); }
+.pb:nth-child(3) { animation-delay: .4s; background: linear-gradient(135deg, #14532d, #2ecc71); box-shadow: 0 3px 10px rgba(46,204,113,.4); }
+@keyframes badgeIn { from { opacity: 0; transform: translateY(14px) scale(.8); } to { opacity: 1; transform: none; } }
+
+/* 主标题：流动金色渐变字 */
+.promo-title {
+    font-size: clamp(30px, 6vw, 46px); font-weight: 900;
+    color: #fff; letter-spacing: 3px; line-height: 1.25;
+    text-shadow: 0 2px 14px rgba(0,0,0,.35);
+    margin-bottom: 6px;
+}
+.pt-hot {
+    margin-left: 8px;
+    background: linear-gradient(90deg, #f3d98b, #d4a644, #ffe9b8, #d4a644, #f3d98b);
+    background-size: 200% 100%;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: goldFlow 2.6s linear infinite;
+}
+.promo-sub {
+    color: rgba(255,255,255,.72); font-size: 13px; letter-spacing: .12em;
+    margin-bottom: 20px;
+}
+
+/* 数据条：白卡数字滚动 */
+.promo-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    max-width: 520px; margin: 0 auto;
+}
+.ps {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 12px;
+    padding: 12px 6px 10px;
+    backdrop-filter: blur(4px);
+    transition: transform .25s, background .25s;
+}
+.ps:hover { transform: translateY(-3px); background: rgba(255,255,255,0.14); }
+.ps b {
+    display: block;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: clamp(20px, 4.4vw, 27px); font-weight: 800;
+    color: #f3d98b; line-height: 1.1;
+    text-shadow: 0 0 18px rgba(243, 217, 139, 0.45);
+}
+.ps i { display: block; font-style: normal; font-size: 11px; color: rgba(255,255,255,.65); margin-top: 3px; letter-spacing: .1em; }
+@media (max-width: 480px) { .promo-stats { grid-template-columns: repeat(2, 1fr); } }
+
+/* ---------- 首页 hero（旧，保留给降级） ---------- */
 .q-hero {
     text-align: center;
     padding: 26px 0 34px;
@@ -610,4 +697,6 @@ body {
 @media (prefers-reduced-motion: reduce) {
     .q-timer.urgent { animation: none; }
     .q-card { animation: none; }
+    .q-promo::before, .q-promo::after, .pt-hot { animation: none; }
+    .pb { animation: none; opacity: 1; }
 }

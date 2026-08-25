@@ -204,10 +204,23 @@
        首页
        ============================================================ */
     function renderHome() {
-        var html = '<section class="q-hero">'
-            + '<h1>证券从业考试<span>学习</span></h1>'
-            + '<p>题库 ' + BANK.length + ' 题 + 知识点 24 篇 · 学习 / 练习 / 模拟考试 / 错题本</p>'
-            + '</section>';
+        var nPapers = (window.EXAM_PAPERS || []).length;
+        var nPaperQ = (window.EXAM_PAPERS || []).reduce(function (a, p) { return a + p.count; }, 0);
+        var nCards = (window.MEMENTO_CARDS || []).length;
+        var html = '<section class="q-promo">'
+            + '<div class="promo-badges">'
+            +   '<span class="pb pb-fire">🔥 六年真题 2019-2024</span>'
+            +   '<span class="pb pb-clock">⏰ 智能间隔复习</span>'
+            +   '<span class="pb pb-radar">📊 薄弱雷达定位</span>'
+            + '</div>'
+            + '<h1 class="promo-title">证券从业考试<span class="pt-hot">一次通过</span></h1>'
+            + '<p class="promo-sub">完整备考闭环 · 真题 → 练习 → 复习 → 补强</p>'
+            + '<div class="promo-stats">'
+            +   '<div class="ps"><b class="count" data-n="' + BANK.length + '">0</b><i>精选题库</i></div>'
+            +   '<div class="ps"><b class="count" data-n="' + nPaperQ + '">0</b><i>历年真题</i></div>'
+            +   '<div class="ps"><b class="count" data-n="' + nPapers + '">0</b><i>套真题卷</i></div>'
+            +   '<div class="ps"><b class="count" data-n="90">0</b><i>万字知识点</i></div>'
+            + '</div></section>';
 
         /* 醒目的知识点学习入口（含各科知识点/章节统计） */
         html += '<section class="q-learn-strip">'
@@ -223,9 +236,6 @@
         html += '</div></section>';
 
         /* 历年真题 + 重点速记 快捷入口 */
-        var nPapers = (window.EXAM_PAPERS || []).length;
-        var nPaperQ = (window.EXAM_PAPERS || []).reduce(function (a, p) { return a + p.count; }, 0);
-        var nCards = (window.MEMENTO_CARDS || []).length;
         html += '<section class="q-quick-strip">'
             + '<a class="qq-card" href="#/papers"><span class="qq-ico">📜</span>'
             + '<span class="qq-txt"><b>历年真题</b><i>' + nPapers + ' 套 · ' + nPaperQ + ' 题 · 按套刷</i></span></a>'
@@ -286,6 +296,19 @@
                 if (e.target.tagName === 'A') return;
                 location.hash = '#/practice/' + card.dataset.subject + '/order';
             });
+        });
+
+        /* 数字滚动动画 */
+        view.querySelectorAll('.count').forEach(function (el) {
+            var target = +el.dataset.n, start = null, dur = 1100;
+            function step(ts) {
+                if (!start) start = ts;
+                var p = Math.min(1, (ts - start) / dur);
+                var eased = 1 - Math.pow(1 - p, 3);
+                el.textContent = Math.round(target * eased).toLocaleString();
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
         });
     }
 
