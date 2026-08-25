@@ -24,6 +24,13 @@
 3. 生成 `quiz-data.js`（题库）/ `learn-data-{law,basics}.js`（知识点，按科目拆分懒加载）/ `exam-extra.js`（真题归档 + 速记卡）
 4. 同步更新页面上的**题数/篇数文案**与 `LEARN_SUMMARY` 静态摘要
 
+## 题库数据来源（含第三方）
+
+`quiz-data.js` 除本地 PDF 提取外，还合并自两个 GitHub 开源题库（仅在 API 可达时抓取）：
+- `zfabc/zhengquantest`：2019-2024《金融市场基础知识》真题（网友回忆版）+ 章节练习（单选已入，多选暂未支持）
+- `kawu98661-cell/card-batch-demo`：补充题库（章节分类）
+两者均无 license 声明，数据仅用于个人学习，勿对外再分发。重新生成走 `/tmp/quiz-extract/merge_banks.py`。
+
 ## 验证清单（改动后必做）
 
 - [ ] `node --check` 全部改动的 js

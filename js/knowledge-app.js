@@ -82,7 +82,7 @@
             + '<div class="kb-newbie-icon">✍️</div>'
             + '<div class="kb-newbie-text">'
             + '<div class="kb-newbie-title">证券从业考试学习</div>'
-            + '<div class="kb-newbie-desc">137 题题库 + 24 篇知识点 · 学习 / 练习 / 模拟考试 →</div>'
+            + '<div class="kb-newbie-desc">2456 题题库（含 2019-2024 真题）+ 24 篇知识点 · 学习 / 练习 / 模拟考试 →</div>'
             + '</div></div>';
 
         // AI 学堂入口（learningAI 课程站，独立仓库托管）
