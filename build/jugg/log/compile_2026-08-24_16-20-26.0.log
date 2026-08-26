@@ -119,3 +119,9 @@
 [2026-08-26 13:19:55.797] [FINE   ] [McpLocalServer] start: Server is already running
 [2026-08-26 13:21:55.951] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
 [2026-08-26 13:57:35.379] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-26 16:22:28.167] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate
+[2026-08-26 16:22:28.246] [FINE   ] [JuggServer] checkHotUpdate response: [200] {"isNeedUpdate":false,"isNeedReinstall":false,"targetVersion":"","updateInfo":null,"jarFileInfos":[]}
+[2026-08-26 16:22:28.250] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-26 17:07:51.396] [FINE   ] [McpLocalServer] start: Server is already running
+[2026-08-26 17:09:51.845] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-26 17:21:56.135] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
