@@ -137,7 +137,11 @@
             + '</div>'
             + '<div class="zk-course-actions">'
             + (qs.length ? '<a class="btn primary" href="#/practice/' + code + '">📝 真题练习（' + qs.length + ' 题）</a>' : '<span class="btn" style="opacity:.5;cursor:default">📝 真题收集中</span>')
-            + (passed ? '' : '<button class="btn" id="zk-mark">✓ 标记已通过</button>')
+            + (!passed
+                ? '<button class="btn" id="zk-mark">✓ 标记已通过</button>'
+                : (store.passedOverride[code]
+                    ? '<span class="zk-mini-note" style="margin:0">本地标记 · </span><button class="btn ghost" id="zk-unmark">↩ 取消通过标记</button>'
+                    : ''))
             + '</div></div>';
 
         if (notes.length) {
@@ -158,6 +162,14 @@
         if (mark) {
             mark.addEventListener('click', function () {
                 store.passedOverride[code] = prompt('输入成绩（可留空）') || '✓';
+                save();
+                renderCourse(code);
+            });
+        }
+        var unmark = document.getElementById('zk-unmark');
+        if (unmark) {
+            unmark.addEventListener('click', function () {
+                delete store.passedOverride[code];
                 save();
                 renderCourse(code);
             });
