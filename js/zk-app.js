@@ -1,0 +1,264 @@
+/* ============================================================
+   自考 080901 学习系统 — 路由 / 仪表盘 / 笔记 / 练习
+   复用 quiz.css 组件体系（浅色知识库主题）
+   ============================================================ */
+(function () {
+    'use strict';
+
+    var D = window.ZK_DATA || { courses: [], notes: [], bank: [], examDates: {} };
+    var COURSES = D.courses.map(function (c, i) {
+        return { idx: i, code: c[0], name: c[1], type: c[2], status: c[3], score: c[4], date: c[5], term: c[6], note: c[7] };
+    });
+    var NOTES = D.notes || [];
+    var BANK = D.bank || [];
+    var EXAM_DATES = D.examDates || {};
+
+    function byCode(code) { return COURSES.filter(function (c) { return c.code === code; })[0]; }
+    function notesOf(code) { return NOTES.map(function (n, i) { n.i = i; return n; }).filter(function (n) { return n.course === code; }); }
+    function bankOf(code) { return BANK.map(function (q, i) { q.id = i; return q; }).filter(function (q) { return q.course === code; }); }
+
+    /* ---------- localStorage ---------- */
+    var KEY = 'zk-080901-v1';
+    var store;
+    try { store = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { store = {}; }
+    store.done = store.done || {};
+    store.wrong = store.wrong || {};
+    store.passedOverride = store.passedOverride || {};
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+
+    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+    var view = document.getElementById('zk-view');
+    var cdTimer = null;
+
+    /* ---------- 路由 ---------- */
+    function route() {
+        if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
+        var parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+        if (parts[0] === 'course' && parts[1]) renderCourse(parts[1]);
+        else if (parts[0] === 'read' && parts[1]) renderReader(+parts[1]);
+        else if (parts[0] === 'practice' && parts[1]) renderPractice(parts[1]);
+        else renderHome();
+    }
+    window.addEventListener('hashchange', route);
+
+    /* ---------- 有效通过态（线上记录 + 本地标记） ---------- */
+    function isPassed(c) { return c.status === 'passed' || store.passedOverride[c.code]; }
+    function passedCount() { return COURSES.filter(isPassed).length; }
+
+    /* ============================================================
+       首页：倒计时 + 概览 + 按考期分组
+       ============================================================ */
+    var STATUS_TXT = { passed: '已通过', planned: '本期报考', todo: '待考', practice: '实践', thesis: '论文' };
+
+    function renderHome() {
+        var nTotal = COURSES.length;
+        var nPassed = passedCount();
+        var remain = nTotal - nPassed;
+        var nextDate = EXAM_DATES['2026.10'] || '2026-10-17';
+
+        var html = '<div class="zk-countdown" id="zk-cd">'
+            + '<div><div class="zkc-label">⏳ 距 2026.10 考期还有</div>'
+            + '<div class="zkc-days" id="zk-cd-days">--<i>天</i></div>'
+            + '<div class="zkc-date">预计 ' + nextDate.replace(/-/g, '.') + ' 开考</div></div>'
+            + '<div class="zkc-next">本期报考 <b>4 门</b>（笔试优先）<br>'
+            + '15040 习思想 · 13005 软件工程<br>13003 数据结构与算法 · 13011 人工智能与大数据</div>'
+            + '</div>'
+            + '<div class="zk-overview">'
+            + '<div class="zko ok"><b>' + nPassed + '</b><i>已通过</i></div>'
+            + '<div class="zko"><b>' + remain + '</b><i>待完成</i></div>'
+            + '<div class="zko"><b>' + Math.round(nPassed / nTotal * 100) + '%</b><i>总进度</i></div>'
+            + '<div class="zko"><b>' + BANK.length + '</b><i>真题入库</i></div>'
+            + '</div>';
+
+        var terms = [['已通过', ''], ['2026.10', '本期主攻'], ['2027.04', '原理+数学'], ['2027.10', '数学+英语+实践'], ['2028.04', '实践收尾'], ['最后', '毕业环节']];
+        terms.forEach(function (tp) {
+            var key = tp[0];
+            var list = COURSES.filter(function (c) { return key === '已通过' ? isPassed(c) : (!isPassed(c) && c.term === key); });
+            if (!list.length) return;
+            var dateTxt = EXAM_DATES[key] ? '预计 ' + EXAM_DATES[key].replace(/-/g, '.') : (key === '已通过' ? nPassed + ' 门在手' : '');
+            html += '<div class="zk-term"><div class="zk-term-head"><h3>'
+                + (key === '已通过' ? '✅ ' : key === '最后' ? '🎓 ' : '📅 ') + esc(key) + '</h3><span>' + esc(tp[1]) + '</span>'
+                + '<span class="zk-term-date">' + esc(dateTxt) + '</span></div><div class="zk-courses">';
+            list.forEach(function (c) {
+                html += '<div class="zk-course" data-code="' + c.code + '">'
+                    + '<span class="zkc-code">' + c.code + '</span>'
+                    + '<div class="zkc-info"><div class="zkc-name">' + esc(c.name) + '</div>'
+                    + '<div class="zkc-sub">' + esc(c.type) + (c.note ? ' · ' + esc(c.note) : '') + '</div></div>'
+                    + (isPassed(c) ? '<span class="zkc-score">' + (c.score || store.passedOverride[c.code] || '✓') + '</span>' : '')
+                    + '<span class="zkc-status st-' + (isPassed(c) ? 'passed' : c.status) + '">' + (isPassed(c) ? '已通过' : STATUS_TXT[c.status]) + '</span>'
+                    + '</div>';
+            });
+            html += '</div></div>';
+        });
+
+        html += '<div class="zk-mini-note">💡 数据说明：通过状态按你的成绩单预置；考后在课程页可自行标记通过（本地保存）。笔记与真题持续补充，缺资料的课（13011 / 03344 / 15040）先用教材复习。</div>';
+        view.innerHTML = html;
+
+        document.querySelectorAll('.zk-course').forEach(function (el) {
+            el.addEventListener('click', function () { location.hash = '#/course/' + el.dataset.code; });
+        });
+        startCountdown(nextDate);
+    }
+
+    function startCountdown(dateStr) {
+        var el = document.getElementById('zk-cd-days');
+        if (!el) return;
+        function tick() {
+            var diff = new Date(dateStr + 'T09:00:00') - Date.now();
+            if (diff < 0) diff = 0;
+            var days = Math.floor(diff / 86400000);
+            var hrs = Math.floor(diff % 86400000 / 3600000);
+            el.innerHTML = days + '<i>天</i> ' + (hrs < 10 ? '0' : '') + hrs + '<i>时</i>';
+        }
+        tick();
+        cdTimer = setInterval(tick, 60000);
+    }
+
+    /* ============================================================
+       课程详情
+       ============================================================ */
+    function renderCourse(code) {
+        var c = byCode(code);
+        if (!c) { location.hash = '#/'; return; }
+        var passed = isPassed(c);
+        var notes = notesOf(code);
+        var qs = bankOf(code);
+
+        var html = '<div class="q-topbar"><a class="btn ghost" href="#/">← 返回</a>'
+            + '<span class="q-meta">课程详情</span><span class="q-progress-text">' + esc(c.code) + '</span></div>'
+            + '<div class="zk-course-head">'
+            + '<div class="zkc-title-row"><h2>' + esc(c.name) + '</h2>'
+            + '<span class="zkc-status st-' + (passed ? 'passed' : c.status) + '">' + (passed ? '已通过' : STATUS_TXT[c.status]) + '</span></div>'
+            + '<div class="zkc-meta">'
+            + '<span>类型 <b>' + esc(c.type) + '</b></span>'
+            + (passed ? '<span>成绩 <b>' + esc(c.score || store.passedOverride[c.code]) + '</b></span><span>通过 <b>' + esc(c.date || '本期') + '</b></span>' : '<span>计划考期 <b>' + esc(c.term) + '</b></span>')
+            + (c.note ? '<span>备注 <b>' + esc(c.note) + '</b></span>' : '')
+            + '</div>'
+            + '<div class="zk-course-actions">'
+            + (qs.length ? '<a class="btn primary" href="#/practice/' + code + '">📝 真题练习（' + qs.length + ' 题）</a>' : '<span class="btn" style="opacity:.5;cursor:default">📝 真题收集中</span>')
+            + (passed ? '' : '<button class="btn" id="zk-mark">✓ 标记已通过</button>')
+            + '</div></div>';
+
+        if (notes.length) {
+            html += '<div class="q-learn-cat"><h3>📖 学习资料（' + notes.length + '）</h3>';
+            notes.forEach(function (n) {
+                html += '<a class="q-doc-card" href="#/read/' + n.i + '">'
+                    + '<div class="qd-main"><div class="qd-title">' + esc(n.title) + '</div>'
+                    + '<div class="qd-meta">' + n.sections.length + ' 节 · ' + (n.chars / 10000).toFixed(1) + ' 万字</div></div>'
+                    + '<span class="qd-arrow">→</span></a>';
+            });
+            html += '</div>';
+        } else {
+            html += '<div class="zk-mini-note">📦 该课程资料尚未收集——当前来源以开源笔记为主，建议先用官方教材 + 刷题 App 复习，后续有资料会自动入库。</div>';
+        }
+        view.innerHTML = html;
+
+        var mark = document.getElementById('zk-mark');
+        if (mark) {
+            mark.addEventListener('click', function () {
+                store.passedOverride[code] = prompt('输入成绩（可留空）') || '✓';
+                save();
+                renderCourse(code);
+            });
+        }
+    }
+
+    /* ============================================================
+       笔记阅读（复用 q-reader 样式）
+       ============================================================ */
+    function renderReader(idx) {
+        var n = NOTES[idx];
+        if (!n) { location.hash = '#/'; return; }
+        var LIMIT = 80;
+        var secs = n.sections.length > LIMIT ? n.sections.slice(0, LIMIT) : n.sections;
+        var html = '<div class="q-topbar">'
+            + '<a class="btn ghost" href="#/course/' + n.course + '">← 课程</a>'
+            + '<span class="q-meta">' + esc(n.cat) + '</span>'
+            + '<span class="q-progress-text">' + n.sections.length + ' 节</span></div>'
+            + '<article class="q-reader"><h1>' + esc(n.title) + '</h1>'
+            + '<nav class="q-toc"><select id="zk-toc">';
+        secs.forEach(function (s, i) { html += '<option value="' + i + '">' + esc(s[0]) + '</option>'; });
+        html += '</select></nav><div class="q-reader-body">';
+        secs.forEach(function (s, i) {
+            html += '<section class="q-sec" id="zsec-' + i + '"><h3>' + esc(s[0]) + '</h3>';
+            s[1].split('\n').forEach(function (p) {
+                if (p.trim()) html += '<p>' + esc(p) + '</p>';
+            });
+            html += '</section>';
+        });
+        html += '</div></article>';
+        view.innerHTML = html;
+        document.getElementById('zk-toc').addEventListener('change', function () {
+            var el = document.getElementById('zsec-' + this.value);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+
+    /* ============================================================
+       真题练习（单题即时反馈 + 错题本）
+       ============================================================ */
+    function renderPractice(code) {
+        var qs = bankOf(code);
+        var c = byCode(code);
+        if (!qs.length || !c) { location.hash = '#/course/' + code; return; }
+        var i = 0, picks = {};
+
+        function draw() {
+            var q = qs[i];
+            var pick = picks[q.id];
+            var letters = ['A', 'B', 'C', 'D'];
+            var html = '<div class="q-topbar"><a class="btn ghost" href="#/course/' + code + '">← 课程</a>'
+                + '<span class="q-meta">' + esc(c.name) + ' · 真题练习</span>'
+                + '<span class="q-progress-text">' + (i + 1) + ' / ' + qs.length + '</span></div>'
+                + '<div class="q-progress"><i style="width:' + ((i + 1) / qs.length * 100) + '%"></i></div>'
+                + '<article class="q-card">'
+                + '<div class="q-stem"><b>' + (i + 1) + '.</b> ' + esc(q.q) + '</div><div class="q-options">';
+            q.options.forEach(function (opt, j) {
+                var L = letters[j];
+                var cls = 'q-opt';
+                if (pick) {
+                    if (L === q.answer) cls += ' correct';
+                    else if (L === pick) cls += ' wrong';
+                }
+                html += '<button class="' + cls + '" data-l="' + L + '"' + (pick ? ' disabled' : '') + '>'
+                    + '<i>' + L + '</i><span>' + esc(opt) + '</span></button>';
+            });
+            html += '</div>';
+            if (pick) {
+                var right = pick === q.answer;
+                html += '<div class="q-feedback ' + (right ? 'ok' : 'no') + '">'
+                    + (right ? '✓ 正确' : '✗ 错误 · 答案 ' + q.answer) + ' · ' + esc(q.source || '') + '</div>';
+            }
+            html += '</article><div class="q-nav">'
+                + '<button class="btn" id="zk-prev"' + (i === 0 ? ' disabled' : '') + '>← 上一题</button>'
+                + '<span class="q-nav-jump"></span>'
+                + '<button class="btn primary" id="zk-next">' + (i === qs.length - 1 ? '完成 ✓' : '下一题 →') + '</button></div>';
+            view.innerHTML = html;
+
+            view.querySelectorAll('.q-opt').forEach(function (b) {
+                b.addEventListener('click', function () {
+                    if (picks[q.id]) return;
+                    var L = b.dataset.l;
+                    picks[q.id] = L;
+                    var ok = L === q.answer;
+                    store.done[q.id] = { pick: L, right: ok };
+                    if (ok) delete store.wrong[q.id]; else store.wrong[q.id] = 1;
+                    save();
+                    draw();
+                });
+            });
+            document.getElementById('zk-prev').addEventListener('click', function () { if (i > 0) { i--; draw(); } });
+            document.getElementById('zk-next').addEventListener('click', function () {
+                if (i < qs.length - 1) { i++; draw(); } else location.hash = '#/course/' + code;
+            });
+        }
+        draw();
+    }
+
+    if (!COURSES.length) {
+        view.innerHTML = '<div class="q-empty"><div class="icon">📦</div><p>数据加载失败</p></div>';
+        return;
+    }
+    route();
+})();

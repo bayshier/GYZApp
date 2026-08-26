@@ -11,6 +11,7 @@
 | 🏠 Easin 主页 | [easin.html](https://bayshier.github.io/GYZApp/easin.html) | 编辑部风格个人主页：二进制数字雨背景、23 个技术 Logo 组成的 3D 星球（可拖拽/点击跳官网）、Works 时间线（全部可点击直达） |
 | 📚 股宇宙知识库 | [knowledge.html](https://bayshier.github.io/GYZApp/knowledge.html) | 股票教学百科：33 篇教程（K线/均线/指标/基本面/港美股/玄学）、30 条名词表、25 个财经网址导航、3D 关键词星球、小白 6 步路线 |
 | ✍️ 证券从业考试学习 | [quiz.html](https://bayshier.github.io/GYZApp/quiz.html) | 两科完整备考系统（见下方详细功能） |
+| 🎓 自考学习系统 | [zk.html](https://bayshier.github.io/GYZApp/zk.html) | 080901 计算机科学与技术：课程进度仪表盘、考期倒计时规划、12 篇考点笔记、软件工程真题练习 |
 | 🤖 AI 学堂 | [learningAI 仓库](https://github.com/bayshier/learningAI) · [在线访问](https://bayshier.github.io/learningAI/) | 团队 AI 课程 5 讲（大模型/Prompt/RAG/Agent/MCP/产品落地），课程体系参考 itshen/learn-ai（AGPL-3.0），独立仓库托管，知识库首页横幅直达 |
 | 📜 MCP 博客 | [blog-kotlin-mcp.html](https://bayshier.github.io/GYZApp/blog-kotlin-mcp.html) | 《我给 AI 写了两个 Kotlin MCP 服务器》——kline-mcp + android-mcp 架构与踩坑 |
 | 🤖 Harness 博客 | [blog-harness-engineering.html](https://bayshier.github.io/GYZApp/blog-harness-engineering.html) | 企业级多 Agent 协同实战：OODA、fail-closed 沙箱、自进化 Skill |

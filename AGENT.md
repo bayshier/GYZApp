@@ -31,6 +31,12 @@
 - `kawu98661-cell/card-batch-demo`：补充题库（章节分类）
 两者均无 license 声明，数据仅用于个人学习，勿对外再分发。重新生成走 `/tmp/quiz-extract/merge_banks.py`。
 
+## 自考系统（zk.html）
+
+- `js/zk-data.js` 自动生成：课程计划（用户真实成绩单进度）+ 笔记（GitHub 开源仓库 Eished/eezd/wscxzrq 的 markdown）+ 软件工程真题（2025 两场，答案内嵌标记解析）。
+- 用户考后可在课程页「标记已通过」（localStorage `zk-080901-v1`），**代码内置状态与本地覆盖并存**。
+- 生成管线在 `/tmp/zk-collect/gen_zk.py`；.doc 旧真题多为扫描图，勿浪费时问提取。
+
 ## 验证清单（改动后必做）
 
 - [ ] `node --check` 全部改动的 js
