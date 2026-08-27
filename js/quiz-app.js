@@ -235,12 +235,14 @@
         });
         html += '</div></section>';
 
-        /* 历年真题 + 重点速记 快捷入口 */
+        /* 历年真题 + 重点速记 快捷入口（醒目大卡） */
         html += '<section class="q-quick-strip">'
-            + '<a class="qq-card" href="#/papers"><span class="qq-ico">📜</span>'
-            + '<span class="qq-txt"><b>历年真题</b><i>' + nPapers + ' 套 · ' + nPaperQ + ' 题 · 按套刷</i></span></a>'
-            + '<a class="qq-card" href="#/memento"><span class="qq-ico">⚡</span>'
-            + '<span class="qq-txt"><b>重点速记</b><i>' + nCards + ' 张卡片 · 百条/口诀/数字考点</i></span></a>'
+            + '<a class="qq-card qq-paper" href="#/papers"><span class="qq-ico">📜</span>'
+            + '<span class="qq-txt"><b>历年真题</b><i><em>' + nPapers + '</em> 套 · <em>' + nPaperQ + '</em> 题 · 考前必刷</i></span>'
+            + '<span class="qq-go">开刷 →</span></a>'
+            + '<a class="qq-card qq-memo" href="#/memento"><span class="qq-ico">⚡</span>'
+            + '<span class="qq-txt"><b>重点速记</b><i><em>' + nCards + '</em> 张卡片 · 百条/口诀/数字</i></span>'
+            + '<span class="qq-go">背诵 →</span></a>'
             + '</section>';
 
         html += '<div class="q-subjects">';
