@@ -113,7 +113,7 @@
     border: 1px solid rgba(212, 166, 68, 0.3); border-radius: 8px;
 }
 
-/* ---------- 高频考点速记（翻卡） ---------- */
+/* ---------- 高频考点速记（问题+答案直出） ---------- */
 .zk-memo-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .zm-chip {
     font-size: 12px; font-weight: 600; padding: 5px 13px; border-radius: 14px;
@@ -124,34 +124,31 @@
 .zm-chip.zm-s3.on { background: var(--up); border-color: var(--up); }
 
 .zk-memo-card {
-    position: relative; height: 340px; perspective: 1200px; cursor: pointer;
-    margin-bottom: 14px; border-radius: var(--radius);
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 22px 26px; margin-bottom: 14px;
 }
-.zm-face {
-    position: absolute; inset: 0; display: flex; flex-direction: column;
-    padding: 26px 28px; border-radius: var(--radius);
-    backface-visibility: hidden; -webkit-backface-visibility: hidden;
-    transition: transform .45s cubic-bezier(.2, .7, .3, 1);
-    background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow);
-}
-.zm-back {
-    transform: rotateY(180deg);
-    background: linear-gradient(160deg, #fbf7ee 0%, var(--card) 60%);
-    border-color: rgba(212, 166, 68, .45);
-}
-.zk-memo-card.flip .zm-front { transform: rotateY(-180deg); }
-.zk-memo-card.flip .zm-back { transform: rotateY(0); }
-
-.zm-tags { display: flex; gap: 8px; align-items: center; margin-bottom: 18px; }
+.zm-tags { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
 .zm-star { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 10px; letter-spacing: .5px; }
 .zm-star.s3 { color: #fff; background: var(--up); }
 .zm-star.s2 { color: #5a4310; background: var(--accent); }
 .zm-star.s1 { color: var(--text-light); background: var(--bg); border: 1px solid var(--border); }
 .zm-tag { font-size: 11.5px; color: var(--brand); font-weight: 700; background: rgba(26, 43, 74, .07); padding: 3px 10px; border-radius: 10px; }
 
-.zm-q { font-size: 19px; font-weight: 700; color: var(--text); line-height: 1.6; flex: 1; }
-.zm-a { font-size: 15.5px; color: var(--text); line-height: 1.85; flex: 1; white-space: pre-wrap; }
-.zm-hint { font-size: 12px; color: var(--text-light); text-align: center; opacity: .75; }
+.zm-q { font-size: 17.5px; font-weight: 700; color: var(--text); line-height: 1.6; }
+.zm-sep {
+    font-size: 11px; font-weight: 800; color: var(--accent); letter-spacing: 4px;
+    margin: 12px 0 8px; display: flex; align-items: center; gap: 10px;
+}
+.zm-sep::before, .zm-sep::after { content: ""; height: 1px; flex: 1; background: rgba(212, 166, 68, .35); }
+.zm-a { font-size: 15px; color: var(--text); line-height: 1.9; white-space: pre-wrap; }
+
+/* 关键词高亮：金色底 + 深蓝字 */
+.zm-k {
+    font-style: normal; font-weight: 700; color: var(--brand);
+    background: linear-gradient(transparent 62%, rgba(212, 166, 68, .38) 62%);
+    border-radius: 2px; padding: 0 1px;
+}
 
 /* 首页概览金色块 */
 .zko.gold b { color: var(--accent); }

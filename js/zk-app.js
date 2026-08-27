@@ -276,9 +276,18 @@
     }
 
     /* ============================================================
-       高频考点速记（翻卡模式：会/不会 + 过滤 + 进度存档）
+       高频考点速记（问题+答案直出，关键词高亮）
        ============================================================ */
     var STAR_TXT = { 3: '★★★ 必背', 2: '★★ 常考', 1: '★ 了解' };
+    var MEMO_KEYS = D.memoKeys || {};
+
+    function regEsc(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+    function hlMemo(course, text) {
+        var keys = (MEMO_KEYS[course] || []).slice().sort(function (a, b) { return b.length - a.length; });
+        if (!keys.length) return esc(text);
+        var re = new RegExp('(' + keys.map(regEsc).join('|') + ')', 'g');
+        return esc(text).replace(re, '<i class="zm-k">$1</i>');
+    }
 
     function renderMemo(code) {
         if (!code) { renderMemoHome(); return; }
@@ -289,7 +298,7 @@
 
         var filter = 'all';           // all | weak | s3
         var queue = [];               // 本轮卡片队列（下标）
-        var pos = 0, flipped = false, roundKnown = 0, roundWeak = 0;
+        var pos = 0, roundKnown = 0, roundWeak = 0;
 
         function buildQueue() {
             queue = [];
@@ -298,7 +307,7 @@
                 if (filter === 'weak' && known[m.i]) return;
                 queue.push(m.i);
             });
-            pos = 0; flipped = false; roundKnown = 0; roundWeak = 0;
+            pos = 0; roundKnown = 0; roundWeak = 0;
         }
 
         function knownCount() { return cards.filter(function (m) { return known[m.i]; }).length; }
@@ -316,41 +325,30 @@
                 + '<button class="zm-chip zm-s3' + (filter === 's3' ? ' on' : '') + '" data-f="s3">⭐ 必背 ' + cards.filter(function (x) { return x.star === 3; }).length + '</button>'
                 + '</div>'
                 + '<div class="q-progress"><i style="width:' + (queue.length ? (pos / queue.length * 100) : 0) + '%"></i></div>'
-                + '<article class="zk-memo-card' + (flipped ? ' flip' : '') + '" id="zk-memo-card">'
-                + '<div class="zm-face zm-front">'
+                + '<article class="zk-memo-card">'
                 + '<div class="zm-tags"><span class="zm-star s' + m.star + '">' + STAR_TXT[m.star] + '</span><span class="zm-tag">' + esc(m.tag) + '</span></div>'
                 + '<div class="zm-q">' + esc(m.front) + '</div>'
-                + '<div class="zm-hint">👆 点击卡片查看答案</div>'
-                + '</div>'
-                + '<div class="zm-face zm-back">'
-                + '<div class="zm-tags"><span class="zm-star s' + m.star + '">' + STAR_TXT[m.star] + '</span><span class="zm-tag">' + esc(m.tag) + '</span></div>'
-                + '<div class="zm-a">' + esc(m.back) + '</div>'
-                + '</div></article>'
+                + '<div class="zm-sep">答案</div>'
+                + '<div class="zm-a">' + hlMemo(code, m.back) + '</div>'
+                + '</article>'
                 + '<div class="q-nav">'
-                + (flipped
-                    ? '<button class="btn ghost" id="zk-memo-weak">😵 还不会</button>'
-                    + '<span class="q-nav-jump"></span>'
-                    + '<button class="btn primary" id="zk-memo-know">😊 会了，下一张</button>'
-                    + '<button class="btn" id="zk-memo-skip">跳过 →</button>'
-                : '<span class="zk-mini-note" style="margin:0">先回忆，再翻面对答案</span>')
+                + '<button class="btn ghost" id="zk-memo-weak">😵 还不会</button>'
+                + '<span class="q-nav-jump"></span>'
+                + '<button class="btn primary" id="zk-memo-know">😊 会了，下一张</button>'
+                + '<button class="btn" id="zk-memo-skip">跳过 →</button>'
                 + '</div>';
             view.innerHTML = html;
 
-            var card = document.getElementById('zk-memo-card');
-            card.addEventListener('click', function () { flipped = true; draw(); });
             view.querySelectorAll('.zm-chip').forEach(function (b) {
                 b.addEventListener('click', function () { filter = b.dataset.f; buildQueue(); draw(); });
             });
-            var bk = document.getElementById('zk-memo-know');
-            if (bk) bk.addEventListener('click', function () {
-                known[queue[pos]] = 1; roundKnown++; save(); pos++; flipped = false; draw();
+            document.getElementById('zk-memo-know').addEventListener('click', function () {
+                known[queue[pos]] = 1; roundKnown++; save(); pos++; draw();
             });
-            var bw = document.getElementById('zk-memo-weak');
-            if (bw) bw.addEventListener('click', function () {
-                delete known[queue[pos]]; roundWeak++; save(); pos++; flipped = false; draw();
+            document.getElementById('zk-memo-weak').addEventListener('click', function () {
+                delete known[queue[pos]]; roundWeak++; save(); pos++; draw();
             });
-            var bs = document.getElementById('zk-memo-skip');
-            if (bs) bs.addEventListener('click', function () { pos++; flipped = false; draw(); });
+            document.getElementById('zk-memo-skip').addEventListener('click', function () { pos++; draw(); });
         }
 
         function drawDone() {
