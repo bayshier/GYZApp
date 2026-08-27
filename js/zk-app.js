@@ -11,11 +11,13 @@
     });
     var NOTES = D.notes || [];
     var BANK = D.bank || [];
+    var MEMO = D.memo || [];
     var EXAM_DATES = D.examDates || {};
 
     function byCode(code) { return COURSES.filter(function (c) { return c.code === code; })[0]; }
     function notesOf(code) { return NOTES.map(function (n, i) { n.i = i; return n; }).filter(function (n) { return n.course === code; }); }
     function bankOf(code) { return BANK.map(function (q, i) { q.id = i; return q; }).filter(function (q) { return q.course === code; }); }
+    function memoOf(code) { return MEMO.map(function (m, i) { m.i = i; return m; }).filter(function (m) { return m.course === code; }); }
 
     /* ---------- localStorage ---------- */
     var KEY = 'zk-080901-v1';
@@ -24,6 +26,7 @@
     store.done = store.done || {};
     store.wrong = store.wrong || {};
     store.passedOverride = store.passedOverride || {};
+    store.memo = store.memo || {};   // { course: { 卡片下标: 1 } }
     function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
 
     function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -38,6 +41,7 @@
         if (parts[0] === 'course' && parts[1]) renderCourse(parts[1]);
         else if (parts[0] === 'read' && parts[1]) renderReader(+parts[1]);
         else if (parts[0] === 'practice' && parts[1]) renderPractice(parts[1]);
+        else if (parts[0] === 'memo') renderMemo(parts[1] || '');
         else renderHome();
     }
     window.addEventListener('hashchange', route);
@@ -69,6 +73,7 @@
             + '<div class="zko"><b>' + remain + '</b><i>待完成</i></div>'
             + '<div class="zko"><b>' + Math.round(nPassed / nTotal * 100) + '%</b><i>总进度</i></div>'
             + '<div class="zko"><b>' + BANK.length + '</b><i>真题入库</i></div>'
+            + '<div class="zko gold"><b>' + MEMO.length + '</b><i>速记卡片</i></div>'
             + '</div>';
 
         var terms = [['已通过', ''], ['2026.10', '本期主攻'], ['2027.04', '原理+数学'], ['2027.10', '数学+英语+实践'], ['2028.04', '实践收尾'], ['最后', '毕业环节']];
@@ -92,7 +97,7 @@
             html += '</div></div>';
         });
 
-        html += '<div class="zk-mini-note">💡 数据说明：通过状态按你的成绩单预置；考后在课程页可自行标记通过（本地保存）。笔记与真题持续补充，缺资料的课（13011 / 03344 / 15040）先用教材复习。</div>';
+        html += '<div class="zk-mini-note">💡 考前冲刺：每门课都整理了「高频考点速记卡」（⚡ 课程页进入，翻卡背诵、标记会/不会）；碎片时间优先刷 3 星必背卡。数据说明：通过状态按成绩单预置，考后可在课程页标记（本地保存）。</div>';
         view.innerHTML = html;
 
         document.querySelectorAll('.zk-course').forEach(function (el) {
@@ -124,6 +129,7 @@
         var passed = isPassed(c);
         var notes = notesOf(code);
         var qs = bankOf(code);
+        var memo = memoOf(code);
 
         var html = '<div class="q-topbar"><a class="btn ghost" href="#/">← 返回</a>'
             + '<span class="q-meta">课程详情</span><span class="q-progress-text">' + esc(c.code) + '</span></div>'
@@ -136,6 +142,7 @@
             + (c.note ? '<span>备注 <b>' + esc(c.note) + '</b></span>' : '')
             + '</div>'
             + '<div class="zk-course-actions">'
+            + (memo.length ? '<a class="btn gold" href="#/memo/' + code + '">⚡ 高频速记（' + memo.length + ' 张）</a>' : '')
             + (qs.length ? '<a class="btn primary" href="#/practice/' + code + '">📝 真题练习（' + qs.length + ' 题）</a>' : '<span class="btn" style="opacity:.5;cursor:default">📝 真题收集中</span>')
             + (!passed
                 ? '<button class="btn" id="zk-mark">✓ 标记已通过</button>'
@@ -266,6 +273,130 @@
             });
         }
         draw();
+    }
+
+    /* ============================================================
+       高频考点速记（翻卡模式：会/不会 + 过滤 + 进度存档）
+       ============================================================ */
+    var STAR_TXT = { 3: '★★★ 必背', 2: '★★ 常考', 1: '★ 了解' };
+
+    function renderMemo(code) {
+        if (!code) { renderMemoHome(); return; }
+        var c = byCode(code);
+        var cards = memoOf(code);
+        if (!c || !cards.length) { location.hash = '#/'; return; }
+        var known = store.memo[code] = store.memo[code] || {};
+
+        var filter = 'all';           // all | weak | s3
+        var queue = [];               // 本轮卡片队列（下标）
+        var pos = 0, flipped = false, roundKnown = 0, roundWeak = 0;
+
+        function buildQueue() {
+            queue = [];
+            cards.forEach(function (m) {
+                if (filter === 's3' && m.star !== 3) return;
+                if (filter === 'weak' && known[m.i]) return;
+                queue.push(m.i);
+            });
+            pos = 0; flipped = false; roundKnown = 0; roundWeak = 0;
+        }
+
+        function knownCount() { return cards.filter(function (m) { return known[m.i]; }).length; }
+
+        function draw() {
+            if (pos >= queue.length) { drawDone(); return; }
+            var m = MEMO[queue[pos]];
+            var knownTotal = knownCount();
+            var html = '<div class="q-topbar"><a class="btn ghost" href="#/course/' + code + '">← 课程</a>'
+                + '<span class="q-meta">' + esc(c.name) + ' · 高频速记</span>'
+                + '<span class="q-progress-text">' + (pos + 1) + ' / ' + queue.length + ' · 已掌握 ' + knownTotal + '/' + cards.length + '</span></div>'
+                + '<div class="zk-memo-filters">'
+                + '<button class="zm-chip' + (filter === 'all' ? ' on' : '') + '" data-f="all">全部 ' + cards.length + '</button>'
+                + '<button class="zm-chip' + (filter === 'weak' ? ' on' : '') + '" data-f="weak">只看未掌握 ' + (cards.length - knownTotal) + '</button>'
+                + '<button class="zm-chip zm-s3' + (filter === 's3' ? ' on' : '') + '" data-f="s3">⭐ 必背 ' + cards.filter(function (x) { return x.star === 3; }).length + '</button>'
+                + '</div>'
+                + '<div class="q-progress"><i style="width:' + (queue.length ? (pos / queue.length * 100) : 0) + '%"></i></div>'
+                + '<article class="zk-memo-card' + (flipped ? ' flip' : '') + '" id="zk-memo-card">'
+                + '<div class="zm-face zm-front">'
+                + '<div class="zm-tags"><span class="zm-star s' + m.star + '">' + STAR_TXT[m.star] + '</span><span class="zm-tag">' + esc(m.tag) + '</span></div>'
+                + '<div class="zm-q">' + esc(m.front) + '</div>'
+                + '<div class="zm-hint">👆 点击卡片查看答案</div>'
+                + '</div>'
+                + '<div class="zm-face zm-back">'
+                + '<div class="zm-tags"><span class="zm-star s' + m.star + '">' + STAR_TXT[m.star] + '</span><span class="zm-tag">' + esc(m.tag) + '</span></div>'
+                + '<div class="zm-a">' + esc(m.back) + '</div>'
+                + '</div></article>'
+                + '<div class="q-nav">'
+                + (flipped
+                    ? '<button class="btn ghost" id="zk-memo-weak">😵 还不会</button>'
+                    + '<span class="q-nav-jump"></span>'
+                    + '<button class="btn primary" id="zk-memo-know">😊 会了，下一张</button>'
+                    + '<button class="btn" id="zk-memo-skip">跳过 →</button>'
+                : '<span class="zk-mini-note" style="margin:0">先回忆，再翻面对答案</span>')
+                + '</div>';
+            view.innerHTML = html;
+
+            var card = document.getElementById('zk-memo-card');
+            card.addEventListener('click', function () { flipped = true; draw(); });
+            view.querySelectorAll('.zm-chip').forEach(function (b) {
+                b.addEventListener('click', function () { filter = b.dataset.f; buildQueue(); draw(); });
+            });
+            var bk = document.getElementById('zk-memo-know');
+            if (bk) bk.addEventListener('click', function () {
+                known[queue[pos]] = 1; roundKnown++; save(); pos++; flipped = false; draw();
+            });
+            var bw = document.getElementById('zk-memo-weak');
+            if (bw) bw.addEventListener('click', function () {
+                delete known[queue[pos]]; roundWeak++; save(); pos++; flipped = false; draw();
+            });
+            var bs = document.getElementById('zk-memo-skip');
+            if (bs) bs.addEventListener('click', function () { pos++; flipped = false; draw(); });
+        }
+
+        function drawDone() {
+            var knownTotal = knownCount();
+            var html = '<div class="q-topbar"><a class="btn ghost" href="#/course/' + code + '">← 课程</a>'
+                + '<span class="q-meta">' + esc(c.name) + ' · 速记完成</span></div>'
+                + '<article class="q-card" style="text-align:center">'
+                + '<div style="font-size:44px">🎉</div>'
+                + '<h3 style="margin:10px 0 6px">本轮完成</h3>'
+                + '<p class="q-meta">本轮标记：会了 ' + roundKnown + ' 张 · 还不会 ' + roundWeak + ' 张</p>'
+                + '<p class="q-meta">总掌握：<b>' + knownTotal + ' / ' + cards.length + '</b>（'
+                + Math.round(knownTotal / cards.length * 100) + '%）</p>'
+                + '<div class="zk-course-actions" style="justify-content:center;margin-top:16px">'
+                + '<button class="btn primary" id="zk-memo-again">🔄 再来一轮（只看未掌握）</button>'
+                + '<a class="btn" href="#/course/' + code + '">返回课程</a>'
+                + '</div></article>';
+            view.innerHTML = html;
+            document.getElementById('zk-memo-again').addEventListener('click', function () {
+                filter = 'weak'; buildQueue();
+                if (!queue.length) filter = 'all', buildQueue();
+                draw();
+            });
+        }
+
+        buildQueue();
+        if (!queue.length) { filter = 'all'; buildQueue(); }
+        draw();
+    }
+
+    function renderMemoHome() {
+        var html = '<div class="q-topbar"><a class="btn ghost" href="#/">← 返回</a>'
+            + '<span class="q-meta">高频考点速记</span>'
+            + '<span class="q-progress-text">' + MEMO.length + ' 张</span></div>'
+            + '<div class="q-learn-cat"><h3>⚡ 选择课程开始背诵</h3>';
+        COURSES.forEach(function (c) {
+            if (isPassed(c)) return;
+            var cards = memoOf(c.code);
+            if (!cards.length) return;
+            var kn = cards.filter(function (m) { return (store.memo[c.code] || {})[m.i]; }).length;
+            html += '<a class="q-doc-card" href="#/memo/' + c.code + '">'
+                + '<div class="qd-main"><div class="qd-title">' + esc(c.name) + '</div>'
+                + '<div class="qd-meta">⚡ ' + cards.length + ' 张 · 已掌握 ' + kn + '</div></div>'
+                + '<span class="qd-arrow">→</span></a>';
+        });
+        html += '</div>';
+        view.innerHTML = html;
     }
 
     if (!COURSES.length) {
