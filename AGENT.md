@@ -24,6 +24,12 @@
 3. 生成 `quiz-data.js`（题库）/ `learn-data-{law,basics}.js`（知识点，按科目拆分懒加载）/ `exam-extra.js`（真题归档 + 速记卡）
 4. 同步更新页面上的**题数/篇数文案**与 `LEARN_SUMMARY` 静态摘要
 
+## 来源公示与免责（sources.html）
+
+- 公开页 `sources.html` 是全站数据来源公示页：题库开源仓库、教材讲义、官方渠道、免责声明、联系邮箱。
+- **硬规则**：以后任何页面新增第三方数据来源（新仓库/新真题站/新笔记源），必须同步更新 `sources.html` 与 README 的「数据来源与免责声明」段；私人 zk 页的来源只写在 zk.html 页脚，不上公开公示页。
+- 反馈邮箱统一 `lanchenyixin@cncfzx.com`（quiz-feedback.js 与 sources.html 两处引用，改邮箱需同步）。
+
 ## 题库数据来源（含第三方）
 
 `quiz-data.js` 除本地 PDF 提取外，还合并自两个 GitHub 开源题库（仅在 API 可达时抓取）：
