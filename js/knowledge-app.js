@@ -85,13 +85,26 @@
             + '<div class="kb-newbie-desc">2456 题题库（含 2019-2024 真题）+ 24 篇知识点 · 学习 / 练习 / 模拟考试 →</div>'
             + '</div></div>';
 
-        // AI 学堂入口（learningAI 课程站，独立仓库托管）
-        html += '<div class="kb-newbie-banner kb-ai-banner" onclick="window.open(\'https://bayshier.github.io/learningAI/\', \'_blank\', \'noopener\')">'
-            + '<div class="kb-newbie-icon">🤖</div>'
-            + '<div class="kb-newbie-text">'
-            + '<div class="kb-newbie-title">AI 学堂</div>'
-            + '<div class="kb-newbie-desc">5 讲 AI 课程 · 大模型 / Prompt / RAG / Agent / 产品落地 →</div>'
-            + '</div></div>';
+        // AI 教学板块（两门内置课程 + 外部 AI 学堂）
+        var AI = window.AI_COURSES || [];
+        if (AI.length) {
+            html += '<div class="kb-ai-section">'
+                + '<div class="kb-ai-head">🤖 AI 教学知识</div><div class="kb-ai-grid">';
+            AI.forEach(function (c, i) {
+                var read = aiReadCount(c.id);
+                html += '<div class="kb-ai-card' + (i === 0 ? ' kb-ai-major' : '') + '" onclick="location.hash=\'#/ai/' + c.id + '\'">'
+                    + '<div class="kb-ai-icon">' + c.icon + '</div>'
+                    + '<div class="kb-ai-txt"><b>' + c.title + '</b>'
+                    + '<i><em>' + c.chapters.length + '</em> 章 · ' + c.desc + '</i>'
+                    + '<span class="kb-ai-tag">' + c.tag + '</span></div>'
+                    + '<span class="kb-ai-go">' + (read ? '续学 ' + read + '/' + c.chapters.length : '开讲') + ' →</span></div>';
+            });
+            html += '</div>'
+                + '<div class="kb-ai-card kb-ai-slim" onclick="window.open(\'https://bayshier.github.io/learningAI/\', \'_blank\', \'noopener\')">'
+                + '<div class="kb-ai-icon">🎓</div>'
+                + '<div class="kb-ai-txt"><b>AI 学堂</b><i>5 讲团队课程 · 大模型 / Prompt / RAG / Agent / 产品落地</i></div>'
+                + '<span class="kb-ai-go">前往 →</span></div></div>';
+        }
 
         html += '<div class="kb-home-title">选择分类开始学习</div>';
         html += '<div class="kb-cats">';
@@ -686,6 +699,105 @@
         btn.style.display = (hash === '' || hash === '#/' || hash === '#') ? 'none' : 'inline-block';
     }
 
+    /* ============================================================
+       AI 教学板块（Datawhale 开源课程：llm-cookbook / llm-universe）
+       ============================================================ */
+    function aiCourses() { return window.AI_COURSES || []; }
+    function aiCourse(id) {
+        var r = null;
+        aiCourses().forEach(function (c) { if (c.id === id) r = c; });
+        return r;
+    }
+    function aiRead(id) {
+        try { return JSON.parse(localStorage.getItem('kb-ai-read-' + id) || '{}'); } catch (e) { return {}; }
+    }
+    function aiReadCount(id) { return Object.keys(aiRead(id)).length; }
+
+    /* 课程列表 */
+    function renderAIHome() {
+        var cs = aiCourses();
+        if (!cs.length) { renderNotFound(); return; }
+        var html = '<div class="ac-page">'
+            + '<div class="ac-hero"><a class="ac-back" href="#/">← 知识库</a>'
+            + '<h1>🤖 AI 教学知识</h1>'
+            + '<p>两门 Datawhale 万星开源课程全文收录 · 代码 / 图表 / 公式完整还原</p></div>'
+            + '<div class="ac-courses">';
+        cs.forEach(function (c) {
+            var read = aiReadCount(c.id);
+            html += '<div class="ac-course" onclick="location.hash=\'#/ai/' + c.id + '\'">'
+                + '<div class="ac-course-top"><span class="ac-course-ico">' + c.icon + '</span>'
+                + '<span class="kb-ai-tag">' + c.tag + '</span></div>'
+                + '<h3>' + c.title + '</h3><p>' + c.desc + '</p>'
+                + '<div class="ac-course-foot"><span class="ac-ch-count">📚 ' + c.chapters.length + ' 章 · 已读 ' + read + '</span>'
+                + '<span class="ac-go-btn">' + (read ? '继续学习 →' : '开始学习 →') + '</span></div></div>';
+        });
+        html += '</div></div>';
+        document.getElementById('kb-view').innerHTML = html;
+    }
+
+    /* 章节列表（按 unit 分组） */
+    function renderAICourse(id) {
+        var c = aiCourse(id);
+        if (!c) { renderNotFound(); return; }
+        var read = aiRead(id);
+        var html = '<div class="ac-page">'
+            + '<div class="ac-hero"><a class="ac-back" href="#/ai">← AI 课程</a>'
+            + '<h1>' + c.icon + ' ' + c.title + '</h1><p>' + c.desc + '</p>'
+            + '<p class="ac-src">课程来源：<a href="' + c.sourceUrl + '" target="_blank" rel="noopener">' + c.source + '</a>（开源教程，仅供学习）</p></div>'
+            + '<div class="ac-progress">已读 <b>' + Object.keys(read).length + '</b> / ' + c.chapters.length + ' 章</div>'
+            + '<div class="ac-list">';
+        var lastUnit = null;
+        c.chapters.forEach(function (ch) {
+            if (ch.unit && ch.unit !== lastUnit) {
+                lastUnit = ch.unit;
+                html += '<div class="ac-unit">' + ch.unit + '</div>';
+            }
+            html += '<a class="ac-item' + (read[ch.no] ? ' done' : '') + '" href="#/ai/' + id + '/' + ch.no + '">'
+                + '<span class="ac-no">' + (ch.no < 10 ? '0' : '') + ch.no + '</span>'
+                + '<span class="ac-name">' + ch.name + '</span>'
+                + (read[ch.no] ? '<span class="ac-done">✓</span>' : '<span class="ac-arrow">→</span>')
+                + '</a>';
+        });
+        html += '</div></div>';
+        document.getElementById('kb-view').innerHTML = html;
+        window.scrollTo(0, 0);
+    }
+
+    /* 章节阅读器 */
+    function renderAIChapter(id, no) {
+        var c = aiCourse(id);
+        if (!c) { renderNotFound(); return; }
+        var idx = -1;
+        c.chapters.forEach(function (ch, i) { if (ch.no === no) idx = i; });
+        if (idx < 0) { renderNotFound(); return; }
+        var ch = c.chapters[idx];
+        var prev = c.chapters[idx - 1], next = c.chapters[idx + 1];
+
+        var read = aiRead(id);
+        read[ch.no] = 1;
+        try { localStorage.setItem('kb-ai-read-' + id, JSON.stringify(read)); } catch (e) {}
+
+        var html = '<div class="ac-page ac-reader">'
+            + '<div class="ac-topbar"><a class="ac-back" href="#/ai/' + id + '">← 目录</a>'
+            + '<select class="ac-toc" id="ac-toc">';
+        c.chapters.forEach(function (x) {
+            html += '<option value="' + x.no + '"' + (x.no === no ? ' selected' : '') + '>'
+                + (x.no < 10 ? '0' : '') + x.no + ' · ' + x.name + '</option>';
+        });
+        html += '</select><span class="ac-count">' + (idx + 1) + ' / ' + c.chapters.length + '</span></div>'
+            + '<article class="ac-ch"><h1>' + (ch.no < 10 ? '0' : '') + ch.no + ' · ' + ch.name + '</h1>'
+            + '<div class="ac-body">' + ch.html + '</div></article>'
+            + '<div class="ac-pn">'
+            + (prev ? '<a class="ac-pn-btn" href="#/ai/' + id + '/' + prev.no + '">← ' + prev.name + '</a>' : '<span></span>')
+            + (next ? '<a class="ac-pn-btn next" href="#/ai/' + id + '/' + next.no + '">' + next.name + ' →</a>'
+                    : '<a class="ac-pn-btn next" href="#/ai/' + id + '">完成 ✓ 返回目录</a>')
+            + '</div></div>';
+        document.getElementById('kb-view').innerHTML = html;
+        var toc = document.getElementById('ac-toc');
+        if (toc) toc.addEventListener('change', function () { location.hash = '#/ai/' + id + '/' + this.value; });
+        window.scrollTo(0, 0);
+    }
+
     /* ---------- 路由分发 ---------- */
     function router() {
         var hash = location.hash.replace(/^#\/?/, ''); // 去掉 #/ 前缀
@@ -701,6 +813,12 @@
             renderKeywordWall();
         } else if (hash === 'glossary') {
             renderGlossaryPage();
+        } else if (hash === 'ai') {
+            renderAIHome();
+        } else if (hash.indexOf('ai/') === 0) {
+            var aiParts = hash.substring(3).split('/');
+            if (aiParts.length >= 2) renderAIChapter(aiParts[0], parseInt(aiParts[1], 10) || 1);
+            else renderAICourse(aiParts[0]);
         } else if (hash.indexOf('cat/') === 0) {
             var catId = hash.substring(4);
             renderCatList(catId);
