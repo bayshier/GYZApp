@@ -9,7 +9,7 @@
 | 页面 | 入口 | 说明 |
 |------|------|------|
 | 🏠 Easin 主页 | [easin.html](https://bayshier.github.io/GYZApp/easin.html) | 编辑部风格个人主页：二进制数字雨背景、23 个技术 Logo 组成的 3D 星球（可拖拽/点击跳官网）、Works 时间线（全部可点击直达） |
-| 📚 股宇宙知识库 | [knowledge.html](https://bayshier.github.io/GYZApp/knowledge.html) | 股票教学百科：33 篇教程（K线/均线/指标/基本面/港美股/玄学）、30 条名词表、25 个财经网址导航、3D 关键词星球、小白 6 步路线 |
+| 📚 股宇宙知识库 | [knowledge.html](https://bayshier.github.io/GYZApp/knowledge.html) | 股票教学百科：33 篇教程（K线/均线/指标/基本面/港美股/玄学）、30 条名词表、25 个财经网址导航、3D 关键词星球、小白 6 步路线、AI 教学板块（《Agent 的底层逻辑》33 讲 + AI 学堂） |
 | ✍️ 证券从业考试学习 | [quiz.html](https://bayshier.github.io/GYZApp/quiz.html) | 两科完整备考系统（见下方详细功能） |
 | 🙏 资料来源公示 | [sources.html](https://bayshier.github.io/GYZApp/sources.html) | 数据来源与致谢公示页 + 免责声明（新来源必须同步此页） |
 | 🤖 AI 学堂 | [learningAI 仓库](https://github.com/bayshier/learningAI) · [在线访问](https://bayshier.github.io/learningAI/) | 团队 AI 课程 5 讲（大模型/Prompt/RAG/Agent/MCP/产品落地），课程体系参考 itshen/learn-ai（AGPL-3.0），独立仓库托管，知识库首页横幅直达 |
@@ -49,6 +49,7 @@ APP 下载入口统一在[个人主页 Works](https://bayshier.github.io/GYZApp/
 > 线上公示页：[资料来源与致谢](https://bayshier.github.io/GYZApp/sources.html)（题目、知识点均来自网络公开数据，来源方可点击跳转）
 
 - **证券学习系统题库**：整理自开源仓库 [zfabc/zhengquantest](https://github.com/zfabc/zhengquantest)（2019-2024 真题回忆版 + 章节练习）、[kawu98661-cell/card-batch-demo](https://github.com/kawu98661-cell/card-batch-demo)（章节分类补充题库）及公开流通的备考教材讲义 PDF；官方信息以[中国证券业协会](https://www.sac.net.cn/)为准。
+- **AI 教学板块**：《Agent 的底层逻辑》33 讲课件整理自 Gitee 开源仓库 [dev-edu/agent-core](https://gitee.com/dev-edu/agent-core)（`js/agent-core-data.js`，图片直链原仓库）。
 - **权利与用途**：全部内容仅供个人学习交流，著作权归原作者所有，不作商业用途；权利人可联系 `lanchenyixin@cncfzx.com` 处理下架。
 - **投资风险**：证券类内容仅用于从业资格考试备考，不构成任何投资建议；股市有风险，投资需谨慎。
 
