@@ -763,7 +763,7 @@
         window.scrollTo(0, 0);
     }
 
-    /* 章节阅读器 */
+    /* 章节阅读器（支持结构化章节：课件/源码/附件 标签页） */
     function renderAIChapter(id, no) {
         var c = aiCourse(id);
         if (!c) { renderNotFound(); return; }
@@ -785,16 +785,68 @@
                 + (x.no < 10 ? '0' : '') + x.no + ' · ' + x.name + '</option>';
         });
         html += '</select><span class="ac-count">' + (idx + 1) + ' / ' + c.chapters.length + '</span></div>'
-            + '<article class="ac-ch"><h1>' + (ch.no < 10 ? '0' : '') + ch.no + ' · ' + ch.name + '</h1>'
-            + '<div class="ac-body">' + ch.html + '</div></article>'
+            + '<article class="ac-ch"><h1>' + (ch.no < 10 ? '0' : '') + ch.no + ' · ' + ch.name + '</h1>';
+
+        if (typeof ch.cw !== 'undefined' || (ch.code && ch.code.length)) {
+            /* 结构化章节：标签页 */
+            var hasCode = ch.code && ch.code.length;
+            html += '<div class="ac-tabs">'
+                + '<button class="ac-tab on" data-t="cw">📖 课件</button>'
+                + (ch.docs ? '<button class="ac-tab" data-t="docs">📝 章节文档</button>' : '')
+                + (hasCode ? '<button class="ac-tab" data-t="code">💻 源码 (' + ch.code.length + ')</button>' : '')
+                + (ch.attach ? '<button class="ac-tab" data-t="attach">📎 附件</button>' : '')
+                + '</div>'
+                + '<div class="ac-tabpane" id="ac-pane">'
+                + '<div class="ac-pane on" data-p="cw">' + ch.cw
+                + (ch.supp ? '<div class="ac-supp"><div class="ac-supp-head">✳️ 编者增补（非原作者内容）</div>' + ch.supp + '</div>' : '')
+                + '</div>';
+            if (ch.docs) html += '<div class="ac-pane" data-p="docs">' + ch.docs + '</div>';
+            if (hasCode) {
+                html += '<div class="ac-pane" data-p="code"><div class="ac-codebar">'
+                    + '<select class="ac-filesel" id="ac-filesel">'
+                    + ch.code.map(function (f, i) { return '<option value="' + i + '">' + f.n + '</option>'; }).join('')
+                    + '</select>'
+                    + '<a class="ac-rawlink" id="ac-rawlink" target="_blank" rel="noopener">原文件 →</a>'
+                    + '</div><div id="ac-codebox">' + ch.code[0].h + '</div></div>';
+            }
+            if (ch.attach) html += '<div class="ac-pane" data-p="attach">' + ch.attach + '</div>';
+            html += '</div>';
+        } else {
+            /* 旧式整页课程 */
+            html += '<div class="ac-body">' + ch.html + '</div>';
+        }
+
+        html += '</article>'
             + '<div class="ac-pn">'
             + (prev ? '<a class="ac-pn-btn" href="#/ai/' + id + '/' + prev.no + '">← ' + prev.name + '</a>' : '<span></span>')
             + (next ? '<a class="ac-pn-btn next" href="#/ai/' + id + '/' + next.no + '">' + next.name + ' →</a>'
                     : '<a class="ac-pn-btn next" href="#/ai/' + id + '">完成 ✓ 返回目录</a>')
             + '</div></div>';
         document.getElementById('kb-view').innerHTML = html;
+
         var toc = document.getElementById('ac-toc');
         if (toc) toc.addEventListener('change', function () { location.hash = '#/ai/' + id + '/' + this.value; });
+
+        /* 标签切换 */
+        var paneRoot = document.getElementById('ac-pane');
+        if (paneRoot) {
+            document.querySelectorAll('.ac-tab').forEach(function (t) {
+                t.addEventListener('click', function () {
+                    document.querySelectorAll('.ac-tab').forEach(function (x) { x.classList.remove('on'); });
+                    t.classList.add('on');
+                    paneRoot.querySelectorAll('.ac-pane').forEach(function (p) {
+                        p.classList.toggle('on', p.dataset.p === t.dataset.t);
+                    });
+                    window.scrollTo({ top: 0 });
+                });
+            });
+            var fsel = document.getElementById('ac-filesel');
+            if (fsel) fsel.addEventListener('change', function () {
+                var f = ch.code[+this.value];
+                document.getElementById('ac-codebox').innerHTML = f.h;
+                document.getElementById('ac-rawlink').href = f.u;
+            });
+        }
         window.scrollTo(0, 0);
     }
 

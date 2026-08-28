@@ -1262,3 +1262,35 @@ body {
 }
 .ac-file-note { font-size: 12.5px; color: var(--text-light); background: #f8f9fb;
     border: 1px dashed var(--border); border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+
+/* 章节内标签页 + 源码浏览器 */
+.ac-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.ac-tab {
+    font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+    color: var(--brand); background: var(--bg); border: 1px solid var(--border);
+    border-radius: 18px; padding: 7px 16px; transition: all .15s;
+}
+.ac-tab.on { color: #fff; background: linear-gradient(135deg, var(--brand), var(--brand-light)); border-color: var(--brand); }
+.ac-pane { display: none; font-size: 14.5px; line-height: 1.9; color: var(--text); }
+.ac-pane.on { display: block; }
+.ac-pane h2, .ac-body h2 { font-size: 17px; color: var(--brand); margin: 20px 0 10px; }
+.ac-pane h3 { font-size: 15px; color: var(--brand-light); margin: 16px 0 8px; }
+.ac-pane img, .ac-body img { max-width: 100%; border-radius: 10px; margin: 10px 0; border: 1px solid var(--border); }
+.ac-pane ul, .ac-pane ol, .ac-body ul, .ac-body ol { padding-left: 22px; margin: 8px 0; }
+.ac-pane li { margin: 4px 0; }
+.ac-pane a { color: var(--brand-light); }
+.ac-codebar {
+    display: flex; gap: 10px; align-items: center; margin-bottom: 10px;
+    position: sticky; top: 110px; z-index: 3; background: var(--card); padding: 6px 0;
+}
+.ac-filesel {
+    flex: 1; min-width: 0; font-family: Menlo, monospace; font-size: 12.5px;
+    color: var(--brand); background: var(--bg); border: 1px solid var(--border);
+    border-radius: 9px; padding: 7px 10px;
+}
+.ac-rawlink { flex-shrink: 0; font-size: 12px; font-weight: 700; color: var(--accent); text-decoration: none; }
+.ac-supp {
+    margin-top: 24px; border: 1px dashed rgba(212,166,68,.5); border-radius: 10px;
+    background: #fdf9ef; padding: 14px 18px; font-size: 13.5px; color: #6b5b2e;
+}
+.ac-supp-head { font-size: 12px; font-weight: 800; color: #5a4310; letter-spacing: 1px; margin-bottom: 8px; }
