@@ -191,6 +191,13 @@
             renderReview(parts[1]);
         } else if (parts[0] === 'radar' && parts[1]) {
             renderRadar(parts[1]);
+        } else if (parts[0] === 'multi') {
+            /* 多选题合集：全部多选题主练习 */
+            practice.list = BANK.filter(isMulti);
+            practice.idx = 0; practice.picks = {}; practice.multiSel = {}; practice.mode = 'order';
+            practice.title = '多选题合集 · ' + practice.list.length + ' 题';
+            practice.backHash = '#/';
+            renderPracticeQuestion();
         } else if (parts[0] === 'drill' && parts[1]) {
             var drillIds = parts[1].split(',').map(Number).filter(function (i) { return BANK[i]; });
             practice.list = drillIds.map(function (i) { return BANK[i]; });
@@ -213,6 +220,7 @@
         var nPapers = (window.EXAM_PAPERS || []).length;
         var nPaperQ = (window.EXAM_PAPERS || []).reduce(function (a, p) { return a + p.count; }, 0);
         var nCards = (window.MEMENTO_CARDS || []).length;
+        var nMulti = BANK.filter(isMulti).length;
         var html = '<section class="q-promo">'
             + '<div class="promo-badges">'
             +   '<span class="pb pb-fire">🔥 六年真题 2019-2024</span>'
@@ -241,7 +249,7 @@
         });
         html += '</div></section>';
 
-        /* 历年真题 + 重点速记 快捷入口（醒目大卡） */
+        /* 历年真题 + 重点速记 + 多选题合集 快捷入口（醒目大卡） */
         html += '<section class="q-quick-strip">'
             + '<a class="qq-card qq-paper" href="#/papers"><span class="qq-ico">📜</span>'
             + '<span class="qq-txt"><b>历年真题</b><i><em>' + nPapers + '</em> 套 · <em>' + nPaperQ + '</em> 题 · 考前必刷</i></span>'
@@ -249,6 +257,9 @@
             + '<a class="qq-card qq-memo" href="#/memento"><span class="qq-ico">⚡</span>'
             + '<span class="qq-txt"><b>重点速记</b><i><em>' + nCards + '</em> 张卡片 · 百条/口诀/数字</i></span>'
             + '<span class="qq-go">背诵 →</span></a>'
+            + '<a class="qq-card qq-multi" href="#/multi"><span class="qq-ico">☑️</span>'
+            + '<span class="qq-txt"><b>多选题合集</b><i><em>' + nMulti + '</em> 道 · 勾选作答 · 逐题判分</i></span>'
+            + '<span class="qq-go">开刷 →</span></a>'
             + '</section>';
 
         html += '<div class="q-subjects">';

@@ -221,8 +221,12 @@ body {
 
 /* ---------- 历年真题 + 重点速记 快捷入口 ---------- */
 .q-quick-strip {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
     margin: 0 0 22px;
+}
+/* 窄屏三卡换行排布 */
+@media (max-width: 900px) {
+    .q-quick-strip { grid-template-columns: 1fr; }
 }
 .qq-card {
     position: relative; overflow: hidden;
@@ -241,6 +245,7 @@ body {
 .qq-card:hover::after { left: 130%; }
 .qq-paper { background: linear-gradient(135deg, var(--brand) 0%, var(--brand-light) 100%); }
 .qq-memo { background: linear-gradient(135deg, #c9922e 0%, var(--accent) 100%); }
+.qq-multi { background: linear-gradient(135deg, #4a3a9e 0%, #7b61ff 100%); }
 .qq-ico {
     flex-shrink: 0; width: 46px; height: 46px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
