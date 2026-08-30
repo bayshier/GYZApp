@@ -30,6 +30,92 @@
     function isMulti(q) { return q.answer.length > 1; }
     function normPick(arr) { return arr.slice().sort().join(''); }
 
+    /* ---------- 题目纠错（每道题页面的醒目反馈入口，邮件直达） ---------- */
+    function feedbackMail() { return window.QUIZ_FEEDBACK_MAIL || 'lanchenyixin@cncfzx.com'; }
+    var QFIX_TYPES = ['答案错误', '解析有误', '题干/选项有误', '其他'];
+
+    function closeQFix() {
+        var m = document.getElementById('qfix-mask');
+        if (m && m.parentNode) m.parentNode.removeChild(m);
+    }
+
+    function openQFix(q) {
+        closeQFix();
+        var mail = feedbackMail();
+        var stem = q.q.length > 60 ? q.q.slice(0, 60) + '…' : q.q;
+        var mask = document.createElement('div');
+        mask.className = 'qfb-mask on';
+        mask.id = 'qfix-mask';
+        mask.innerHTML = '<div class="qfb-modal" role="dialog" aria-label="题目纠错">'
+            + '<h3>🚩 题目纠错</h3>'
+            + '<div class="qfb-sub">发现题目或答案有误？选择错误类型、写下正确内容，一键发邮件给我们</div>'
+            + '<div class="qfix-info">'
+            + '<b>题目 #' + q.id + '</b> · ' + esc(SUBJECTS[q.subject].name) + ' · ' + esc(q.source)
+            + '<p>' + esc(stem) + '</p>'
+            + '<i>当前答案：<b>' + q.answer + '</b>' + (isMulti(q) ? '（多选）' : '') + '</i>'
+            + '</div>'
+            + '<div class="qfb-types">' + QFIX_TYPES.map(function (t, i) {
+                return '<span class="qfb-type' + (i === 0 ? ' on' : '') + '" data-t="' + t + '">' + t + '</span>';
+            }).join('') + '</div>'
+            + '<input class="qfix-input" id="qfix-ans" placeholder="我认为正确的答案/内容（如：应为 ABD）" />'
+            + '<textarea id="qfix-note" placeholder="补充说明（可选）：判断依据、资料出处等"></textarea>'
+            + '<div class="qfb-mail">📮 纠错邮箱 <b>' + mail + '</b></div>'
+            + '<div class="qfb-actions">'
+            + '<button class="btn" id="qfix-cancel">取消</button>'
+            + '<button class="btn" id="qfix-copy">复制内容</button>'
+            + '<button class="btn primary" id="qfix-send">📧 发送邮件</button>'
+            + '</div>'
+            + '<div class="qfix-tip">点击「发送邮件」会打开系统邮件应用：收件人与纠错模板已自动填好，补上你认为正确的答案后直接发送即可</div>'
+            + '</div>';
+        document.body.appendChild(mask);
+
+        var picked = QFIX_TYPES[0];
+        mask.querySelectorAll('.qfb-type').forEach(function (el) {
+            el.addEventListener('click', function () {
+                picked = el.dataset.t;
+                mask.querySelectorAll('.qfb-type').forEach(function (x) { x.classList.remove('on'); });
+                el.classList.add('on');
+            });
+        });
+
+        function tmpl() {
+            var ans = (document.getElementById('qfix-ans').value || '').trim();
+            var note = (document.getElementById('qfix-note').value || '').trim();
+            return '【题目纠错】\n'
+                + '题目编号：#' + q.id + '\n'
+                + '科目：' + SUBJECTS[q.subject].name + '\n'
+                + '来源：' + q.source + '\n'
+                + '当前答案：' + q.answer + (isMulti(q) ? '（多选）' : '') + '\n'
+                + '题干摘要：' + stem + '\n\n'
+                + '── 我的反馈 ──\n'
+                + '错误类型：' + picked + '\n'
+                + '我认为正确：' + (ans || '（待填写）') + '\n'
+                + '补充说明：' + (note || '无') + '\n\n'
+                + '──\n页面：' + location.href + '\n'
+                + '时间：' + new Date().toLocaleString();
+        }
+
+        document.getElementById('qfix-cancel').addEventListener('click', closeQFix);
+        document.getElementById('qfix-copy').addEventListener('click', function () {
+            var self = this;
+            function ok() { self.textContent = '已复制 ✓'; setTimeout(function () { self.textContent = '复制内容'; }, 1600); }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(tmpl()).then(ok, function () {});
+            }
+        });
+        document.getElementById('qfix-send').addEventListener('click', function () {
+            location.href = 'mailto:' + mail
+                + '?subject=' + encodeURIComponent('[题目纠错] #' + q.id + ' ' + SUBJECTS[q.subject].short)
+                + '&body=' + encodeURIComponent(tmpl());
+            closeQFix();
+        });
+    }
+
+    /* 纠错入口按钮（题目卡片底部，醒目） */
+    function qFixBtn(attr) {
+        return '<div class="q-fixrow"><button class="q-fixlink"' + (attr || '') + '>🚩 题目有错？点此纠错</button></div>';
+    }
+
     /* 知识点库统计（数据懒加载，首页用静态摘要） */
     /* 题目模块分类：法律法规按关键词，基础知识按章 */
     var LAW_MODULES = [
@@ -417,6 +503,7 @@
             html += '<div class="q-knowledge-inline" id="q-ki"></div>';
         }
 
+        html += qFixBtn(' id="q-fixlink"');
         html += '</article><div class="q-nav">'
             + '<button class="btn" id="q-prev"' + (practice.idx === 0 ? ' disabled' : '') + '>← 上一题</button>'
             + '<span class="q-nav-jump"></span>'
@@ -453,6 +540,9 @@
             recordResult(q, p === q.answer);
             renderPracticeQuestion();
         });
+
+        var fixlink = document.getElementById('q-fixlink');
+        if (fixlink) fixlink.addEventListener('click', function () { openQFix(q); });
 
         if (pick !== undefined) fillKnowledge(q);
 
@@ -552,7 +642,7 @@
                 + '<i>' + L + '</i><span>' + esc(opt) + '</span></button>';
         });
 
-        html += '</div></article><div class="q-nav">'
+        html += '</div>' + qFixBtn(' id="q-fixlink"') + '</article><div class="q-nav">'
             + '<button class="btn" id="ex-prev"' + (examState.idx === 0 ? ' disabled' : '') + '>← 上一题</button>'
             + '<span class="q-nav-jump"></span>'
             + '<button class="btn primary" id="ex-submit">交卷 📝</button></div>';
@@ -581,6 +671,8 @@
                 renderExamQuestion();
             });
         });
+        var exFix = document.getElementById('q-fixlink');
+        if (exFix) exFix.addEventListener('click', function () { openQFix(q); });
         document.getElementById('ex-prev').addEventListener('click', function () {
             if (examState.idx > 0) { examState.idx--; renderExamQuestion(); }
         });
@@ -655,11 +747,18 @@
                 });
                 html += '</div><div class="q-feedback no">你的答案：' + (pick || '—') + ' · 正确答案：' + q.answer + (isMulti(q) ? '（多选）' : '') + '</div>';
                 if (q.explain) html += '<div class="q-explain"><b>解析</b>' + esc(q.explain) + '</div>';
+                html += qFixBtn(' data-i="' + q.id + '"');
                 html += '</article>';
             });
         }
 
         view.innerHTML = html;
+        view.querySelectorAll('.q-fixlink').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var fq = BANK[+btn.dataset.i];
+                if (fq) openQFix(fq);
+            });
+        });
         timerEl.hidden = true;
     }
 

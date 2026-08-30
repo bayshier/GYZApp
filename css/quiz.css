@@ -563,6 +563,32 @@ body {
 .q-multi-ok { margin-top: 14px; width: 100%; }
 .q-multi-ok:disabled { opacity: .55; }
 
+/* ---------- 题目纠错入口（每道题页面） ---------- */
+.q-fixrow { margin-top: 14px; }
+.q-fixlink {
+    width: 100%; padding: 9px 12px; font-size: 13px; font-weight: 700;
+    color: #b3541e; background: #fdf3ea; border: 1px dashed #e2a06b;
+    border-radius: 10px; cursor: pointer; transition: background .15s, border-color .15s;
+}
+.q-fixlink:hover { background: #fbe9da; border-color: #c97b3d; }
+/* 纠错弹窗（复用反馈弹窗 qfb-* 骨架，以下为题目信息/输入区样式） */
+.qfix-info {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; font-size: 12px; color: var(--text-light);
+    margin-bottom: 12px; line-height: 1.7;
+}
+.qfix-info b { color: var(--brand); }
+.qfix-info p { margin: 4px 0; color: var(--text); font-size: 12.5px; }
+.qfix-info i { font-style: normal; }
+.qfix-info i b { color: var(--up); font-family: Menlo, monospace; }
+.qfix-input {
+    width: 100%; font-family: inherit; font-size: 14px;
+    padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); background: #fff; margin-bottom: 10px; box-sizing: border-box;
+}
+.qfix-input:focus { outline: none; border-color: var(--brand-light); }
+.qfix-tip { font-size: 11.5px; color: var(--text-light); margin-top: 10px; line-height: 1.6; }
+
 /* ---------- 反馈 / 解析 ---------- */
 .q-feedback {
     margin-top: 16px; padding: 10px 16px; border-radius: 8px;

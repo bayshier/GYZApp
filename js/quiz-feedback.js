@@ -5,6 +5,7 @@
     'use strict';
 
     var FEEDBACK_MAIL = 'lanchenyixin@cncfzx.com';
+    window.QUIZ_FEEDBACK_MAIL = FEEDBACK_MAIL; // 供 quiz-app 题目纠错复用，两处保持一致
     var TYPES = ['题目有误', '答案争议', '内容建议', '功能异常', '考试资讯', '其他'];
     var picked = '内容建议';
 
