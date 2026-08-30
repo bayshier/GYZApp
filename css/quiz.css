@@ -548,6 +548,16 @@ body {
 .q-opt.wrong i { border-color: var(--up); background: var(--up); color: #fff; }
 .q-opt:disabled { cursor: default; }
 
+/* ---------- 多选题 ---------- */
+.q-multitag {
+    display: inline-block; vertical-align: 2px; margin-left: 4px;
+    font-size: 11px; font-weight: 700; letter-spacing: .5px;
+    color: #7b61ff; background: rgba(123, 97, 255, .1);
+    border-radius: 8px; padding: 1px 8px;
+}
+.q-multi-ok { margin-top: 14px; width: 100%; }
+.q-multi-ok:disabled { opacity: .55; }
+
 /* ---------- 反馈 / 解析 ---------- */
 .q-feedback {
     margin-top: 16px; padding: 10px 16px; border-radius: 8px;

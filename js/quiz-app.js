@@ -24,6 +24,12 @@
         basics: { name: '金融市场基础知识',     short: '基础知识' }
     };
 
+    /* ---------- 多选题支持 ----------
+       题库中答案为多字母（如 "ABD"）的是多选题：
+       练习模式点击选项=勾选/取消，提交后判分；考试模式勾选即记录 */
+    function isMulti(q) { return q.answer.length > 1; }
+    function normPick(arr) { return arr.slice().sort().join(''); }
+
     /* 知识点库统计（数据懒加载，首页用静态摘要） */
     /* 题目模块分类：法律法规按关键词，基础知识按章 */
     var LAW_MODULES = [
@@ -188,7 +194,7 @@
         } else if (parts[0] === 'drill' && parts[1]) {
             var drillIds = parts[1].split(',').map(Number).filter(function (i) { return BANK[i]; });
             practice.list = drillIds.map(function (i) { return BANK[i]; });
-            practice.idx = 0; practice.picks = {}; practice.mode = 'order';
+            practice.idx = 0; practice.picks = {}; practice.multiSel = {}; practice.mode = 'order';
             practice.title = '薄弱专项 · ' + drillIds.length + ' 题';
             practice.backHash = '#/';
             renderPracticeQuestion();
@@ -317,7 +323,7 @@
     /* ============================================================
        刷题模式（即时反馈）
        ============================================================ */
-    var practice = { list: [], idx: 0, picks: {} };
+    var practice = { list: [], idx: 0, picks: {}, multiSel: {} };
 
     function renderPractice(subject, mode) {
         var list;
@@ -334,6 +340,7 @@
         practice.list = list;
         practice.idx = 0;
         practice.picks = {};
+        practice.multiSel = {};
         practice.mode = mode;
         renderPracticeQuestion();
     }
@@ -358,16 +365,20 @@
             + '<span class="q-progress-text">' + n + ' / ' + total + '</span></div>'
             + '<div class="q-progress"><i style="width:' + (n / total * 100) + '%"></i></div>'
             + '<article class="q-card">'
-            + '<div class="q-stem"><b>' + n + '.</b> ' + esc(q.q) + '</div>'
+            + '<div class="q-stem"><b>' + n + '.</b> ' + esc(q.q)
+            + (isMulti(q) ? ' <span class="q-multitag">多选题</span>' : '') + '</div>'
             + '<div class="q-options">';
 
         var letters = ['A', 'B', 'C', 'D'];
+        var multiSel = practice.multiSel[q.id] || [];
         q.options.forEach(function (opt, i) {
             var L = letters[i];
             var cls = 'q-opt';
             if (pick !== undefined) {
-                if (L === q.answer) cls += ' correct';
-                else if (L === pick) cls += ' wrong';
+                if (q.answer.indexOf(L) > -1) cls += ' correct';
+                else if (pick.indexOf(L) > -1) cls += ' wrong';
+            } else if (isMulti(q) && multiSel.indexOf(L) > -1) {
+                cls += ' picked';
             }
             html += '<button class="' + cls + '" data-pick="' + L + '"'
                 + (pick !== undefined ? ' disabled' : '') + '>'
@@ -376,10 +387,18 @@
 
         html += '</div>';
 
+        // 多选题：未作答时显示提交按钮
+        if (pick === undefined && isMulti(q)) {
+            html += '<button class="btn primary q-multi-ok" id="q-multi-ok"'
+                + (multiSel.length ? '' : ' disabled') + '>'
+                + (multiSel.length ? '提交答案（已选 ' + multiSel.length + ' 项）' : '请勾选答案后提交')
+                + '</button>';
+        }
+
         if (pick !== undefined) {
             var right = pick === q.answer;
             html += '<div class="q-feedback ' + (right ? 'ok' : 'no') + '">'
-                + (right ? '✓ 回答正确' : '✗ 回答错误 · 正确答案 ' + q.answer)
+                + (right ? '✓ 回答正确' : '✗ 回答错误 · 正确答案 ' + q.answer + (isMulti(q) ? '（多选）' : ''))
                 + (mode_eraseWrongNote(q)) + '</div>';
             if (q.explain) {
                 html += '<div class="q-explain"><b>解析</b>' + esc(q.explain) + '</div>';
@@ -399,10 +418,29 @@
             btn.addEventListener('click', function () {
                 if (practice.picks[q.id] !== undefined) return;
                 var L = btn.dataset.pick;
+                if (isMulti(q)) {
+                    // 多选：勾选/取消，不立即判分
+                    var sel = practice.multiSel[q.id] = practice.multiSel[q.id] || [];
+                    var k = sel.indexOf(L);
+                    if (k > -1) { sel.splice(k, 1); } else { sel.push(L); }
+                    renderPracticeQuestion();
+                    return;
+                }
                 practice.picks[q.id] = L;
                 recordResult(q, L === q.answer);
                 renderPracticeQuestion();
             });
+        });
+
+        var multiOk = document.getElementById('q-multi-ok');
+        if (multiOk) multiOk.addEventListener('click', function () {
+            if (practice.picks[q.id] !== undefined) return;
+            var sel = practice.multiSel[q.id] || [];
+            if (!sel.length) return;
+            var p = normPick(sel);
+            practice.picks[q.id] = p;
+            recordResult(q, p === q.answer);
+            renderPracticeQuestion();
         });
 
         if (pick !== undefined) fillKnowledge(q);
@@ -490,14 +528,16 @@
         });
         html += '</div>'
             + '<article class="q-card">'
-            + '<div class="q-stem"><b>' + n + '.</b> ' + esc(q.q) + '</div>'
+            + '<div class="q-stem"><b>' + n + '.</b> ' + esc(q.q)
+            + (isMulti(q) ? ' <span class="q-multitag">多选题</span>' : '') + '</div>'
             + '<div class="q-options">';
 
         var letters = ['A', 'B', 'C', 'D'];
         q.options.forEach(function (opt, i) {
             var L = letters[i];
-            var cls = 'q-opt' + (pick === L ? ' picked' : '');
-            html += '<button class="' + cls + '" data-pick="' + L + '">'
+            var on = pick !== undefined &&
+                (isMulti(q) ? pick.indexOf(L) > -1 : pick === L);
+            html += '<button class="q-opt' + (on ? ' picked' : '') + '" data-pick="' + L + '">'
                 + '<i>' + L + '</i><span>' + esc(opt) + '</span></button>';
         });
 
@@ -510,7 +550,17 @@
 
         view.querySelectorAll('.q-opt').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                examState.picks[q.id] = btn.dataset.pick;
+                var L = btn.dataset.pick;
+                if (isMulti(q)) {
+                    // 多选：勾选/取消，全取消则视为未作答
+                    var cur = (examState.picks[q.id] || '').split('').filter(function (x) { return x; });
+                    var k = cur.indexOf(L);
+                    if (k > -1) { cur.splice(k, 1); } else { cur.push(L); }
+                    if (cur.length) { examState.picks[q.id] = normPick(cur); }
+                    else { delete examState.picks[q.id]; }
+                } else {
+                    examState.picks[q.id] = L;
+                }
                 renderExamQuestion();
             });
         });
@@ -588,11 +638,11 @@
                 q.options.forEach(function (opt, j) {
                     var L = letters[j];
                     var cls = 'q-opt';
-                    if (L === q.answer) cls += ' correct';
-                    else if (L === pick) cls += ' wrong';
+                    if (q.answer.indexOf(L) > -1) cls += ' correct';
+                    else if (pick && pick.indexOf && pick.indexOf(L) > -1) cls += ' wrong';
                     html += '<div class="' + cls + '"><i>' + L + '</i><span>' + esc(opt) + '</span></div>';
                 });
-                html += '</div><div class="q-feedback no">你的答案：' + (pick || '—') + ' · 正确答案：' + q.answer + '</div>';
+                html += '</div><div class="q-feedback no">你的答案：' + (pick || '—') + ' · 正确答案：' + q.answer + (isMulti(q) ? '（多选）' : '') + '</div>';
                 if (q.explain) html += '<div class="q-explain"><b>解析</b>' + esc(q.explain) + '</div>';
                 html += '</article>';
             });
@@ -617,6 +667,7 @@
         practice.list = due;
         practice.idx = 0;
         practice.picks = {};
+        practice.multiSel = {};
         practice.mode = 'review';
         practice.title = '今日复习 · ' + SUBJECTS[subject].short + '（' + due.length + ' 题到期）';
         practice.backHash = '#/';
@@ -678,6 +729,7 @@
             practice.list = p.qIds.map(function (i) { return BANK[i]; });
             practice.idx = 0;
             practice.picks = {};
+            practice.multiSel = {};
             practice.mode = 'order';
             practice.title = '历年真题 · ' + p.name;
             practice.backHash = '#/papers';
