@@ -85,25 +85,23 @@
             + '<div class="kb-newbie-desc">2456 题题库（含 2019-2024 真题）+ 24 篇知识点 · 学习 / 练习 / 模拟考试 →</div>'
             + '</div></div>';
 
-        // AI 教学板块（两门内置课程 + 外部 AI 学堂）
+        // AI 教学板块（单一栏目入口，课程分类移到二级页 #/ai 展示）
         var AI = window.AI_COURSES || [];
         if (AI.length) {
-            html += '<div class="kb-ai-section">'
-                + '<div class="kb-ai-head">🤖 AI 教学知识</div><div class="kb-ai-grid">';
-            AI.forEach(function (c, i) {
-                var read = aiReadCount(c.id);
-                html += '<div class="kb-ai-card' + (i === 0 ? ' kb-ai-major' : '') + '" onclick="location.hash=\'#/ai/' + c.id + '\'">'
-                    + '<div class="kb-ai-icon">' + c.icon + '</div>'
-                    + '<div class="kb-ai-txt"><b>' + c.title + '</b>'
-                    + '<i><em>' + c.chapters.length + '</em> 章 · ' + c.desc + '</i>'
-                    + '<span class="kb-ai-tag">' + c.tag + '</span></div>'
-                    + '<span class="kb-ai-go">' + (read ? '续学 ' + read + '/' + c.chapters.length : '开讲') + ' →</span></div>';
+            var aiTotal = 0, aiReadTotal = 0;
+            AI.forEach(function (c) {
+                aiTotal += c.chapters.length;
+                aiReadTotal += aiReadCount(c.id);
             });
-            html += '</div>'
-                + '<div class="kb-ai-card kb-ai-slim" onclick="window.open(\'https://bayshier.github.io/learningAI/\', \'_blank\', \'noopener\')">'
-                + '<div class="kb-ai-icon">🎓</div>'
-                + '<div class="kb-ai-txt"><b>AI 学堂</b><i>5 讲团队课程 · 大模型 / Prompt / RAG / Agent / 产品落地</i></div>'
-                + '<span class="kb-ai-go">前往 →</span></div></div>';
+            html += '<div class="kb-newbie-banner kb-ai-banner" onclick="location.hash=\'#/ai\'">'
+                + '<div class="kb-newbie-icon">🤖</div>'
+                + '<div class="kb-newbie-text">'
+                + '<div class="kb-newbie-title">AI 教学知识</div>'
+                + '<div class="kb-newbie-desc">'
+                + AI.length + ' 门开源课程 · ' + aiTotal + ' 章全文收录'
+                + (aiReadTotal ? '（已读 ' + aiReadTotal + ' 章）' : '')
+                + ' · 入门筑基 / Agent 实战 / 拓展资源 →</div>'
+                + '</div></div>';
         }
 
         html += '<div class="kb-home-title">选择分类开始学习</div>';
@@ -713,16 +711,23 @@
     }
     function aiReadCount(id) { return Object.keys(aiRead(id)).length; }
 
-    /* 课程列表 */
-    function renderAIHome() {
-        var cs = aiCourses();
-        if (!cs.length) { renderNotFound(); return; }
-        var html = '<div class="ac-page">'
-            + '<div class="ac-hero"><a class="ac-back" href="#/">← 知识库</a>'
-            + '<h1>🤖 AI 教学知识</h1>'
-            + '<p>两门 Datawhale 万星开源课程全文收录 · 代码 / 图表 / 公式完整还原</p></div>'
-            + '<div class="ac-courses">';
-        cs.forEach(function (c) {
+    /* AI 栏目课程分类（二级页分组展示） */
+    var AI_GROUPS = [
+        { icon: '🧭', name: '入门筑基', desc: 'Prompt 工程与大模型使用基础，零基础也能起步', ids: ['llm-cookbook', 'llm-universe'] },
+        { icon: '🛠️', name: 'Agent 实战', desc: '课件 + 文档 + 源码三合一的 Agent 开发完整实战', ids: ['agent-core'] }
+    ];
+
+    /* 渲染一个分类分组 */
+    function renderAIGroup(g, courses) {
+        var html = '<div class="ac-group">'
+            + '<div class="ac-group-head">'
+            + '<span class="ac-group-ico">' + g.icon + '</span>'
+            + '<span class="ac-group-name">' + g.name + '</span>'
+            + '<span class="ac-group-count">' + courses.length + ' 门</span>'
+            + '</div>'
+            + (g.desc ? '<p class="ac-group-desc">' + g.desc + '</p>' : '');
+        html += '<div class="ac-courses">';
+        courses.forEach(function (c) {
             var read = aiReadCount(c.id);
             html += '<div class="ac-course" onclick="location.hash=\'#/ai/' + c.id + '\'">'
                 + '<div class="ac-course-top"><span class="ac-course-ico">' + c.icon + '</span>'
@@ -732,6 +737,52 @@
                 + '<span class="ac-go-btn">' + (read ? '继续学习 →' : '开始学习 →') + '</span></div></div>';
         });
         html += '</div></div>';
+        return html;
+    }
+
+    /* 课程列表（二级页：按分类分组） */
+    function renderAIHome() {
+        var cs = aiCourses();
+        if (!cs.length) { renderNotFound(); return; }
+        var total = 0, readTotal = 0;
+        cs.forEach(function (c) { total += c.chapters.length; readTotal += aiReadCount(c.id); });
+
+        var html = '<div class="ac-page">'
+            + '<div class="ac-hero"><a class="ac-back" href="#/">← 知识库</a>'
+            + '<h1>🤖 AI 教学知识</h1>'
+            + '<p>' + cs.length + ' 门开源课程 · ' + total + ' 章全文收录 · 代码 / 图表 / 公式完整还原'
+            + (readTotal ? ' · 已读 ' + readTotal + ' 章' : '') + '</p></div>';
+
+        var used = {};
+        AI_GROUPS.forEach(function (g) {
+            var group = cs.filter(function (c) { return g.ids.indexOf(c.id) > -1; });
+            group.forEach(function (c) { used[c.id] = 1; });
+            if (group.length) html += renderAIGroup(g, group);
+        });
+        // 未归入分组的课程兜底展示，避免后续新增课程被漏掉
+        var rest = cs.filter(function (c) { return !used[c.id]; });
+        if (rest.length) {
+            html += renderAIGroup({ icon: '📚', name: '更多课程', desc: '' }, rest);
+        }
+
+        // 拓展资源：站外课程
+        html += '<div class="ac-group">'
+            + '<div class="ac-group-head">'
+            + '<span class="ac-group-ico">🎓</span>'
+            + '<span class="ac-group-name">拓展资源</span>'
+            + '<span class="ac-group-count">站外</span>'
+            + '</div>'
+            + '<p class="ac-group-desc">团队出品的站外课程，点击新标签页前往</p>'
+            + '<div class="ac-courses">'
+            + '<div class="ac-course" onclick="window.open(\'https://bayshier.github.io/learningAI/\', \'_blank\', \'noopener\')">'
+            + '<div class="ac-course-top"><span class="ac-course-ico">🎓</span>'
+            + '<span class="kb-ai-tag">外部</span></div>'
+            + '<h3>AI 学堂</h3><p>5 讲团队课程 · 大模型 / Prompt / RAG / Agent / 产品落地</p>'
+            + '<div class="ac-course-foot"><span class="ac-ch-count">📚 5 讲 · 站外学习</span>'
+            + '<span class="ac-go-btn">前往 ↗</span></div></div>'
+            + '</div></div>';
+
+        html += '</div>';
         document.getElementById('kb-view').innerHTML = html;
     }
 
