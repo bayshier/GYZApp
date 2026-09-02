@@ -59,14 +59,16 @@
         var nTotal = COURSES.length;
         var nPassed = passedCount();
         var remain = nTotal - nPassed;
-        var nextDate = EXAM_DATES['2026.10'] || '2026-10-17';
+        var nextDate = EXAM_DATES['2026.10'] || '2026-10-24';
+        var oct = COURSES.filter(function (c) { return !isPassed(c) && c.term === '2026.10'; });
 
         var html = '<div class="zk-countdown" id="zk-cd">'
             + '<div><div class="zkc-label">⏳ 距 2026.10 考期还有</div>'
             + '<div class="zkc-days" id="zk-cd-days">--<i>天</i></div>'
-            + '<div class="zkc-date">预计 ' + nextDate.replace(/-/g, '.') + ' 开考</div></div>'
-            + '<div class="zkc-next">本期报考 <b>4 门</b>（笔试优先）<br>'
-            + '15040 习思想 · 13005 软件工程<br>13003 数据结构与算法 · 13011 人工智能与大数据</div>'
+            + '<div class="zkc-date">' + nextDate.replace(/-/g, '.') + ' 开考（周六首考）</div></div>'
+            + '<div class="zkc-next">本期报考 <b>' + oct.length + '</b> 门（时段已排，无冲突）<br>'
+            + oct.map(function (c) { return c.code + ' ' + c.name; }).join('<br>')
+            + '</div>'
             + '</div>'
             + '<div class="zk-overview">'
             + '<div class="zko ok"><b>' + nPassed + '</b><i>已通过</i></div>'
@@ -75,6 +77,29 @@
             + '<div class="zko"><b>' + BANK.length + '</b><i>真题入库</i></div>'
             + '<div class="zko gold"><b>' + MEMO.length + '</b><i>速记卡片</i></div>'
             + '</div>';
+
+        /* 考试安排（202610 真实开考表，来自广东省自学考试管理系统） */
+        if (D.schedule2610 && D.schedule2610.sessions) {
+            html += '<div class="zk-sched"><div class="zk-sched-head"><h3>🗓 2026.10 考试安排</h3>'
+                + '<span>' + esc(D.schedule2610.source || '') + '</span></div>';
+            D.schedule2610.sessions.forEach(function (s) {
+                html += '<div class="zk-sess"><div class="zk-sess-time"><b>' + esc(s.d) + '</b>'
+                    + '<i>' + esc(s.w || '') + ' ' + esc(s.t) + '</i></div>'
+                    + '<div class="zk-sess-items">';
+                s.items.forEach(function (it) {
+                    var c = byCode(it.c);
+                    var passed = c && isPassed(c);
+                    var cls = it.pick ? ' pick' : (it.conflict ? ' conflict' : (passed ? ' done' : ''));
+                    html += '<span class="zk-sitem' + cls + '">'
+                        + (it.pick ? '✓ 报考 ' : it.conflict ? '⚠ 冲突 ' : '')
+                        + esc(it.c) + ' ' + esc(c ? c.name : '')
+                        + (passed ? '（已过）' : it.conflict ? '（与15040同时段）' : '')
+                        + '</span>';
+                });
+                html += '</div></div>';
+            });
+            html += '<div class="zk-sched-note">⚠ 13003 数据结构与算法与 15040 同在 10.24 下午，二选一——15040 纯背诵优先，13003 顺延 2027.04；13011 人工智能与大数据本期不开考，顺延 2027.04。未标 ✓ 的为本期开考但未报（03344 / 13015 / 00023 / 13000），可作机动替换。</div></div>';
+        }
 
         var terms = [['已通过', ''], ['2026.10', '本期主攻'], ['2027.04', '原理+数学'], ['2027.10', '数学+英语+实践'], ['2028.04', '实践收尾'], ['最后', '毕业环节']];
         terms.forEach(function (tp) {
