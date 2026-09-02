@@ -764,3 +764,26 @@ body {
     .q-promo::before, .q-promo::after, .pt-hot { animation: none; }
     .pb { animation: none; opacity: 1; }
 }
+
+/* ============================================================
+   吸顶工具栏（知识点阅读 / 练习 / 考试：返回+章节筛选/进度固定）
+   ============================================================ */
+.q-sticky-bar {
+    position: sticky; top: 56px; z-index: 90;
+    background: var(--bg);
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; margin-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+.qtoc-sel {
+    flex: 1; min-width: 0;
+    font-family: inherit; font-size: 13px; color: var(--text);
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.qtoc-sel:focus { outline: none; border-color: var(--accent); }
+@media (max-width: 560px) {
+    .q-sticky-bar { top: 52px; gap: 8px; }
+    .q-sticky-bar .btn { padding: 7px 10px; font-size: 12px; }
+}

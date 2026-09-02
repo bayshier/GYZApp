@@ -456,7 +456,7 @@
         var subName = SUBJECTS[q.subject].short;
 
         var backH = practice.backHash || '#/';
-        var html = '<div class="q-topbar">'
+        var html = '<div class="q-topbar q-sticky-bar">'
             + '<a class="btn ghost" href="' + backH + '">← 退出</a>'
             + '<span class="q-meta">' + (practice.title ? esc(practice.title) : esc(subName) + ' · ' + esc(q.source)) + '</span>'
             + '<span class="q-progress-text">' + n + ' / ' + total + '</span></div>'
@@ -616,7 +616,7 @@
         var n = examState.idx + 1, total = examState.list.length;
         var pick = examState.picks[q.id];
 
-        var html = '<div class="q-topbar exam">'
+        var html = '<div class="q-topbar exam q-sticky-bar">'
             + '<button class="btn ghost" id="ex-quit">放弃</button>'
             + '<span class="q-meta">模拟考试 · ' + esc(SUBJECTS[examState.subject].name) + '</span>'
             + '<span class="q-progress-text">' + n + ' / ' + total + '</span></div>'
@@ -1044,16 +1044,15 @@
         var shown = doc.sections.length > LIMIT;
         var secs = shown ? doc.sections.slice(0, LIMIT) : doc.sections;
 
-        var html = '<div class="q-topbar">'
+        var html = '<div class="q-topbar q-sticky-bar">'
             + '<a class="btn ghost" href="#/learn/' + subject + '">← 目录</a>'
-            + '<span class="q-meta">' + esc(doc.cat) + ' · ' + esc(SUBJECTS[subject].short) + '</span>'
-            + '<span class="q-progress-text">' + doc.sections.length + ' 节</span></div>'
-            + '<article class="q-reader"><h1>' + esc(doc.title) + '</h1>'
-            + '<nav class="q-toc"><select id="q-toc-sel">';
+            + '<select class="qtoc-sel" id="q-toc-sel" aria-label="跳转章节">';
         secs.forEach(function (sArr, i) {
             html += '<option value="' + i + '">' + esc(sArr[0]) + '</option>';
         });
-        html += '</select></nav><div class="q-reader-body">';
+        html += '</select>'
+            + '<span class="q-progress-text">' + doc.sections.length + ' 节</span></div>'
+            + '<article class="q-reader"><h1>' + esc(doc.title) + '</h1><div class="q-reader-body">';
 
         secs.forEach(function (sArr, i) {
             var paras = sArr[1].split('\n').filter(function (l) { return l.trim(); });
@@ -1090,19 +1089,29 @@
     }
 
     function renderReaderFull(subject, doc) {
-        var html = '<div class="q-topbar">'
+        var html = '<div class="q-topbar q-sticky-bar">'
             + '<a class="btn ghost" href="#/learn/' + subject + '">← 目录</a>'
-            + '<span class="q-meta">' + esc(doc.cat) + ' · ' + esc(SUBJECTS[subject].short) + '</span>'
+            + '<select class="qtoc-sel" id="q-toc-sel-full" aria-label="跳转章节">';
+        doc.sections.forEach(function (sArr, i) {
+            html += '<option value="' + i + '">' + esc(sArr[0]) + '</option>';
+        });
+        html += '</select>'
             + '<span class="q-progress-text">' + doc.sections.length + ' 节</span></div>'
             + '<article class="q-reader"><h1>' + esc(doc.title) + '</h1><div class="q-reader-body">';
         doc.sections.forEach(function (sArr, i) {
             var paras = sArr[1].split('\n').filter(function (l) { return l.trim(); });
-            html += '<section class="q-sec"><h3>' + esc(sArr[0]) + '</h3>';
+            html += '<section class="q-sec" id="fsec-' + i + '"><h3>' + esc(sArr[0]) + '</h3>';
             paras.forEach(function (p) { html += '<p>' + esc(p) + '</p>'; });
             html += '</section>';
         });
         html += '</div></article>';
         view.innerHTML = html;
+
+        var tocFull = document.getElementById('q-toc-sel-full');
+        if (tocFull) tocFull.addEventListener('change', function () {
+            var el = document.getElementById('fsec-' + tocFull.value);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
     }
 
     /* ---------- 启动 ---------- */
