@@ -219,14 +219,13 @@
         if (!n) { location.hash = '#/'; return; }
         var LIMIT = 80;
         var secs = n.sections.length > LIMIT ? n.sections.slice(0, LIMIT) : n.sections;
-        var html = '<div class="q-topbar">'
+        var html = '<div class="q-topbar zk-reader-bar">'
             + '<a class="btn ghost" href="#/course/' + n.course + '">← 课程</a>'
-            + '<span class="q-meta">' + esc(n.cat) + '</span>'
-            + '<span class="q-progress-text">' + n.sections.length + ' 节</span></div>'
-            + '<article class="q-reader"><h1>' + esc(n.title) + '</h1>'
-            + '<nav class="q-toc"><select id="zk-toc">';
+            + '<select class="zk-toc-sel" id="zk-toc" aria-label="跳转章节">';
         secs.forEach(function (s, i) { html += '<option value="' + i + '">' + esc(s[0]) + '</option>'; });
-        html += '</select></nav><div class="q-reader-body">';
+        html += '</select>'
+            + '<span class="q-progress-text">' + n.sections.length + ' 节</span></div>'
+            + '<article class="q-reader"><h1>' + esc(n.title) + '</h1><div class="q-reader-body">';
         secs.forEach(function (s, i) {
             html += '<section class="q-sec" id="zsec-' + i + '"><h3>' + esc(s[0]) + '</h3>';
             s[1].split('\n').forEach(function (p) {

@@ -209,3 +209,26 @@
 .zk-sitem.defer {
     color: #8a6d1a; background: #fdf8e9; border: 1px dashed #d4c06a;
 }
+
+/* ============================================================
+   笔记阅读页：吸顶工具栏（返回 + 章节筛选固定不随滚动）
+   ============================================================ */
+.zk-reader-bar {
+    position: sticky; top: 56px; z-index: 90;
+    background: var(--bg);
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; margin-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+.zk-toc-sel {
+    flex: 1; min-width: 0;
+    font-family: inherit; font-size: 13px; color: var(--text);
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.zk-toc-sel:focus { outline: none; border-color: var(--accent); }
+@media (max-width: 560px) {
+    .zk-reader-bar { top: 52px; gap: 8px; }
+    .zk-reader-bar .btn { padding: 7px 10px; font-size: 12px; }
+}
