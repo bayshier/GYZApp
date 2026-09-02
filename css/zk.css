@@ -198,3 +198,14 @@
     .zk-sess { flex-direction: column; gap: 6px; }
     .zk-sess-time { width: auto; }
 }
+
+/* 周日下车：不可考时段 & 顺延课程 */
+.zk-sess.off .zk-sess-time b { color: var(--text-light); }
+.zk-sess.off .zk-sess-time em {
+    display: block; font-style: normal; font-size: 11px; font-weight: 700;
+    color: #b3541e; margin-top: 3px;
+}
+.zk-sitem.dim { opacity: .5; }
+.zk-sitem.defer {
+    color: #8a6d1a; background: #fdf8e9; border: 1px dashed #d4c06a;
+}

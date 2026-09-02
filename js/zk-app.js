@@ -83,22 +83,25 @@
             html += '<div class="zk-sched"><div class="zk-sched-head"><h3>🗓 2026.10 考试安排</h3>'
                 + '<span>' + esc(D.schedule2610.source || '') + '</span></div>';
             D.schedule2610.sessions.forEach(function (s) {
-                html += '<div class="zk-sess"><div class="zk-sess-time"><b>' + esc(s.d) + '</b>'
-                    + '<i>' + esc(s.w || '') + ' ' + esc(s.t) + '</i></div>'
+                html += '<div class="zk-sess' + (s.off ? ' off' : '') + '"><div class="zk-sess-time"><b>' + esc(s.d) + '</b>'
+                    + '<i>' + esc(s.w || '') + ' ' + esc(s.t) + '</i>'
+                    + (s.off ? '<em>🚫 本人无法应考</em>' : '') + '</div>'
                     + '<div class="zk-sess-items">';
                 s.items.forEach(function (it) {
                     var c = byCode(it.c);
                     var passed = c && isPassed(c);
-                    var cls = it.pick ? ' pick' : (it.conflict ? ' conflict' : (passed ? ' done' : ''));
+                    var cls = it.pick ? ' pick' : (it.defer ? ' defer' : (it.conflict ? ' conflict' : (passed ? ' done' : (s.off ? ' dim' : ''))));
                     html += '<span class="zk-sitem' + cls + '">'
-                        + (it.pick ? '✓ 报考 ' : it.conflict ? '⚠ 冲突 ' : '')
+                        + (it.pick ? '✓ 报考 ' : it.defer ? '⏳ 顺延 ' : it.conflict ? '⚠ 冲突 ' : '')
                         + esc(it.c) + ' ' + esc(c ? c.name : '')
-                        + (passed ? '（已过）' : it.conflict ? '（与15040同时段）' : '')
+                        + (passed ? '（已过）' : it.conflict ? '（与15040同时段）' : it.defer ? '（仅此时段开考）' : '')
                         + '</span>';
                 });
                 html += '</div></div>';
             });
-            html += '<div class="zk-sched-note">⚠ 13003 数据结构与算法与 15040 同在 10.24 下午，二选一——15040 纯背诵优先，13003 顺延 2027.04；13011 人工智能与大数据本期不开考，顺延 2027.04。未标 ✓ 的为本期开考但未报（03344 / 13015 / 00023 / 13000），可作机动替换。</div></div>';
+            html += '<div class="zk-sched-note">📌 十月报 3 门：02324 离散数学（周六上午）+ 15040 习思想（周六下午）+ 13180 操作系统（周日上午），零冲突。<br>'
+                + '⏳ 13005 软件工程仅开考于周日下午、本人无法应考 → 顺延 2027.04；13003 与 15040 同时段冲突、13011 本期不开考，均顺延。<br>'
+                + '⚠ 2027.04 候选已积 5 门（13003/13005/13011/13015/03344），超出单期 4 门上限——待 2027.04 开考表公布后再按时段裁一门到 2027.10。</div></div>';
         }
 
         var terms = [['已通过', ''], ['2026.10', '本期主攻'], ['2027.04', '原理+数学'], ['2027.10', '数学+英语+实践'], ['2028.04', '实践收尾'], ['最后', '毕业环节']];
