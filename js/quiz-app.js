@@ -947,7 +947,7 @@
             view.innerHTML = '<div class="q-empty"><div class="icon">⏳</div><p>知识点库加载中...</p></div>';
         }
         var s = document.createElement('script');
-        s.src = 'js/learn-data-' + subject + '.js';
+        s.src = 'js/learn-data-' + subject + '.js?v=20260914';
         s.onload = function () {
             LEARN[subject] = window[varName] || [];
             cb(LEARN[subject]);
