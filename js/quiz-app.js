@@ -906,11 +906,12 @@
             + '<div class="q-memo-grid">';
 
         list.slice(0, 400).forEach(function (c) {
+            // title 是 content 的原文/截断前缀时不再重复展示（数字考点卡多为这种自动截断标题）
+            var showTitle = c.cat !== '百条考点' && c.title && c.content.indexOf(c.title) !== 0;
             html += '<div class="q-memo-card cat-' + (c.cat.indexOf('数字') === 0 ? 'num' : (c.cat === '百条考点' ? 'bai' : 'kou')) + '">'
                 + '<div class="qm-tag">' + esc(c.cat) + ' · ' + (c.subject === 'law' ? '法规' : '基础') + '</div>'
-                + (c.cat === '百条考点'
-                    ? '<div class="qm-body">' + hl(esc(c.content)) + '</div>'
-                    : '<div class="qm-title">' + hl(esc(c.title)) + '</div><div class="qm-body">' + hl(esc(c.content)) + '</div>')
+                + (showTitle ? '<div class="qm-title">' + hl(esc(c.title)) + '</div>' : '')
+                + '<div class="qm-body">' + hl(esc(c.content)) + '</div>'
                 + '</div>';
         });
         html += '</div>';
