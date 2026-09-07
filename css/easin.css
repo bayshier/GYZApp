@@ -436,3 +436,15 @@ body::before {
     .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
     .noise-overlay, .vignette, #matrix-rain { display: none; }
 }
+
+/* 时间线内嵌图片（如 token 用量统计卡） */
+.entry-body .entry-img {
+    display: block; margin-top: 12px;
+    max-width: 207px; width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+    cursor: zoom-in;
+    transition: transform 0.2s;
+}
+.entry-body .entry-img:hover { transform: translateY(-2px); }
