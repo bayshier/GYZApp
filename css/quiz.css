@@ -803,3 +803,7 @@ body {
 .pd-set .pd-meta2 { font-size: 11px; color: var(--text-light); }
 /* 案例题资料/题干换行保留 */
 .q-stem { white-space: pre-wrap; }
+
+/* ---------- 提分密训（第5张通栏卡） ---------- */
+.qq-mid { background: linear-gradient(135deg, #14532d 0%, #2f9e5a 100%); }
+.qq-wide { grid-column: 1 / -1; }
