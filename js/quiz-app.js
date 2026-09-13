@@ -20,8 +20,9 @@
     });
 
     var SUBJECTS = {
-        law:    { name: '证券市场基本法律法规', short: '法律法规' },
-        basics: { name: '金融市场基础知识',     short: '基础知识' }
+        law:     { name: '证券市场基本法律法规', short: '法律法规' },
+        basics:  { name: '金融市场基础知识',     short: '基础知识' },
+        advisor: { name: '证券投资顾问业务',     short: '证券投顾' }
     };
 
     /* ---------- 多选题支持 ----------
@@ -277,6 +278,10 @@
             renderReview(parts[1]);
         } else if (parts[0] === 'radar' && parts[1]) {
             renderRadar(parts[1]);
+        } else if (parts[0] === 'predict' && parts[1]) {
+            renderPredictSet(parts[1]);
+        } else if (parts[0] === 'predict') {
+            renderPredictHome();
         } else if (parts[0] === 'multi') {
             /* 多选题合集：全部多选题主练习 */
             practice.list = BANK.filter(isMulti);
@@ -307,6 +312,8 @@
         var nPaperQ = (window.EXAM_PAPERS || []).reduce(function (a, p) { return a + p.count; }, 0);
         var nCards = (window.MEMENTO_CARDS || []).length;
         var nMulti = BANK.filter(isMulti).length;
+        var PRED = window.PREDICT_202609 || [];
+        var nPredQ = PRED.reduce(function (a, s) { return a + s.questions.length; }, 0);
         var html = '<section class="q-promo">'
             + '<div class="promo-badges">'
             +   '<span class="pb pb-fire">🔥 六年真题 2019-2024</span>'
@@ -335,7 +342,7 @@
         });
         html += '</div></section>';
 
-        /* 历年真题 + 重点速记 + 多选题合集 快捷入口（醒目大卡） */
+        /* 历年真题 + 重点速记 + 多选题合集 + 9月押题 快捷入口（醒目大卡） */
         html += '<section class="q-quick-strip">'
             + '<a class="qq-card qq-paper" href="#/papers"><span class="qq-ico">📜</span>'
             + '<span class="qq-txt"><b>历年真题</b><i><em>' + nPapers + '</em> 套 · <em>' + nPaperQ + '</em> 题 · 考前必刷</i></span>'
@@ -346,6 +353,11 @@
             + '<a class="qq-card qq-multi" href="#/multi"><span class="qq-ico">☑️</span>'
             + '<span class="qq-txt"><b>多选题合集</b><i><em>' + nMulti + '</em> 道 · 勾选作答 · 逐题判分</i></span>'
             + '<span class="qq-go">开刷 →</span></a>'
+            + (PRED.length
+                ? '<a class="qq-card qq-pred" href="#/predict"><span class="qq-ico">🔮</span>'
+                  + '<span class="qq-txt"><b>9月押题</b><i><em>' + PRED.length + '</em> 套 · <em>' + nPredQ + '</em> 题 · LC终极押题</i></span>'
+                  + '<span class="qq-go">开刷 →</span></a>'
+                : '')
             + '</section>';
 
         html += '<div class="q-subjects">';
@@ -453,7 +465,8 @@
         if (!q) return;
         var n = practice.idx + 1, total = practice.list.length;
         var pick = practice.picks[q.id];
-        var subName = SUBJECTS[q.subject].short;
+        var subName = SUBJECTS[q.subject] ? SUBJECTS[q.subject].short : q.subject;
+        var typeTag = isMulti(q) ? '多选题' : (q.type === '判断' ? '判断题' : (q.type === '案例' ? '案例题' : ''));
 
         var backH = practice.backHash || '#/';
         var html = '<div class="q-topbar q-sticky-bar">'
@@ -463,7 +476,7 @@
             + '<div class="q-progress"><i style="width:' + (n / total * 100) + '%"></i></div>'
             + '<article class="q-card">'
             + '<div class="q-stem"><b>' + n + '.</b> ' + esc(q.q)
-            + (isMulti(q) ? ' <span class="q-multitag">多选题</span>' : '') + '</div>'
+            + (typeTag ? ' <span class="q-multitag">' + typeTag + '</span>' : '') + '</div>'
             + '<div class="q-options">';
 
         var letters = ['A', 'B', 'C', 'D'];
@@ -830,6 +843,63 @@
     /* ============================================================
        历年真题（试卷归档 · 复用练习引擎）
        ============================================================ */
+    /* ============================================================
+       9月押题（2026.09 LC 终极押题 · 6 套：法规/金融/投顾 各两套）
+       ============================================================ */
+    function predictSets() { return window.PREDICT_202609 || []; }
+
+    function renderPredictHome() {
+        var sets = predictSets();
+        if (!sets.length) { renderNotFound(); return; }
+        var html = '<div class="q-topbar q-sticky-bar">'
+            + '<a class="btn ghost" href="#/">← 退出</a>'
+            + '<span class="q-meta">9月押题 · LC终极押题（单选/多选/判断/案例）</span>'
+            + '<span class="q-progress-text">' + sets.length + ' 套</span></div>'
+            + '<div class="pd-note">🔮 考前冲刺专用：每套均为完整试卷结构，多选题勾选作答、判断题二选一、案例题自带背景资料；做题记录与解析同主题库。</div>';
+
+        var bySubject = {};
+        sets.forEach(function (s) {
+            (bySubject[s.subject] = bySubject[s.subject] || []).push(s);
+        });
+        Object.keys(bySubject).forEach(function (sub) {
+            var name = SUBJECTS[sub] ? SUBJECTS[sub].name : sub;
+            html += '<div class="q-learn-cat"><h3>' + esc(name) + '</h3>';
+            bySubject[sub].forEach(function (s) {
+                var done = 0, wrongN = 0;
+                s.questions.forEach(function (q) {
+                    if (store.done[q.id]) done++;
+                    if (store.wrong[q.id]) wrongN++;
+                });
+                var st = s.stats || {};
+                var mix = ['单选', '多选', '判断', '案例'].filter(function (k) { return st[k]; })
+                    .map(function (k) { return st[k] + ' ' + k; }).join(' · ');
+                html += '<a class="q-doc-card pd-set" href="#/predict/' + s.id + '">'
+                    + '<div class="qd-main"><div class="qd-title">🔮 ' + esc(s.name) + '</div>'
+                    + '<div class="qd-meta">' + mix + ' · 共 ' + s.questions.length + ' 题</div>'
+                    + '<div class="pd-progress"><i style="width:' + (done / s.questions.length * 100) + '%"></i></div>'
+                    + '<div class="pd-meta2">已练 ' + done + '/' + s.questions.length + (wrongN ? ' · 待消灭错题 ' + wrongN : '') + '</div></div>'
+                    + '<span class="qd-arrow">' + (done ? '续刷 →' : '开始 →') + '</span></a>';
+            });
+            html += '</div>';
+        });
+        view.innerHTML = html;
+        window.scrollTo(0, 0);
+    }
+
+    function renderPredictSet(setId) {
+        var s = null;
+        predictSets().forEach(function (x) { if (x.id === setId) s = x; });
+        if (!s) { renderPredictHome(); return; }
+        practice.list = s.questions;
+        practice.idx = 0;
+        practice.picks = {};
+        practice.multiSel = {};
+        practice.mode = 'order';
+        practice.title = '9月押题 · ' + s.name;
+        practice.backHash = '#/predict';
+        renderPracticeQuestion();
+    }
+
     function renderPapers(pid) {
         var PAPERS = window.EXAM_PAPERS || [];
         if (pid) {
@@ -983,6 +1053,7 @@
     function fillKnowledge(q) {
         var box = document.getElementById('q-ki');
         if (!box) return;
+        if (!LEARN_SUMMARY[q.subject]) return; // 押题·投顾科目暂无知识点库
         loadLearn(q.subject, function (docs) {
             var el = document.getElementById('q-ki');
             if (!el) return;

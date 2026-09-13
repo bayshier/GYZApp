@@ -26,6 +26,7 @@ APP 下载入口统一在[个人主页 Works](https://bayshier.github.io/GYZApp/
 两场考试（证券市场基本法律法规 + 金融市场基础知识）的完整备考闭环：
 
 - **知识点学习**：24 篇 PDF 全量提取文档（考点精讲×8、备考100条、口诀、章节讲义×8、应试笔记 2 部共 52 万字、新旧法条对照表、2021/2025 考试大纲），3156 个小节，按科目懒加载
+- **9月押题**：[2026.09] LC 终极押题 6 套（法规×2 / 金融×2 / 投顾×2）共 710 题，单选/多选/判断/综合案例四题型，含名师解析
 - **历年真题**：11 套试卷——2019-2024 六年考试真题（回忆版）+ 2021.12 两场机考真题 + 考前冲刺卷×3，按套刷题
 - **重点速记**：370 张考点卡片（备考100条 98 / 记忆口诀 12 / 数字考点 260），三级智能高亮（数字红显 / 执法术语金线 / 口诀荧光），两科分栏展示
 - **题库练习**：2456 题（2019-2024 真题 1753 + 在线补充 566 + 本地 PDF 137，含解析），顺序 / 随机 / 专项
@@ -48,7 +49,7 @@ APP 下载入口统一在[个人主页 Works](https://bayshier.github.io/GYZApp/
 
 > 线上公示页：[资料来源与致谢](https://bayshier.github.io/GYZApp/sources.html)（题目、知识点均来自网络公开数据，来源方可点击跳转）
 
-- **证券学习系统题库**：整理自开源仓库 [zfabc/zhengquantest](https://github.com/zfabc/zhengquantest)（2019-2024 真题回忆版 + 章节练习）、[kawu98661-cell/card-batch-demo](https://github.com/kawu98661-cell/card-batch-demo)（章节分类补充题库）及公开流通的备考教材讲义 PDF；官方信息以[中国证券业协会](https://www.sac.net.cn/)为准。
+- **证券学习系统题库**：整理自开源仓库 [zfabc/zhengquantest](https://github.com/zfabc/zhengquantest)（2019-2024 真题回忆版 + 章节练习）、[kawu98661-cell/card-batch-demo](https://github.com/kawu98661-cell/card-batch-demo)（章节分类补充题库）、公开流通的备考教材讲义 PDF 及 [2026.09] LC 终极押题（考前辅导材料，仅供内部学习）；官方信息以[中国证券业协会](https://www.sac.net.cn/)为准。
 - **AI 教学板块**：两门 Datawhale 万星开源课程全文收录——[llm-cookbook](https://github.com/datawhalechina/llm-cookbook)（吴恩达系列中文版，30 章）、[llm-universe](https://github.com/datawhalechina/llm-universe)（大模型应用开发，7 章）与 [dev-edu/agent-core](https://gitee.com/dev-edu/agent-core)（《Agent 的底层逻辑》全量版 35 讲：课件+每章工程代码快照+附件，第 2 章由作者 xmind 还原，5 个薄章节含标注的编者增补），生成 `js/ai-courses-data.js`，图片直链原仓库。
 - **权利与用途**：全部内容仅供个人学习交流，著作权归原作者所有，不作商业用途；权利人可联系 `lanchenyixin@cncfzx.com` 处理下架。
 - **投资风险**：证券类内容仅用于从业资格考试备考，不构成任何投资建议；股市有风险，投资需谨慎。
