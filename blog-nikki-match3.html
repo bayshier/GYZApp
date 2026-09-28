@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Nikki 猫大王：用自家八只猫的照片做的消消乐。纯原生单文件实现，大儿有三种性格——空闲乱跑、倔强拒绝消除、交换反击扣分；死局自动检测重排、WebAudio 音效、密码解锁彩蛋。">
+    <meta name="theme-color" content="#0a0e16">
+    <title>Nikki 猫大王：给家里的猫做一个消消乐 — Easin's Blog</title>
+    <link rel="shortcut icon" href="icon_logo.png" type="image/png">
+    <link rel="stylesheet" href="css/blog.css">
+</head>
+
+<body>
+    <div class="article-wrap">
+
+        <a class="back-home" href="easin.html">← 返回主页</a>
+
+        <div class="article-meta">
+            <span class="tag hot">小游戏</span>
+            <span class="tag">消消乐</span>
+            <span class="tag">原生 JS</span>
+            <span class="tag">WebAudio</span>
+            <span class="tag">猫</span>
+        </div>
+
+        <h1 class="article-title">Nikki 猫大王：给家里的猫做一个消消乐</h1>
+        <div class="article-date">
+            2026.09 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a>
+        </div>
+
+        <blockquote>
+            <p>市面上的消消乐千千万，但棋子上<strong>不是你家的猫</strong>。于是我做了「Nikki 猫大王」：八只真猫照片当棋子的三消游戏——而且其中一只「大儿」会在你挂机时乱跑、被消除时赌气罢工、交换时反咬你一口。这篇是它的开发实录：<strong>纯原生单文件、零依赖、零框架</strong>，打开网页就能玩。</p>
+        </blockquote>
+
+        <p>🎮 线上地址：<a href="https://bayshier.github.io/Nikki/" target="_blank" rel="noopener">bayshier.github.io/Nikki</a>（手机浏览器直接玩）</p>
+
+        <h2>一、为什么自己做一个消消乐</h2>
+
+        <p>起因很简单：想给家人做一个<strong>有自家猫出镜</strong>的小游戏。三消是最合适的选择——规则零学习成本、单手可玩、每一局都短。市面上的三消要么广告满天飞，要么棋子是许愿池里的卡通形象；而我们的棋子是真正的八位主子：</p>
+
+        <table>
+            <tr><th>棋子</th><th>名字</th><th>性格设定</th></tr>
+            <tr><td>🐱</td><td>陈皮 · 包子 · 年年 · 松露</td><td>普通猫：规规矩矩被消除</td></tr>
+            <tr><td>🐱</td><td>警长 · 有鱼 · 阿狸</td><td>普通猫：同上</td></tr>
+            <tr><td>😼</td><td><strong>大儿</strong></td><td><strong>三重性格：调皮乱跑 / 倔强罢工 / 反击扣分</strong></td></tr>
+        </table>
+
+        <p>对，「大儿」是整只游戏的灵魂，下面重点讲它。</p>
+
+        <h2>二、基础玩法与关卡曲线</h2>
+
+        <p>经典三消骨架：<strong>8×8 棋盘、相邻交换、三连消除、上方下落补位、连锁 cascades 自动结算</strong>。关卡曲线用两条公式控制：</p>
+
+        <pre><code>目标分数 target = 1000 + (level - 1) × 600
+限制步数 moves  = max(12, 22 - (level - 1) / 2)</code></pre>
+
+        <p>目标线性涨、步数缓慢缩，前几关轻松愉快，往后逐步逼近「步数刚好不够」的心流区间。步数剩 5 步时 HUD 数字变红脉动，提醒玩家开始精打细算。</p>
+
+        <h2>三、灵魂角色：大儿的三重性格</h2>
+
+        <p>如果只是「照片换皮消消乐」，做完第一个周末就该腻了。真正让这个游戏有记忆点的是大儿——一只拥有<strong>三重性格</strong>的猫：</p>
+
+        <h3>1. 调皮：挂机 5 秒就乱跑</h3>
+        <p>玩家 5 秒没有任何操作，大儿会随机在棋盘上换位置。这不是彩蛋，是<strong> soft 干扰机制</strong>：你正对着规划好的消除路径发呆，大儿一动，盘面就变了——逼你保持专注。</p>
+
+        <h3>2. 倔强：50% 概率拒绝被消除</h3>
+        <p>三连消到包含大儿时，它有 50% 概率「赌气罢工」——摇摇头拒绝消失，你这一组白消。交换时它也可能拒绝移动。一只猫凭一己之力抬高了关卡方差。</p>
+
+        <h3>3. 反击：交换有 30% 概率被咬</h3>
+        <p>和它交换时，它有 30% 概率反咬你一口，随机扣 <strong>200~500 分</strong>，屏幕抖动 + 粒子特效 + 伤害数字飘出。</p>
+
+        <h3>技术上最有意思的一个决定</h3>
+
+        <p>倔强状态怎么记？直觉是用<strong>棋盘坐标</strong>记——但这里有个隐蔽的坑：</p>
+
+        <blockquote>
+            <p>大儿会调皮乱跑、会随消除下落，<strong>坐标一直在变</strong>。如果用坐标记录「这只猫在生气」，等它移走后，旧坐标上残留的标记会<strong>误伤移动过来的其他猫</strong>——别人只是路过，却被当成了倔强大儿。</p>
+        </blockquote>
+
+        <p>所以倔强状态最终用 <strong>DOM 元素本身</strong>来记录（一个 <code>Set</code> 存处于生气状态的元素引用）——状态跟着猫走，猫到哪状态在哪，下落、乱跑、交换都不会错。这是个很典型的「状态该挂在实体上，而不是挂在世界坐标上」的教训，做游戏的人和做业务系统的人应该都有共鸣。</p>
+
+        <h2>四、那些看不见但必须有的机制</h2>
+
+        <h3>死局检测与自动重排</h3>
+        <p>三消游戏最怕「无解盘面」。每次消除结算后都会跑一遍 <code>hasPossibleMove</code>：全盘扫描是否存在至少一个能形成三连的交换，没有就<strong>自动触发重排</strong>并toast提示。这个逻辑不复杂，但没有它，玩家会在第 40 步遇到一个卡死的棋盘然后永远流失。</p>
+
+        <h3>提示系统</h3>
+        <p><code>findHint</code> 沿用死局检测的同款扫描，找到一个可行交换后高亮。每关免费 5 次。</p>
+
+        <h3>音效：WebAudio 现场合成</h3>
+        <p>没有引入任何音频文件，所有音效用 <strong>AudioContext 现场合成</strong>——消除、连击、按钮、被咬，都是 <code>beep</code> 函数按频率与时长现场生成。好处是零资源加载、包体更小；首次交互后才初始化 AudioContext，也顺手规避了移动端浏览器的自动播放限制。</p>
+
+        <h3>连击与反馈</h3>
+        <p>连锁消除带 combo 计数与居中大字；每个消除位置飘分数、爆粒子；大儿反击有专门的攻击粒子与屏幕震动。<strong>三消游戏 80% 的手感来自这些反馈细节</strong>，而不是规则本身。</p>
+
+        <h2>五、一个彩蛋：扫码 V 我 50</h2>
+
+        <p>每关免费提示 5 次、免费重排 2 次，用完之后会弹出一个解锁面板——面板上写着：</p>
+
+        <blockquote>
+            <p>本关免费提示已用完，<strong>扫码 V 我 50</strong> 继续获取提示 😼</p>
+        </blockquote>
+
+        <p>当然不是真收钱——面板背后是<strong>密码解锁</strong>：输入只有家人知道的口令就能继续。（防猜设计：错误密码触发抖动动画，输入框限定单字符逐位填写。）家人群发口令、全家解锁通关，这大概就是这个游戏被设计出来的全部意义。</p>
+
+        <h2>六、视觉：Hello Kitty 粉色体系</h2>
+
+        <p>视觉上彻底拥抱可爱系：樱花粉主色 + 草莓粉渐变 + 蝴蝶结红点缀，背景是粉黄双色波点纹理，还有一层缓慢漂浮的 🎀 💕 ✨ 🌸 🍬 emoji 雨。标题用 Fredoka 圆体、正文用 Nunito，中文回退 PingFang。游戏标题上的蝴蝶结做了<strong>左右摇摆动画</strong>，进度条用粉色渐变发光——和日常写的深色极客风完全相反，做起来意外地解压。</p>
+
+        <h2>七、踩坑清单</h2>
+
+        <table>
+            <tr><th>坑</th><th>现象</th><th>解法</th></tr>
+            <tr><td>倔强状态记坐标</td><td>大儿移走后旧坐标误伤其他猫</td><td>状态挂在 DOM 元素引用上，跟着猫走</td></tr>
+            <tr><td>连锁消除时序</td><td>下落未完成就检测出新消除，动画错乱</td><td>cascades 用 sleep 串行的异步链，每步等动画结束</td></tr>
+            <tr><td>移动端双击缩放</td><td>快速点按触发页面缩放</td><td>viewport 禁用缩放 + tap-highlight 透明</td></tr>
+            <tr><td>音效自动播放限制</td><td>首次操作无声</td><td>首次用户交互后才初始化 AudioContext</td></tr>
+            <tr><td>格子尺寸适配</td><td>小屏棋盘溢出</td><td>运行时读取实际 cell 尺寸计算坐标，不写死像素</td></tr>
+        </table>
+
+        <h2>八、小结</h2>
+
+        <p>这个项目没有架构、没有框架、没有构建工具——一个 2000 行的单 HTML 文件，打开就玩。但它可能是今年我做得<strong>最快乐</strong>的一个项目：八只猫在棋盘上被消除的时候会「喵」，大儿赌气摇头的时候没有人能忍住不笑。</p>
+
+        <p>工程能力到了某个阶段，「做一个让家人笑出来的东西」比「再引入一个新框架」的回报率高得多。<strong>技术终究是要落回到具体的人身上的</strong>——哪怕只是让某个人在某个下午，对着一只赌气的像素猫笑出声。</p>
+
+        <div class="article-end">
+            <span>Easin's Code Lab · <a href="easin.html" style="color:inherit;">作者：Easin</a></span>
+            <span><a href="https://bayshier.github.io/Nikki/" target="_blank" rel="noopener">🎮 玩一下</a> · <a href="easin.html">← 返回主页</a> · <a href="https://github.com/bayshier" target="_blank" rel="noopener">GitHub ↗</a></span>
+        </div>
+
+    </div>
+</body>
+
+</html>
