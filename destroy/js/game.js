@@ -21,14 +21,30 @@
     /* ============================================================
      * 一、常量与全局状态
      * ============================================================ */
-    var VIEW_W = 480;            // 视口逻辑宽度（与关卡同宽，只纵向卷动）
+    var VIEW_W = 384;            // 视口逻辑宽度（比关卡窄，镜头横向跟随）
     var GRAVITY = 0.34;          // 重力加速度
     var MOVE_SPD = 1.7;          // 水平移速
     var JUMP_V = -6.4;           // 起跳速度
-    var BULLET_SPD = 7;          // 子弹速度
-    var BULLET_R = 5;            // 子弹破坏半径
+    var BULLET_SPD = 7;          // 基础子弹速度
     var MAX_HP = 100;            // 玩家生命
     var FOOTEER_H = 140;         // 底部「页脚通关区」高度
+
+    /* ---------- 武器库（参考原版 Destroy Any Website 设计） ----------
+     * auto    : 是否按住连发
+     * cd      : 射击冷却（帧）
+     * pellets : 一次射出的弹丸数（霰弹枪多弹丸）
+     * spread  : 散布角度（度），弹丸在扇形范围内随机偏转
+     * r       : 命中破坏半径（火箭=爆炸半径）
+     * rocket  : 火箭弹——命中爆炸 + 大震屏 */
+    var WEAPONS = [
+        { name: '手枪',   auto: false, cd: 13, pellets: 1, spread: 0,    spd: 7,   r: 4,  kick: 0 },
+        { name: '冲锋枪', auto: true,  cd: 5,  pellets: 1, spread: 3,    spd: 8,   r: 3,  kick: 0 },
+        { name: '霰弹枪', auto: false, cd: 32, pellets: 5, spread: 14,   spd: 6.5, r: 3,  kick: 2 },
+        { name: '火箭筒', auto: false, cd: 55, pellets: 1, spread: 0,    spd: 4.5, r: 15, kick: 4, rocket: true }
+    ];
+    var GRENADE_CD = 50;         // 手雷冷却（帧）
+    var GRENADE_FUSE = 65;       // 手雷引信（帧，约1.1秒）
+    var GRENADE_R = 18;          // 手雷爆炸半径
 
     var $ = function (id) { return document.getElementById(id); };
     var ui = {
@@ -36,6 +52,7 @@
         inUrl: $('in-url'), btnGo: $('btn-go'), loadText: $('load-text'), loadErr: $('load-err'), btnDemo: $('btn-demo'),
         cv: $('cv'), hudScore: $('hud-score'), hudDestroy: $('hud-destroy'),
         hudEnemy: $('hud-enemy'), hudDepth: $('hud-depth'), hpfill: $('hpfill'),
+        hudWeapon: $('hud-weapon'),
         toast: $('center-toast'), panelEnd: $('panel-end'), endTitle: $('end-title'),
         endDetail: $('end-detail'), btnAgain: $('btn-again'), btnQuit: $('btn-quit')
     };
@@ -48,15 +65,18 @@
         url: '',                 // 本局网址
         player: null,            // 玩家
         bullets: [],             // 存活子弹
+        grenades: [],            // 存活手雷
         enemies: [],             // 存活敌人
         parts: [],               // 粒子（墨水飞溅）
-        camY: 0,                 // 摄像机纵向位置
+        camX: 0, camY: 0,        // 摄像机（双向跟随）
         scale: 2,                // 像素放大倍数
         viewH: 400,              // 视口逻辑高度
         score: 0, destroyed: 0, kills: 0,
         startTime: 0, milestone: 0,
-        fireCd: 0, shake: 0,     // 射击冷却 / 屏幕震动
-        toastT: 0
+        weaponIdx: 0,            // 当前武器下标
+        fireCd: 0, gCd: 0,       // 射击/手雷冷却
+        fireLatch: false,        // 半自动武器：需松开再按才打下一发
+        shake: 0, toastT: 0
     };
 
     /* 输入状态 */
@@ -176,17 +196,90 @@
     }
 
     /* ============================================================
-     * 五、开火：子弹命中 → 抹掉圆形像素
+     * 五、开火：多武器 + 弹丸散射 + 火箭爆炸
      * ============================================================ */
+    function curWeapon() { return WEAPONS[G.weaponIdx]; }
+
+    function switchWeapon(idx) {
+        G.weaponIdx = (idx + WEAPONS.length) % WEAPONS.length;
+        G.fireCd = Math.max(G.fireCd, 8);            // 切枪短暂上膛
+        sfx.select();
+        updateHUD();
+    }
+
     function fire() {
         if (G.fireCd > 0) return;
-        G.fireCd = 9;
+        var w = curWeapon();
         var p = G.player;
-        G.bullets.push({
-            x: p.x + p.w / 2 + p.dir * 7, y: p.y + 5,
-            vx: p.dir * BULLET_SPD, vy: 0
-        });
+        G.fireCd = w.cd;
+        if (!w.auto) G.fireLatch = true;             // 半自动：松开才能再打
+
+        /* 扇形散射：多弹丸在 spread 角度内均匀偏转 */
+        for (var i = 0; i < w.pellets; i++) {
+            var ang = 0;
+            if (w.pellets > 1) ang = (i / (w.pellets - 1) - 0.5) * w.spread;
+            else ang = (Math.random() - 0.5) * w.spread;
+            var rad = ang * Math.PI / 180;
+            var spd = w.spd * (0.94 + Math.random() * 0.12);
+            G.bullets.push({
+                x: p.x + p.w / 2 + p.dir * 7, y: p.y + 5,
+                vx: Math.cos(rad) * p.dir * spd,
+                vy: Math.sin(rad) * spd,
+                r: w.r, rocket: !!w.rocket
+            });
+        }
+        /* 后坐力：火箭/霰弹把玩家往后推 */
+        if (w.kick) { p.x -= p.dir * w.kick; G.shake = Math.max(G.shake, w.kick); }
         sfx.shoot();
+    }
+
+    /** 爆炸：圆形破坏 + 大量粒子 + 震屏（火箭/手雷共用） */
+    function explode(cx, cy, r) {
+        var removed = window.DLevel.erase(G.lv, cx, cy, r);
+        addDestroyed(removed);
+        spawnParts(cx, cy, Math.min(40, 10 + r), '#e94560');
+        spawnParts(cx, cy, 10);
+        G.shake = Math.max(G.shake, r / 2);
+        sfx.crumble();
+        /* 爆炸波及附近敌人 */
+        for (var i = G.enemies.length - 1; i >= 0; i--) {
+            var en = G.enemies[i];
+            var dx = en.x + en.w / 2 - cx, dy = en.y + en.h / 2 - cy;
+            if (dx * dx + dy * dy < (r + 8) * (r + 8)) {
+                G.enemies.splice(i, 1);
+                G.score += 100; G.kills++;
+                spawnParts(en.x, en.y, 14, '#e94560');
+            }
+        }
+    }
+
+    function throwGrenade() {
+        if (G.gCd > 0) return;
+        G.gCd = GRENADE_CD;
+        var p = G.player;
+        G.grenades.push({
+            x: p.x + p.w / 2 + p.dir * 6, y: p.y + 4,
+            vx: p.dir * 3.6, vy: -4.2,
+            fuse: GRENADE_FUSE
+        });
+        beep(240, 0.08, 'sine', 0.06);
+    }
+
+    function stepGrenades() {
+        for (var i = G.grenades.length - 1; i >= 0; i--) {
+            var gr = G.grenades[i];
+            gr.vy += GRAVITY;
+            gr.x += gr.vx; gr.y += gr.vy;
+            /* 碰地反弹（能量衰减） */
+            if (window.DLevel.solidAt(G.lv, Math.floor(gr.x), Math.floor(gr.y))) {
+                gr.y -= gr.vy; gr.vy *= -0.45; gr.vx *= 0.7;
+                if (Math.abs(gr.vy) < 0.8) gr.vy = 0;
+            }
+            if (--gr.fuse <= 0) {
+                explode(gr.x, gr.y, GRENADE_R);
+                G.grenades.splice(i, 1);
+            }
+        }
     }
 
     function stepBullets() {
@@ -198,25 +291,29 @@
             for (var s = 0; s < steps && !dead; s++) {
                 b.x += b.vx / steps; b.y += b.vy / steps;
                 if (b.x < 0 || b.x >= lv.W || b.y < 0 || b.y >= lv.H) { dead = true; break; }
-                /* 打到地形：破坏像素 */
+                /* 打到地形 */
                 if (window.DLevel.solidAt(lv, Math.floor(b.x), Math.floor(b.y))) {
-                    var removed = window.DLevel.erase(lv, b.x, b.y, BULLET_R);
-                    addDestroyed(removed);
-                    spawnParts(b.x, b.y, 7);
-                    if (removed > 6) sfx.crumble();
-                    G.shake = 3;
+                    if (b.rocket) {
+                        explode(b.x, b.y, b.r);             // 火箭：大范围爆炸
+                    } else {
+                        var removed = window.DLevel.erase(lv, b.x, b.y, b.r);
+                        addDestroyed(removed);
+                        spawnParts(b.x, b.y, 7);
+                        if (removed > 6) sfx.crumble();
+                        G.shake = Math.max(G.shake, 3);
+                    }
                     dead = true;
                 }
-                /* 打到敌人 */
-                for (var e = 0; e < G.enemies.length; e++) {
+                /* 打到敌人（火箭爆炸已在 explode 里波及，这里只算直击） */
+                if (!dead) for (var e = 0; e < G.enemies.length; e++) {
                     var en = G.enemies[e];
                     if (b.x > en.x - 2 && b.x < en.x + en.w + 2 && b.y > en.y - 2 && b.y < en.y + en.h + 2) {
-                        en.hp--; en.hurtT = 6;
+                        en.hp -= b.rocket ? 9 : 1; en.hurtT = 6;
                         spawnParts(b.x, b.y, 5, '#e94560');
                         if (en.hp <= 0) {
                             G.enemies.splice(e, 1); e--;
                             G.score += 100; G.kills++;
-                            spawnParts(en.x + en.w / 2, en.y + en.h / 2, 16, '#e94560');
+                            spawnParts(en.x, en.y, 14, '#e94560');
                             sfx.kill();
                         }
                         dead = true; break;
@@ -291,9 +388,14 @@
         /* 冲到底部页脚区 → 通关 */
         if (p.y + p.h >= G.lv.H - FOOTEER_H) { endGame(true); return; }
 
-        /* 射击 */
+        /* 射击：全自动武器按住连发；半自动需松开再按 */
         if (G.fireCd > 0) G.fireCd--;
-        if (input.fire) fire();
+        if (G.gCd > 0) G.gCd--;
+        var w = curWeapon();
+        if (input.fire) {
+            if (w.auto) fire();
+            else if (!G.fireLatch) { fire(); }
+        } else G.fireLatch = false;
     }
 
     /* ============================================================
@@ -314,10 +416,12 @@
 
     function render() {
         var lv = G.lv, p = G.player;
-        /* 摄像机跟随：玩家保持在屏幕 55% 高度附近 */
-        var targetCam = Math.max(0, Math.min(lv.H - G.viewH, p.y - G.viewH * 0.55));
-        G.camY += (targetCam - G.camY) * 0.18;
-        var cam = Math.round(G.camY);
+        /* 摄像机双向跟随：玩家保持在屏幕中上部 */
+        var tx = Math.max(0, Math.min(lv.W - VIEW_W, p.x + p.w / 2 - VIEW_W / 2));
+        var ty = Math.max(0, Math.min(lv.H - G.viewH, p.y - G.viewH * 0.55));
+        G.camX += (tx - G.camX) * 0.15;
+        G.camY += (ty - G.camY) * 0.18;
+        var cam = Math.round(G.camY), camH = Math.round(G.camX);
 
         /* 屏幕震动 */
         var sx = 0, sy = 0;
@@ -330,9 +434,10 @@
         ctx.fillStyle = '#05070c';
         ctx.fillRect(-2, -2, VIEW_W + 4, G.viewH + 4);
 
-        /* 关卡像素画：只画视口内的那一片 */
+        /* 关卡像素画：只画视口内的那一片（横向+纵向） */
         var vh = Math.min(G.viewH, lv.H);
-        ctx.drawImage(lv.canvas, 0, cam, VIEW_W, vh, 0, 0, VIEW_W, vh);
+        var vw = Math.min(VIEW_W, lv.W);
+        ctx.drawImage(lv.canvas, camH, cam, vw, vh, 0, 0, vw, vh);
 
         /* 页脚通关区：绿色虚线 + 提示 */
         var footY = lv.H - FOOTEER_H - cam;
@@ -349,25 +454,41 @@
         /* 敌人：红色小虫（受击闪白） */
         for (var i = 0; i < G.enemies.length; i++) {
             var en = G.enemies[i];
-            var ey = en.y - cam;
-            if (ey < -10 || ey > G.viewH + 10) continue;
+            var ey = en.y - cam, ex = en.x - camH;
+            if (ey < -10 || ey > G.viewH + 10 || ex < -12 || ex > VIEW_W + 12) continue;
             ctx.fillStyle = en.hurtT > 0 ? '#ffffff' : '#e94560';
-            ctx.fillRect(en.x, ey, en.w, en.h - 2);
+            ctx.fillRect(ex, ey, en.w, en.h - 2);
             ctx.fillStyle = en.hurtT > 0 ? '#ffffff' : '#b03050';
             /* 三条小短腿，随时间摆动 */
             var leg = Math.floor(Date.now() / 120 + i) % 2 ? 1 : 0;
-            ctx.fillRect(en.x + 1, ey + en.h - 2, 2, 2 + leg);
-            ctx.fillRect(en.x + en.w / 2 - 1, ey + en.h - 2, 2, 2);
-            ctx.fillRect(en.x + en.w - 3, ey + en.h - 2, 2, 2 + (1 - leg));
+            ctx.fillRect(ex + 1, ey + en.h - 2, 2, 2 + leg);
+            ctx.fillRect(ex + en.w / 2 - 1, ey + en.h - 2, 2, 2);
+            ctx.fillRect(ex + en.w - 3, ey + en.h - 2, 2, 2 + (1 - leg));
             /* 眼睛 */
             ctx.fillStyle = '#fff';
-            ctx.fillRect(en.x + (en.vx > 0 ? en.w - 4 : 2), ey + 2, 2, 2);
+            ctx.fillRect(ex + (en.vx > 0 ? en.w - 4 : 2), ey + 2, 2, 2);
         }
 
-        /* 子弹：亮黄色小方块 */
-        ctx.fillStyle = '#ffd56b';
-        for (var b = 0; b < G.bullets.length; b++) {
-            ctx.fillRect(G.bullets[b].x - 1, G.bullets[b].y - 1, 3, 2);
+        /* 子弹：手枪/冲锋枪黄色小方块；火箭画大一点带尾焰 */
+        for (var b2 = 0; b2 < G.bullets.length; b2++) {
+            var bl = G.bullets[b2];
+            var bx = bl.x - camH, by = bl.y - cam;
+            if (bl.rocket) {
+                ctx.fillStyle = '#ffd56b';
+                ctx.fillRect(bx - 2, by - 2, 5, 4);
+                ctx.fillStyle = '#ff8c42';
+                ctx.fillRect(bx - bl.vx * 1.2 - 2, by - bl.vy * 1.2 - 2, 4, 4);
+            } else {
+                ctx.fillStyle = '#ffd56b';
+                ctx.fillRect(bx - 1, by - 1, 3, 2);
+            }
+        }
+
+        /* 手雷：深灰圆球，引信临近爆炸时闪红 */
+        for (var g2 = 0; g2 < G.grenades.length; g2++) {
+            var gr = G.grenades[g2];
+            ctx.fillStyle = (gr.fuse < 20 && Math.floor(gr.fuse / 3) % 2 === 0) ? '#ff5d5d' : '#2a2f38';
+            ctx.fillRect(gr.x - 2 - camH, gr.y - 2 - cam, 5, 5);
         }
 
         /* 粒子 */
@@ -375,13 +496,13 @@
             var pt = G.parts[pi];
             ctx.globalAlpha = Math.min(1, pt.life / 20);
             ctx.fillStyle = pt.c;
-            ctx.fillRect(pt.x, pt.y - cam, 2, 2);
+            ctx.fillRect(pt.x - camH, pt.y - cam, 2, 2);
         }
         ctx.globalAlpha = 1;
 
         /* 玩家：像素小人（无敌帧闪烁）。
            白色描边打底，保证在深浅不一的网页内容上都看得清 */
-        var px = p.x, py = p.y - cam;
+        var px = p.x - camH, py = p.y - cam;
         if (!(p.iframe > 0 && Math.floor(p.iframe / 4) % 2 === 0)) {
             ctx.fillStyle = '#ffffff';                       // 描边层（大一圈）
             ctx.fillRect(px - 1, py - 1, 10, 15);
@@ -423,6 +544,7 @@
             if (G.state !== 'play') break;                   // 本步内可能已结束
             stepEnemies();
             stepBullets();
+            stepGrenades();
             /* 粒子 */
             for (var i = G.parts.length - 1; i >= 0; i--) {
                 var pt = G.parts[i];
@@ -441,6 +563,7 @@
         ui.hudDestroy.textContent = pct + '%';
         ui.hudEnemy.textContent = G.enemies.length;
         ui.hudDepth.textContent = '深度 ' + Math.max(0, Math.min(100, Math.round(G.player.y / (G.lv.H - FOOTEER_H) * 100))) + '%';
+        if (ui.hudWeapon) ui.hudWeapon.textContent = curWeapon().name;
     }
 
     /* ============================================================
@@ -448,17 +571,18 @@
      * ============================================================ */
     function startPlay(lv) {
         G.lv = lv; G.state = 'play';
-        G.bullets = []; G.enemies = []; G.parts = [];
+        G.bullets = []; G.grenades = []; G.enemies = []; G.parts = [];
         G.score = 0; G.destroyed = 0; G.kills = 0;
-        G.milestone = 0; G.camY = 0; G.fireCd = 0; G.shake = 0;
+        G.milestone = 0; G.camX = 0; G.camY = 0; G.fireCd = 0; G.gCd = 0;
+        G.fireLatch = false; G.weaponIdx = 0; G.shake = 0;
         G.startTime = Date.now();
         ui.hpfill.style.width = '100%';
         ui.panelEnd.classList.remove('on');
 
-        /* 出生点：关卡生成时已在版心中部（x=240）清出竖井并铺好
-           绿色出生平台（y=134），这里直接落到平台上，稳定可靠 */
-        var sx = Math.floor(VIEW_W / 2) - 4;                 // 236，角色宽8居中
-        var sy = 116;                                        // 脚底 129，落在平台 134 上方
+        /* 出生点：关卡生成时已在版心中部清出竖井并铺好
+           绿色出生平台（x=W/2, 平台顶 y=134），直接落到平台上 */
+        var sx = Math.floor(lv.W / 2) - 4;                   // 角色宽8居中
+        var sy = 116;
         G.player = makePlayer(sx, sy);
 
         /* 敌人出生：跳过离玩家太近的（开局别被咬） */
@@ -540,6 +664,13 @@
             if (e.code === 'ArrowRight' || e.code === 'KeyD') input.right = true;
             if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') { input.jump = true; e.preventDefault(); }
             if (e.code === 'KeyJ' || e.code === 'KeyX') input.fire = true;
+            /* 武器：1-4 直选，Q 循环切换，G 扔手雷 */
+            if (e.code === 'Digit1') switchWeapon(0);
+            if (e.code === 'Digit2') switchWeapon(1);
+            if (e.code === 'Digit3') switchWeapon(2);
+            if (e.code === 'Digit4') switchWeapon(3);
+            if (e.code === 'KeyQ') switchWeapon(G.weaponIdx + 1);
+            if (e.code === 'KeyG') throwGrenade();
         });
         window.addEventListener('keyup', function (e) {
             keys[e.code] = false;
@@ -560,21 +691,24 @@
 
         /* 移动端虚拟按键（仅触屏设备显示） */
         if ('ontouchstart' in window) {
-            var mk = function (label, x, y, on, off) {
+            var mk = function (label, side, offset, bottom, on, off) {
                 var b = document.createElement('div');
                 b.textContent = label;
-                b.style.cssText = 'position:fixed;bottom:' + y + 'px;' + x + ':18px;width:58px;height:58px;'
+                b.style.cssText = 'position:fixed;bottom:' + bottom + 'px;' + side + ':' + offset + 'px;'
+                    + 'width:52px;height:52px;'
                     + 'background:rgba(20,27,40,.7);border:1px solid #26324a;border-radius:50%;color:#e6edf3;'
-                    + 'display:flex;align-items:center;justify-content:center;font-size:22px;z-index:25;'
+                    + 'display:flex;align-items:center;justify-content:center;font-size:20px;z-index:25;'
                     + 'user-select:none;-webkit-user-select:none;touch-action:none;';
                 b.addEventListener('touchstart', function (e) { e.preventDefault(); on(); }, { passive: false });
                 b.addEventListener('touchend', function (e) { e.preventDefault(); off(); }, { passive: false });
                 document.body.appendChild(b);
             };
-            mk('◀', 'left', 24, function () { input.left = true; }, function () { input.left = false; });
-            mk('▶', 'left', 96, function () { input.right = true; }, function () { input.right = false; });
-            mk('⤴', 'right', 24, function () { input.jump = true; }, function () { input.jump = false; });
-            mk('🔫', 'right', 96, function () { input.fire = true; }, function () { input.fire = false; });
+            mk('◀', 'left', 16, 24, function () { input.left = true; }, function () { input.left = false; });
+            mk('▶', 'left', 84, 24, function () { input.right = true; }, function () { input.right = false; });
+            mk('⤴', 'right', 16, 24, function () { input.jump = true; }, function () { input.jump = false; });
+            mk('🔫', 'right', 84, 24, function () { input.fire = true; }, function () { input.fire = false; });
+            mk('🔁', 'right', 16, 92, function () { switchWeapon(G.weaponIdx + 1); }, function () { });
+            mk('💣', 'right', 84, 92, throwGrenade, function () { });
         }
     }
 
