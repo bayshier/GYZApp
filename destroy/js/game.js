@@ -21,26 +21,22 @@
     /* ============================================================
      * 一、常量与全局状态
      * ============================================================ */
-    var VIEW_W = 384;            // 视口逻辑宽度（比关卡窄，镜头横向跟随）
+    var VIEW_W = 640;            // 桌面端视口逻辑宽度的目标值（resize 自适应）
     var GRAVITY = 0.34;          // 重力加速度
     var MOVE_SPD = 1.7;          // 水平移速
     var JUMP_V = -6.4;           // 起跳速度
-    var BULLET_SPD = 7;          // 基础子弹速度
     var MAX_HP = 100;            // 玩家生命
     var FOOTEER_H = 140;         // 底部「页脚通关区」高度
 
     /* ---------- 武器库（参考原版 Destroy Any Website 设计） ----------
-     * auto    : 是否按住连发
-     * cd      : 射击冷却（帧）
-     * pellets : 一次射出的弹丸数（霰弹枪多弹丸）
-     * spread  : 散布角度（度），弹丸在扇形范围内随机偏转
-     * r       : 命中破坏半径（火箭=爆炸半径）
-     * rocket  : 火箭弹——命中爆炸 + 大震屏 */
+     * 原版弹速在 2000~2300 px/s 量级（≈35px/帧），射击节奏很快，
+     * 这里对齐到同量级；auto=按住连发；pellets=一次射出的弹丸数；
+     * spread=扇形散布角度；r=命中破坏半径（火箭=爆炸半径） */
     var WEAPONS = [
-        { name: '手枪',   auto: false, cd: 13, pellets: 1, spread: 0,    spd: 7,   r: 4,  kick: 0 },
-        { name: '冲锋枪', auto: true,  cd: 5,  pellets: 1, spread: 3,    spd: 8,   r: 3,  kick: 0 },
-        { name: '霰弹枪', auto: false, cd: 32, pellets: 5, spread: 14,   spd: 6.5, r: 3,  kick: 2 },
-        { name: '火箭筒', auto: false, cd: 55, pellets: 1, spread: 0,    spd: 4.5, r: 15, kick: 4, rocket: true }
+        { name: '手枪',   auto: false, cd: 8,  pellets: 1, spread: 1,    spd: 13,  r: 4,  kick: 0 },
+        { name: '冲锋枪', auto: true,  cd: 3,  pellets: 1, spread: 5,    spd: 15,  r: 3,  kick: 0 },
+        { name: '霰弹枪', auto: false, cd: 22, pellets: 6, spread: 16,   spd: 11,  r: 3,  kick: 2 },
+        { name: '火箭筒', auto: false, cd: 40, pellets: 1, spread: 0,    spd: 8,   r: 16, kick: 3, rocket: true }
     ];
     var GRENADE_CD = 50;         // 手雷冷却（帧）
     var GRENADE_FUSE = 65;       // 手雷引信（帧，约1.1秒）
@@ -68,9 +64,13 @@
         grenades: [],            // 存活手雷
         enemies: [],             // 存活敌人
         parts: [],               // 粒子（墨水飞溅）
+        flashes: [],             // 命中白闪（打击感）
+        muzzle: null,            // 枪口火焰
+        hitStop: 0,              // 击杀顿帧（命中瞬间世界凝滞几帧）
         camX: 0, camY: 0,        // 摄像机（双向跟随）
         scale: 2,                // 像素放大倍数
         viewH: 400,              // 视口逻辑高度
+        viewW: 640,              // 视口逻辑宽度（resize 按窗口自适应）
         score: 0, destroyed: 0, kills: 0,
         startTime: 0, milestone: 0,
         weaponIdx: 0,            // 当前武器下标
@@ -232,6 +232,8 @@
         p.dir = Math.cos(baseAng) >= 0 ? 1 : -1;
 
         /* 扇形散射：多弹丸在 spread 角度内均匀偏转（围绕瞄准角） */
+        var mx = p.x + p.w / 2 + Math.cos(baseAng) * 8;
+        var my = p.y + 5 + Math.sin(baseAng) * 8;
         for (var i = 0; i < w.pellets; i++) {
             var off = 0;
             if (w.pellets > 1) off = (i / (w.pellets - 1) - 0.5) * w.spread;
@@ -239,11 +241,13 @@
             var a = baseAng + off * Math.PI / 180;
             var spd = w.spd * (0.94 + Math.random() * 0.12);
             G.bullets.push({
-                x: p.x + p.w / 2 + p.dir * 5, y: p.y + 5,
+                x: mx, y: my,
                 vx: Math.cos(a) * spd, vy: Math.sin(a) * spd,
                 r: w.r, rocket: !!w.rocket
             });
         }
+        /* 枪口火焰（打击感） */
+        G.muzzle = { x: mx, y: my, life: 3 };
         /* 后坐力：沿射击反方向推玩家 */
         if (w.kick) {
             p.x -= Math.cos(baseAng) * w.kick;
@@ -253,13 +257,15 @@
         sfx.shoot();
     }
 
-    /** 爆炸：圆形破坏 + 大量粒子 + 震屏（火箭/手雷共用） */
+    /** 爆炸：圆形破坏 + 大量粒子 + 震屏 + 顿帧（火箭/手雷共用） */
     function explode(cx, cy, r) {
         var removed = window.DLevel.erase(G.lv, cx, cy, r);
         addDestroyed(removed);
         spawnParts(cx, cy, Math.min(40, 10 + r), '#e94560');
         spawnParts(cx, cy, 10);
+        G.flashes.push({ x: cx, y: cy, r: r + 4, life: 6 });
         G.shake = Math.max(G.shake, r / 2);
+        G.hitStop = Math.max(G.hitStop, 4);
         sfx.crumble();
         /* 爆炸波及附近敌人 */
         for (var i = G.enemies.length - 1; i >= 0; i--) {
@@ -306,7 +312,7 @@
         var lv = G.lv;
         for (var i = G.bullets.length - 1; i >= 0; i--) {
             var b = G.bullets[i];
-            var steps = 3;                                  // 分三小步推进，防高速穿墙
+            var steps = 4;                                  // 弹速提高后分四小步推进，防穿墙
             var dead = false;
             for (var s = 0; s < steps && !dead; s++) {
                 b.x += b.vx / steps; b.y += b.vy / steps;
@@ -315,12 +321,15 @@
                 if (window.DLevel.solidAt(lv, Math.floor(b.x), Math.floor(b.y))) {
                     if (b.rocket) {
                         explode(b.x, b.y, b.r);             // 火箭：大范围爆炸
+                        G.hitStop = 5;
                     } else {
                         var removed = window.DLevel.erase(lv, b.x, b.y, b.r);
                         addDestroyed(removed);
                         spawnParts(b.x, b.y, 7);
+                        /* 命中白闪（打击感） */
+                        G.flashes.push({ x: b.x, y: b.y, r: b.r + 2, life: 4 });
                         if (removed > 6) sfx.crumble();
-                        G.shake = Math.max(G.shake, 3);
+                        G.shake = Math.max(G.shake, 2);
                     }
                     dead = true;
                 }
@@ -330,10 +339,13 @@
                     if (b.x > en.x - 2 && b.x < en.x + en.w + 2 && b.y > en.y - 2 && b.y < en.y + en.h + 2) {
                         en.hp -= b.rocket ? 9 : 1; en.hurtT = 6;
                         spawnParts(b.x, b.y, 5, '#e94560');
+                        G.flashes.push({ x: b.x, y: b.y, r: 4, life: 4 });
                         if (en.hp <= 0) {
                             G.enemies.splice(e, 1); e--;
                             G.score += 100; G.kills++;
-                            spawnParts(en.x, en.y, 14, '#e94560');
+                            spawnParts(en.x, en.y, 18, '#e94560');
+                            G.flashes.push({ x: en.x + 4, y: en.y + 3, r: 9, life: 5 });
+                            G.hitStop = 3;                   // 击杀顿帧：世界凝滞一瞬
                             sfx.kill();
                         }
                         dead = true; break;
@@ -431,11 +443,14 @@
      * ============================================================ */
     function resize() {
         var w = window.innerWidth, h = window.innerHeight;
-        /* 选整数倍缩放，保证像素棱角 */
-        G.scale = Math.max(2, Math.round(w / VIEW_W));
+        /* 自适应缩放：目标是让一屏能看到约 640（桌面）/260（手机）
+           逻辑宽的页面内容——原版一屏能看一大片网页，不能太憋 */
+        var targetW = w < 600 ? 260 : 640;
+        G.scale = Math.max(1, Math.round(w / targetW));
+        G.viewW = Math.ceil(w / G.scale);
         G.viewH = Math.ceil(h / G.scale);
-        ui.cv.width = VIEW_W * G.scale;
-        ui.cv.height = G.viewH * G.scale;
+        ui.cv.width = w;
+        ui.cv.height = h;
         ui.cv.style.width = w + 'px';
         ui.cv.style.height = h + 'px';
         ctx.imageSmoothingEnabled = false;
@@ -445,7 +460,7 @@
     function render() {
         var lv = G.lv, p = G.player;
         /* 摄像机双向跟随：玩家保持在屏幕中上部 */
-        var tx = Math.max(0, Math.min(lv.W - VIEW_W, p.x + p.w / 2 - VIEW_W / 2));
+        var tx = Math.max(0, Math.min(lv.W - G.viewW, p.x + p.w / 2 - G.viewW / 2));
         var ty = Math.max(0, Math.min(lv.H - G.viewH, p.y - G.viewH * 0.55));
         G.camX += (tx - G.camX) * 0.15;
         G.camY += (ty - G.camY) * 0.18;
@@ -460,11 +475,11 @@
 
         /* 天幕（关卡外的虚空） */
         ctx.fillStyle = '#05070c';
-        ctx.fillRect(-2, -2, VIEW_W + 4, G.viewH + 4);
+        ctx.fillRect(-2, -2, G.viewW + 4, G.viewH + 4);
 
         /* 关卡像素画：只画视口内的那一片（横向+纵向） */
         var vh = Math.min(G.viewH, lv.H);
-        var vw = Math.min(VIEW_W, lv.W);
+        var vw = Math.min(G.viewW, lv.W);
         ctx.drawImage(lv.canvas, camH, cam, vw, vh, 0, 0, vw, vh);
 
         /* 页脚通关区：绿色虚线 + 提示 */
@@ -472,7 +487,7 @@
         if (footY < G.viewH + 20 && footY > -20) {
             ctx.strokeStyle = 'rgba(61,220,132,0.9)';
             ctx.setLineDash([4, 3]);
-            ctx.strokeRect(0.5, footY, VIEW_W - 1, FOOTEER_H);
+            ctx.strokeRect(0.5, footY, G.viewW - 1, FOOTEER_H);
             ctx.setLineDash([]);
             ctx.fillStyle = 'rgba(61,220,132,0.9)';
             ctx.font = 'bold 10px monospace';
@@ -483,7 +498,7 @@
         for (var i = 0; i < G.enemies.length; i++) {
             var en = G.enemies[i];
             var ey = en.y - cam, ex = en.x - camH;
-            if (ey < -10 || ey > G.viewH + 10 || ex < -12 || ex > VIEW_W + 12) continue;
+            if (ey < -10 || ey > G.viewH + 10 || ex < -12 || ex > G.viewW + 12) continue;
             ctx.fillStyle = en.hurtT > 0 ? '#ffffff' : '#e94560';
             ctx.fillRect(ex, ey, en.w, en.h - 2);
             ctx.fillStyle = en.hurtT > 0 ? '#ffffff' : '#b03050';
@@ -497,7 +512,7 @@
             ctx.fillRect(ex + (en.vx > 0 ? en.w - 4 : 2), ey + 2, 2, 2);
         }
 
-        /* 子弹：手枪/冲锋枪黄色小方块；火箭画大一点带尾焰 */
+        /* 子弹：拖尾弹道（沿速度反方向拉出光线）+ 火箭大弹体 */
         for (var b2 = 0; b2 < G.bullets.length; b2++) {
             var bl = G.bullets[b2];
             var bx = bl.x - camH, by = bl.y - cam;
@@ -507,9 +522,34 @@
                 ctx.fillStyle = '#ff8c42';
                 ctx.fillRect(bx - bl.vx * 1.2 - 2, by - bl.vy * 1.2 - 2, 4, 4);
             } else {
-                ctx.fillStyle = '#ffd56b';
-                ctx.fillRect(bx - 1, by - 1, 3, 2);
+                ctx.strokeStyle = 'rgba(255,213,107,0.85)';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(bx, by);
+                ctx.lineTo(bx - bl.vx * 1.6, by - bl.vy * 1.6);
+                ctx.stroke();
             }
+        }
+
+        /* 命中白闪：命中点绽开的白色光环（打击感） */
+        for (var fl = 0; fl < G.flashes.length; fl++) {
+            var fs = G.flashes[fl];
+            ctx.globalAlpha = Math.min(0.9, fs.life / 5);
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(fs.x - camH, fs.y - cam, fs.r * (1.2 - fs.life * 0.12), 0, 7);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        /* 枪口火焰 */
+        if (G.muzzle) {
+            ctx.globalAlpha = G.muzzle.life / 3;
+            ctx.fillStyle = G.muzzle.life > 1 ? '#fff3c4' : '#ff9c42';
+            ctx.beginPath();
+            ctx.arc(G.muzzle.x - camH, G.muzzle.y - cam, 3.5, 0, 7);
+            ctx.fill();
+            ctx.globalAlpha = 1;
         }
 
         /* 手雷：深灰圆球，引信临近爆炸时闪红 */
@@ -571,6 +611,15 @@
         requestAnimationFrame(loop);
         if (G.state !== 'play') return;
         acc += Math.min(100, t - lastT); lastT = t;
+
+        /* 击杀顿帧：命中要害的瞬间世界凝滞 3~5 帧，随后恢复——
+           这是动作游戏打击感的经典手法 */
+        if (G.hitStop > 0) {
+            G.hitStop--;
+            render();
+            return;
+        }
+
         while (acc >= STEP) {
             acc -= STEP;
             stepPlayer();
@@ -584,6 +633,11 @@
                 pt.vy += 0.16; pt.x += pt.vx; pt.y += pt.vy; pt.life--;
                 if (pt.life <= 0) G.parts.splice(i, 1);
             }
+            /* 命中白闪衰减 */
+            for (var f = G.flashes.length - 1; f >= 0; f--) {
+                if (--G.flashes[f].life <= 0) G.flashes.splice(f, 1);
+            }
+            if (G.muzzle && --G.muzzle.life <= 0) G.muzzle = null;
             if (G.toastT > 0) { G.toastT--; if (G.toastT === 0) ui.toast.style.display = 'none'; }
         }
         updateHUD();
@@ -605,6 +659,7 @@
     function startPlay(lv) {
         G.lv = lv; G.state = 'play';
         G.bullets = []; G.grenades = []; G.enemies = []; G.parts = [];
+        G.flashes = []; G.muzzle = null; G.hitStop = 0;
         G.score = 0; G.destroyed = 0; G.kills = 0;
         G.milestone = 0; G.camX = 0; G.camY = 0; G.fireCd = 0; G.gCd = 0;
         G.fireLatch = false; G.weaponIdx = 0; G.shake = 0;
