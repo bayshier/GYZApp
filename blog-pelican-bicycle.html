@@ -718,6 +718,188 @@
 
         <p>最简的一份：轮子只有 4 根辐条，没有链条，鹈鹕的嘴小得不像鹈鹕，腿悬在半空没踩任何东西。最出圈的是<strong>踏板被安装在了后轮的轴心上</strong>——机械结构上属于车祸现场。但公平地说，两个轮子、车架、鸟、嘴、眼睛都在，「一只鸟和一辆车」的意象是成立的，只是「骑」的动作没做出来。</p>
 
+        <h3>特别参展：ZCode 手绘动态版（评测员亲自下场）</h3>
+
+        <p>评测员交卷——纯坐标手绘的 <strong>SMIL 动画 SVG</strong>，零 JS：车轮旋转、双腿按 180° 相位差蹬踏（蹼掌跟随踏板做圆周运动）、链条上下两段反向流动、整车高频颠簸、头部点动、云朵飘移、速度线掠过。页面里就是活的，不是截图。</p>
+
+        <figure class="pc-fig">
+            <div class="pc-svgbox"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" font-family="sans-serif">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#bfdbfe"/>
+      <stop offset="1" stop-color="#eff6ff"/>
+    </linearGradient>
+    <g id="wheel">
+      <circle r="92" fill="none" stroke="#1f2937" stroke-width="13"/>
+      <circle r="70" fill="none" stroke="#94a3b8" stroke-width="3"/>
+      <g stroke="#94a3b8" stroke-width="1.5">
+        <line x1="70" y1="0" x2="-70" y2="0"/>
+        <line x1="60.6" y1="35" x2="-60.6" y2="-35"/>
+        <line x1="35" y1="60.6" x2="-35" y2="-60.6"/>
+        <line x1="0" y1="70" x2="0" y2="-70"/>
+        <line x1="-35" y1="60.6" x2="35" y2="-60.6"/>
+        <line x1="-60.6" y1="35" x2="60.6" y2="-35"/>
+      </g>
+      <circle r="9" fill="#475569"/>
+      <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="2s" repeatCount="indefinite"/>
+    </g>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="900" height="620" fill="url(#sky)"/>
+  <circle cx="812" cy="84" r="46" fill="#fde68a"/>
+  <g fill="#ffffff" opacity="0.9">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 26 0; 0 0" dur="14s" repeatCount="indefinite"/>
+    <ellipse cx="150" cy="90" rx="52" ry="18"/>
+    <ellipse cx="195" cy="78" rx="38" ry="14"/>
+    <ellipse cx="640" cy="60" rx="44" ry="15"/>
+  </g>
+  <rect y="520" width="900" height="100" fill="#cbd5e1"/>
+  <rect y="520" width="900" height="8" fill="#94a3b8"/>
+  <g stroke="#f8fafc" stroke-width="6" stroke-linecap="round" opacity="0.85">
+    <line x1="60" y1="575" x2="180" y2="575"/>
+    <line x1="260" y1="575" x2="380" y2="575"/>
+    <line x1="460" y1="575" x2="580" y2="575"/>
+    <line x1="660" y1="575" x2="780" y2="575"/>
+  </g>
+  <ellipse cx="420" cy="540" rx="255" ry="14" fill="#000000" opacity="0.12"/>
+
+  <!-- 速度线（流动淡出） -->
+  <g stroke="#94a3b8" stroke-width="5" stroke-linecap="round">
+    <line x1="55" y1="405" x2="130" y2="405">
+      <animateTransform attributeName="transform" type="translate" values="0 0; -30 0" dur="0.7s" begin="-0.0s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.75;0" dur="0.7s" begin="-0.0s" repeatCount="indefinite"/>
+    </line>
+    <line x1="35" y1="438" x2="120" y2="438">
+      <animateTransform attributeName="transform" type="translate" values="0 0; -30 0" dur="0.7s" begin="-0.25s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.75;0" dur="0.7s" begin="-0.25s" repeatCount="indefinite"/>
+    </line>
+    <line x1="60" y1="471" x2="135" y2="471">
+      <animateTransform attributeName="transform" type="translate" values="0 0; -30 0" dur="0.7s" begin="-0.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.75;0" dur="0.7s" begin="-0.5s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  <!-- 尘土 -->
+  <g fill="#e2e8f0">
+    <animateTransform attributeName="transform" type="translate" values="0 0; -20 0" dur="1s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/>
+    <circle cx="150" cy="532" r="9"/>
+    <circle cx="132" cy="524" r="6"/>
+    <circle cx="120" cy="533" r="4"/>
+  </g>
+
+  <!-- 整车 + 骑手：骑行颠簸 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 3; 0 0" dur="0.9s" repeatCount="indefinite"
+                      calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/>
+
+    <!-- 远侧曲柄与脚踏（车架后面，随曲柄旋转） -->
+    <path d="M 405 438 L 374 476" stroke="#1f2937" stroke-width="7" stroke-linecap="round">
+      <animate attributeName="d" dur="2s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1"
+        values="M 405 438 L 374 476; M 405 438 L 364 407; M 405 438 L 436 397; M 405 438 L 446 469; M 405 438 L 374 476"/>
+    </path>
+    <rect x="359" y="472" width="30" height="9" rx="3" fill="#111827">
+      <animateTransform attributeName="transform" type="translate" dur="2s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1"
+        values="0 0; -10 -72; 62 -82; 72 -10; 0 0"/>
+    </rect>
+
+    <!-- 车轮（定义内自带旋转） -->
+    <use href="#wheel" x="255" y="438"/>
+    <use href="#wheel" x="585" y="438"/>
+
+    <!-- 车架 -->
+    <g stroke="#dc2626" stroke-width="10" stroke-linecap="round" fill="none">
+      <line x1="255" y1="438" x2="405" y2="438"/>
+      <line x1="255" y1="438" x2="350" y2="300"/>
+      <line x1="350" y1="300" x2="555" y2="315"/>
+      <line x1="405" y1="438" x2="350" y2="300"/>
+      <line x1="405" y1="438" x2="555" y2="315"/>
+    </g>
+    <line x1="585" y1="438" x2="560" y2="310" stroke="#334155" stroke-width="9" stroke-linecap="round"/>
+    <line x1="555" y1="315" x2="560" y2="292" stroke="#334155" stroke-width="10" stroke-linecap="round"/>
+    <path d="M 560 292 C 574 280, 590 283, 592 297" stroke="#334155" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <circle cx="592" cy="299" r="7" fill="#111827"/>
+    <line x1="350" y1="300" x2="342" y2="276" stroke="#334155" stroke-width="8" stroke-linecap="round"/>
+    <ellipse cx="337" cy="271" rx="30" ry="10" fill="#1f2937"/>
+
+    <!-- 链条（反向流动）与牙盘 -->
+    <line x1="405" y1="415" x2="255" y2="430" stroke="#475569" stroke-width="4" stroke-dasharray="6 4">
+      <animate attributeName="stroke-dashoffset" from="0" to="-20" dur="0.4s" repeatCount="indefinite"/>
+    </line>
+    <line x1="255" y1="446" x2="405" y2="461" stroke="#475569" stroke-width="4" stroke-dasharray="6 4">
+      <animate attributeName="stroke-dashoffset" from="0" to="-20" dur="0.4s" repeatCount="indefinite"/>
+    </line>
+    <circle cx="405" cy="438" r="24" fill="none" stroke="#475569" stroke-width="5"/>
+
+    <!-- 近侧曲柄与脚踏 -->
+    <path d="M 405 438 L 436 397" stroke="#334155" stroke-width="7" stroke-linecap="round">
+      <animate attributeName="d" dur="2s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1"
+        values="M 405 438 L 436 397; M 405 438 L 446 469; M 405 438 L 374 479; M 405 438 L 364 407; M 405 438 L 436 397"/>
+    </path>
+    <rect x="420" y="392" width="30" height="9" rx="3" fill="#111827">
+      <animateTransform attributeName="transform" type="translate" dur="2s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1"
+        values="0 0; 10 72; -62 82; -72 10; 0 0"/>
+    </rect>
+
+    <!-- 鹈鹕：远侧腿（蹬踏） -->
+    <path d="M 355 320 L 338 398 L 373 474" stroke="#b45309" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.9">
+      <animate attributeName="d" dur="2s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1"
+        values="M 355 320 L 338 398 L 374 477; M 355 320 L 336 390 L 364 405; M 355 320 L 342 395 L 436 395; M 355 320 L 340 400 L 446 467; M 355 320 L 338 398 L 374 477"/>
+    </path>
+    <path d="M 359 476 L 391 476 L 377 460 Z" fill="#b45309">
+      <animateTransform attributeName="transform" type="translate" dur="2s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1"
+        values="0 0; -10 -72; 62 -82; 72 -10; 0 0"/>
+    </path>
+
+    <!-- 鹈鹕：尾巴 -->
+    <path d="M 272 258 L 218 228 L 256 296 Z" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="3" stroke-linejoin="round"/>
+
+    <!-- 鹈鹕：身体 -->
+    <ellipse cx="345" cy="285" rx="88" ry="62" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+    <ellipse cx="318" cy="304" rx="58" ry="32" fill="#e2e8f0"/>
+
+    <!-- 鹈鹕：近侧腿（蹬踏） -->
+    <path d="M 370 330 L 404 396 L 433 395" stroke="#d97706" stroke-width="8" fill="none" stroke-linecap="round">
+      <animate attributeName="d" dur="2s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1"
+        values="M 370 330 L 404 396 L 436 397; M 370 330 L 416 400 L 446 469; M 370 330 L 396 402 L 374 479; M 370 330 L 392 390 L 364 407; M 370 330 L 404 396 L 436 397"/>
+    </path>
+    <path d="M 419 396 L 453 396 L 438 378 Z" fill="#d97706">
+      <animateTransform attributeName="transform" type="translate" dur="2s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1"
+        values="0 0; 10 72; -62 82; -72 10; 0 0"/>
+    </path>
+
+    <!-- 鹈鹕：脖子 -->
+    <path d="M 388 258 C 425 235, 445 200, 455 158" stroke="#cbd5e1" stroke-width="36" fill="none" stroke-linecap="round"/>
+    <path d="M 388 258 C 425 235, 445 200, 455 158" stroke="#f8fafc" stroke-width="30" fill="none" stroke-linecap="round"/>
+
+    <!-- 鹈鹕：头部（轻微点动） -->
+    <g>
+      <animateTransform attributeName="transform" type="translate" values="0 0; 0 2.5; 0 0" dur="1.8s" repeatCount="indefinite"
+                        calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/>
+      <circle cx="462" cy="148" r="30" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+      <path d="M 480 158 C 502 212, 562 220, 614 176 L 478 158 Z" fill="#fbbf24" stroke="#b45309" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M 478 140 L 620 164 L 611 176 L 478 158 Z" fill="#f59e0b" stroke="#b45309" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M 500 148 L 596 162" stroke="#b45309" stroke-width="2" opacity="0.6"/>
+      <circle cx="474" cy="137" r="4.5" fill="#111827"/>
+      <circle cx="475.5" cy="135.5" r="1.5" fill="#ffffff"/>
+    </g>
+
+    <!-- 鹈鹕：翅膀扶把 -->
+    <path d="M 366 250 C 432 244, 522 262, 586 291 C 560 301, 468 290, 396 294 C 374 290, 361 272, 366 250 Z"
+          fill="#e2e8f0" stroke="#cbd5e1" stroke-width="3" stroke-linejoin="round"/>
+    <g stroke="#94a3b8" stroke-width="2" opacity="0.7">
+      <path d="M 545 282 C 560 284, 574 289, 584 293" fill="none"/>
+      <path d="M 538 291 C 552 293, 566 296, 577 297" fill="none"/>
+    </g>
+  </g>
+
+  <!-- 落款 -->
+  <text x="24" y="600" font-size="15" fill="#64748b">鹈鹕骑自行车 · ZCode 手绘 SVG 动态版</text>
+</svg>
+</div>
+            <figcaption>ZCode 手绘动态版 · 纯 SMIL 动画，0 KB 图片依赖</figcaption>
+        </figure>
+
         <hr>
 
         <h2>五、缺席的 glm 双子座，和一场自己挤自己的事故</h2>
