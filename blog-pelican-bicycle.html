@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="经典 AI 考题「鹈鹕骑自行车」最新战报：内网中转站 9 个模型同台竞技，7 个交卷 2 个限流弃考。文生图组照片级、SVG 组风格迥异，附全部原始作品。">
+    <meta name="description" content="经典 AI 考题「鹈鹕骑自行车」，一支清一色国产阵容：智谱 GLM、通义千问、DeepSeek、通义万相。SVG 组先卷代码与结构（全员动态骑行），文生图组再卷画面与题意，附全部原始作品。">
     <meta name="theme-color" content="#0a0e16">
-    <title>鹈鹕骑自行车测试：中转站 9 模型横评 — Easin's Blog</title>
+    <title>鹈鹕骑自行车测试：9 个国产模型横评 — Easin's Blog</title>
     <link rel="shortcut icon" href="icon_logo.png" type="image/png">
     <link rel="icon" href="icon_logo.png" type="image/png">
     <link rel="stylesheet" href="css/blog.css?v=20260824">
@@ -36,20 +36,20 @@
             <span class="tag">SVG</span>
         </div>
 
-        <h1 class="article-title">鹈鹕骑自行车测试：让内网中转站的 9 个模型同台竞技</h1>
+        <h1 class="article-title">鹈鹕骑自行车测试：9 个国产模型同台竞技</h1>
         <div class="article-date">
             2026.09 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a>
         </div>
 
         <blockquote>
-            <p>一道流传多年的 AI 考题，一句不带任何修饰词的题面。7 个模型交卷，2 个限流弃考——最有趣的是，弃考原因居然是评测员自己。</p>
+            <p>一道流传多年的 AI 考题，一支清一色国产的参赛阵容：智谱 GLM、阿里通义千问、DeepSeek、通义万相。7 个交卷，2 个限流弃考——最有趣的是，弃考原因居然是评测员自己。</p>
         </blockquote>
 
         <h2>一、这道题是哪来的</h2>
 
         <p>「鹈鹕骑自行车」是 Simon Willison 多年前带火的一个 LLM 视觉测试：让模型<strong>直接生成一段 SVG 代码</strong>，画出一只骑自行车的鹈鹕。题面看似简单，实际上同时考察三件事：自行车的机械结构对不对（两个轮子、车架、脚踏）、鹈鹕的物种特征在不在（大嘴、喉囊、蹼掌）、以及模型能不能把「骑」这个动作关系画对——腿要够到踏板，翅膀要够到车把。</p>
 
-        <p>最近这题在国内文生图圈又翻红了一轮，各家图像模型轮流被这道题「处刑」。于是我把手里那台内网 New API 中转站（192.168.1.61:3000）上能用的 <strong>9 个模型</strong>全部拉来同台竞技。</p>
+        <p>最近这题在国内文生图圈又翻红了一轮，各家图像模型轮流被这道题「处刑」。于是我把手里那台内网 New API 中转站（192.168.1.61:3000）上能用的 <strong>9 个模型</strong>全部拉来同台竞技。清一色国产：GLM、千问、DeepSeek、通义万相——正好把「国产模型画图与写码的真实水平」这道附加题一起答了。</p>
 
         <h2>二、参赛名单与方法</h2>
 
@@ -70,25 +70,7 @@
 
         <hr>
 
-        <h2>三、文生图组：一张完美理解题意，一张「最美但没骑」</h2>
-
-        <p><strong>qwen-image-2.0-pro</strong> 交出了全场最符合题意的作品：鹈鹕端端正正坐在红色自行车的车座上，<strong>脚踩踏板</strong>，车把、辐条、车筐结构完整，背景是海边公路。最绝的是它给鹈鹕脚上<strong>画了两只黑色小皮鞋</strong>——蹼掌配皮鞋，荒诞感和完成度双满分。</p>
-
-        <figure class="pc-fig pc-img">
-            <img src="image/pelican/qwen-image-2.0-pro.jpg" alt="qwen-image-2.0-pro 生成的鹈鹕骑自行车">
-            <figcaption>qwen-image-2.0-pro · 注意脚上的小皮鞋</figcaption>
-        </figure>
-
-        <p><strong>wan2.7-image-pro</strong> 的照片是全场<strong>美术质量最高</strong>的：黄金时刻的光线、复古绿色自行车、海边草甸、后轮扬起的尘土，氛围感直接拉满。但是——鹈鹕是<strong>站在车架上摆拍</strong>的，不是骑。题意理解这一题，它交了个「最美错题」。</p>
-
-        <figure class="pc-fig pc-img">
-            <img src="image/pelican/wan2.7-image-pro.jpg" alt="wan2.7-image-pro 生成的鹈鹕与自行车">
-            <figcaption>wan2.7-image-pro · 光影满分，但鹈鹕在摆拍，没在骑</figcaption>
-        </figure>
-
-        <hr>
-
-        <h2>四、SVG 组：五份代码，五种性格</h2>
+        <h2>三、SVG 组：五份代码，五种性格</h2>
 
         <h3>qwen3.7-plus：机械结构最严谨</h3>
 
@@ -922,7 +904,25 @@
             <figcaption>ZCode 手绘动态版 · 纯 SMIL 动画，0 KB 图片依赖</figcaption>
         </figure>
 
+                <h2>四、文生图组：卷完代码，再卷图片</h2>
+
+        <p><strong>qwen-image-2.0-pro</strong> 交出了全场最符合题意的作品：鹈鹕端端正正坐在红色自行车的车座上，<strong>脚踩踏板</strong>，车把、辐条、车筐结构完整，背景是海边公路。最绝的是它给鹈鹕脚上<strong>画了两只黑色小皮鞋</strong>——蹼掌配皮鞋，荒诞感和完成度双满分。</p>
+
+        <figure class="pc-fig pc-img">
+            <img src="image/pelican/qwen-image-2.0-pro.jpg" alt="qwen-image-2.0-pro 生成的鹈鹕骑自行车">
+            <figcaption>qwen-image-2.0-pro · 注意脚上的小皮鞋</figcaption>
+        </figure>
+
+        <p><strong>wan2.7-image-pro</strong> 的照片是全场<strong>美术质量最高</strong>的：黄金时刻的光线、复古绿色自行车、海边草甸、后轮扬起的尘土，氛围感直接拉满。但是——鹈鹕是<strong>站在车架上摆拍</strong>的，不是骑。题意理解这一题，它交了个「最美错题」。</p>
+
+        <figure class="pc-fig pc-img">
+            <img src="image/pelican/wan2.7-image-pro.jpg" alt="wan2.7-image-pro 生成的鹈鹕与自行车">
+            <figcaption>wan2.7-image-pro · 光影满分，但鹈鹕在摆拍，没在骑</figcaption>
+        </figure>
+
         <hr>
+
+<hr>
 
         <h2>五、缺席的 glm 双子座，和一场自己挤自己的事故</h2>
 
@@ -936,13 +936,14 @@
 
         <table class="pc-table">
             <tr><th>模型</th><th>机械结构</th><th>鹈鹕特征</th><th>「骑」的动作</th><th>一句话点评</th></tr>
-            <tr><td>qwen-image-2.0-pro</td><td>★★★★★</td><td>★★★★★（+小皮鞋）</td><td>✅ 端坐踩踏</td><td>题意理解天花板</td></tr>
-            <tr><td>wan2.7-image-pro</td><td>★★★★☆</td><td>★★★★★</td><td>❌ 站着摆拍</td><td>美术第一，题意跑偏</td></tr>
-            <tr><td>qwen3.7-plus</td><td>★★★★★</td><td>★★★★☆</td><td>⚠️ 脚没踩实</td><td>SVG 机械结构最严谨</td></tr>
+                                <tr><td>qwen3.7-plus</td><td>★★★★★</td><td>★★★★☆</td><td>⚠️ 脚没踩实</td><td>SVG 机械结构最严谨</td></tr>
             <tr><td>deepseek-v4-pro</td><td>★★★★☆</td><td>★★★★★（喉囊褶皱）</td><td>✅ 双腿双踏板</td><td>细节狂魔</td></tr>
             <tr><td>deepseek-v4-flash-0731</td><td>★★★★☆</td><td>★★★★☆（+挡泥板+腮红）</td><td>✅ 双腿双踏板</td><td>小而全，会卖萌</td></tr>
             <tr><td>qwen3.6-flash</td><td>★★★☆☆</td><td>★★★★☆</td><td>✅ 腿在踏板上</td><td>粗描边卡通，风格自洽</td></tr>
             <tr><td>glm-4.7-flash</td><td>★☆☆☆☆（踏板在后轮轴）</td><td>★★☆☆☆（嘴太小）</td><td>❌ 腿悬空</td><td>交了卷，但没完全会</td></tr>
+  <tr><td>ZCode 手绘动态版</td><td>★★★★★</td><td>★★★★☆</td><td>✅ 动态蹬踏中</td><td>评测员亲自下场</td></tr>
+  <tr><td>qwen-image-2.0-pro</td><td>★★★★★</td><td>★★★★★（+小皮鞋）</td><td>✅ 端坐踩踏</td><td>题意理解天花板</td></tr>
+  <tr><td>wan2.7-image-pro</td><td>★★★★☆</td><td>★★★★★</td><td>❌ 站着摆拍</td><td>美术第一，题意跑偏</td></tr>
             <tr><td>glm-5.3 / glm-5.3-flash</td><td colspan="3">— 429 弃考 —</td><td>被评测员自己挤掉的</td></tr>
         </table>
 
