@@ -66,7 +66,7 @@
             <tr><td>glm-5.3-flash</td><td>❌ 限流弃考（429）</td></tr>
         </table>
 
-        <p>全部走内网中转站的 OpenAI 兼容接口：图像模型打 <code>/v1/images/generations</code>，文本模型打 <code>/v1/chat/completions</code>。文本组的 SVG <strong>未做任何人工修改</strong>，从返回里截出 <code>&lt;svg&gt;…&lt;/svg&gt;</code> 原样内嵌到本文——包括那些画错的。</p>
+        <p>全部走内网中转站的 OpenAI 兼容接口：图像模型打 <code>/v1/images/generations</code>，文本模型打 <code>/v1/chat/completions</code>。文本组的 SVG 从返回里截出 <code>&lt;svg&gt;…&lt;/svg&gt;</code> 后原样内嵌，并统一注入了 <strong>SMIL 动画</strong>（车轮旋转、整车颠簸、曲柄蹬踏、链条流动）——包括那些画错的，原坐标一概未动；未加动画的原始版本在 <a href="https://github.com/bayshier/pelican-bicycle/tree/main/svg" target="_blank" rel="noopener">pelican-bicycle 仓库</a>与 git 历史中。</p>
 
         <hr>
 
@@ -97,10 +97,11 @@
   <rect x="0" y="373" width="500" height="27" fill="#8B7355"/>
   <line x1="0" y1="375" x2="500" y2="375" stroke="#6B5335" stroke-width="2"/>
 
+  <g><animateTransform attributeName="transform" type="translate" values="0 0; 0 2.5; 0 0" dur="0.9s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/>
   <!-- REAR WHEEL -->
   <circle cx="140" cy="320" r="55" fill="none" stroke="#444" stroke-width="5"/>
   <circle cx="140" cy="320" r="6" fill="#555"/>
-  <g stroke="#999" stroke-width="1">
+  <g stroke="#999" stroke-width="1"><animateTransform attributeName="transform" type="rotate" from="0 140 320" to="360 140 320" dur="2s" repeatCount="indefinite"/>
     <line x1="140" y1="268" x2="140" y2="372"/>
     <line x1="88" y1="320" x2="192" y2="320"/>
     <line x1="101" y1="281" x2="179" y2="359"/>
@@ -114,7 +115,7 @@
   <!-- FRONT WHEEL -->
   <circle cx="360" cy="320" r="55" fill="none" stroke="#444" stroke-width="5"/>
   <circle cx="360" cy="320" r="6" fill="#555"/>
-  <g stroke="#999" stroke-width="1">
+  <g stroke="#999" stroke-width="1"><animateTransform attributeName="transform" type="rotate" from="0 360 320" to="360 360 320" dur="2s" repeatCount="indefinite"/>
     <line x1="360" y1="268" x2="360" y2="372"/>
     <line x1="308" y1="320" x2="412" y2="320"/>
     <line x1="321" y1="281" x2="399" y2="359"/>
@@ -152,14 +153,16 @@
   <circle cx="210" cy="300" r="8" fill="#666"/>
 
   <!-- Chain -->
-  <path d="M196,300 Q170,318 140,322" fill="none" stroke="#444" stroke-width="2" stroke-dasharray="3,2"/>
-  <path d="M224,300 Q180,325 140,318" fill="none" stroke="#444" stroke-width="2" stroke-dasharray="3,2"/>
+  <path d="M196,300 Q170,318 140,322" fill="none" stroke="#444" stroke-width="2" stroke-dasharray="3,2"><animate attributeName="stroke-dashoffset" from="0" to="-10" dur="0.5s" repeatCount="indefinite"/></path>
+  <path d="M224,300 Q180,325 140,318" fill="none" stroke="#444" stroke-width="2" stroke-dasharray="3,2"><animate attributeName="stroke-dashoffset" from="0" to="-10" dur="0.5s" repeatCount="indefinite"/></path>
 
   <!-- Crank arms and pedals -->
+  <g><animateTransform attributeName="transform" type="rotate" from="0 210 300" to="360 210 300" dur="2s" repeatCount="indefinite"/>
   <line x1="210" y1="300" x2="195" y2="320" stroke="#555" stroke-width="4" stroke-linecap="round"/>
   <rect x="186" y="318" width="16" height="5" rx="2" fill="#444"/>
   <line x1="210" y1="300" x2="225" y2="280" stroke="#555" stroke-width="4" stroke-linecap="round"/>
   <rect x="218" y="277" width="16" height="5" rx="2" fill="#444"/>
+  </g>
 
   <!-- ===== PELICAN ===== -->
 
@@ -218,7 +221,8 @@
 
   <!-- Smile line -->
   <path d="M320,88 Q325,92 320,95" fill="none" stroke="#d08020" stroke-width="1"/>
-</svg></div><figcaption>qwen3.7-plus · 5 KB，未做任何人工修改，原样内嵌</figcaption></figure>
+</g>
+</svg></div><figcaption>qwen3.7-plus · 原作 + SMIL 动画：轮转/颠簸/蹬踏</figcaption></figure>
 
         <p>自行车该有的机械件一个不落：双层辐条、链传动（虚线画出了链线）、曲柄双踏板、弯形车把。鹈鹕的配件也最全——嘴尖的钩、头冠羽、尾羽、翅膀一根根羽毛线。两条腿从身体跨过车架伸向踏板，唯一的小瑕疵是腿的落点和踏板差了几个像素，属于「姿势到位、脚没踩实」。</p>
 
@@ -237,6 +241,7 @@
   <rect x="0" y="520" width="800" height="80" fill="#e0e0e0" />
   <rect x="0" y="520" width="800" height="10" fill="#c0c0c0" />
 
+  <g><animateTransform attributeName="transform" type="translate" values="0 0; 0 2.5; 0 0" dur="0.9s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/>
   <!-- 运动线与灰尘 -->
   <path d="M 120 440 L 80 440 M 130 420 L 100 400 M 130 460 L 100 480" stroke="#333" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 6" opacity="0.5" />
   <path d="M 660 440 L 700 440 M 650 420 L 680 400 M 650 460 L 680 480" stroke="#333" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 6" opacity="0.5" />
@@ -255,7 +260,7 @@
   <path d="M 340 400 L 320 420 M 340 400 L 340 425 M 340 400 L 355 420" fill="none" stroke="#e76f51" stroke-width="8" stroke-linecap="round" />
 
   <!-- 自行车 - 后轮 -->
-  <g transform="translate(200, 440)">
+  <g transform="translate(200, 440)"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="2s" additive="sum" repeatCount="indefinite"/>
     <circle cx="0" cy="0" r="70" fill="none" stroke="#1d3557" stroke-width="12" />
     <circle cx="0" cy="0" r="64" fill="none" stroke="#ccc" stroke-width="2" />
     <line x1="0" y1="-64" x2="0" y2="64" stroke="#999" stroke-width="2" />
@@ -268,7 +273,7 @@
   </g>
 
   <!-- 自行车 - 前轮 -->
-  <g transform="translate(580, 440)">
+  <g transform="translate(580, 440)"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="2s" additive="sum" repeatCount="indefinite"/>
     <circle cx="0" cy="0" r="70" fill="none" stroke="#1d3557" stroke-width="12" />
     <circle cx="0" cy="0" r="64" fill="none" stroke="#ccc" stroke-width="2" />
     <line x1="0" y1="-64" x2="0" y2="64" stroke="#999" stroke-width="2" />
@@ -281,12 +286,13 @@
   </g>
 
   <!-- 链条 -->
-  <path d="M 200 420 L 380 400 M 200 460 L 380 480" stroke="#555" stroke-width="4" stroke-dasharray="6 4" />
+  <path d="M 200 420 L 380 400 M 200 460 L 380 480" stroke="#555" stroke-width="4" stroke-dasharray="6 4"><animate attributeName="stroke-dashoffset" from="0" to="-20" dur="0.5s" repeatCount="indefinite"/></path>
 
   <!-- 牙盘与曲柄 -->
   <circle cx="380" cy="440" r="40" fill="none" stroke="#333" stroke-width="8" />
   <circle cx="380" cy="440" r="30" fill="none" stroke="#666" stroke-width="4" />
   
+  <g><animateTransform attributeName="transform" type="rotate" from="0 380 440" to="360 380 440" dur="2s" repeatCount="indefinite"/>
   <!-- 后曲柄与踏板 -->
   <line x1="380" y1="440" x2="340" y2="400" stroke="#333" stroke-width="12" stroke-linecap="round" />
   <g transform="translate(340, 400) rotate(-45)">
@@ -299,6 +305,7 @@
   <g transform="translate(420, 480) rotate(-45)">
     <rect x="-25" y="-10" width="50" height="20" rx="6" fill="#333" />
     <rect x="-20" y="-6" width="40" height="12" fill="#666" />
+  </g>
   </g>
 
   <circle cx="380" cy="440" r="10" fill="#fff" stroke="#333" stroke-width="6" />
@@ -354,7 +361,8 @@
   <!-- 左翼羽毛细节 -->
   <path d="M 340 220 L 410 250 M 370 230 L 440 265 M 400 240 L 470 275 M 430 250 L 500 280" fill="none" stroke="#555" stroke-width="5" stroke-linecap="round" />
 
-</svg></div><figcaption>deepseek-v4-pro · 7 KB，未做任何人工修改，原样内嵌</figcaption></figure>
+  </g>
+</svg></div><figcaption>deepseek-v4-pro · 原作 + SMIL 动画：轮转/颠簸/蹬踏</figcaption></figure>
 
         <p>全场元素量最大的一家：云朵、路缘石、双向运动线、扬尘、羽冠、翅膀上的羽毛线条都有。最见功力的是<strong>喉囊上画了皮肤褶皱</strong>，这是真的理解了鹈鹕的解剖特征。双腿分别连到两个踏板上，踏板还带了旋钮细节。缺点是画面元素太挤，鹈鹕的身子被车架穿插得有点乱。</p>
 
@@ -371,6 +379,7 @@
   <!-- Background -->
   <rect width="800" height="600" fill="url(#skyGrad)"/>
 
+  <g><animateTransform attributeName="transform" type="translate" values="0 0; 0 2.5; 0 0" dur="0.9s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/>
   <!-- Ground Shadow -->
   <ellipse cx="380" cy="540" rx="260" ry="20" fill="rgba(0,0,0,0.1)"/>
 
@@ -379,7 +388,7 @@
     <!-- Rear Wheel -->
     <circle cx="200" cy="480" r="60" fill="none" stroke="#2C3E50" stroke-width="10"/>
     <circle cx="200" cy="480" r="50" fill="none" stroke="#BDC3C7" stroke-width="4"/>
-    <g stroke="#95A5A6" stroke-width="2">
+    <g stroke="#95A5A6" stroke-width="2"><animateTransform attributeName="transform" type="rotate" from="0 200 480" to="360 200 480" dur="2s" repeatCount="indefinite"/>
       <line x1="200" y1="430" x2="200" y2="530"/>
       <line x1="150" y1="480" x2="250" y2="480"/>
       <line x1="165" y1="445" x2="235" y2="515"/>
@@ -390,7 +399,7 @@
     <!-- Front Wheel -->
     <circle cx="550" cy="480" r="60" fill="none" stroke="#2C3E50" stroke-width="10"/>
     <circle cx="550" cy="480" r="50" fill="none" stroke="#BDC3C7" stroke-width="4"/>
-    <g stroke="#95A5A6" stroke-width="2">
+    <g stroke="#95A5A6" stroke-width="2"><animateTransform attributeName="transform" type="rotate" from="0 550 480" to="360 550 480" dur="2s" repeatCount="indefinite"/>
       <line x1="550" y1="430" x2="550" y2="530"/>
       <line x1="500" y1="480" x2="600" y2="480"/>
       <line x1="515" y1="445" x2="585" y2="515"/>
@@ -423,6 +432,7 @@
     <circle cx="350" cy="480" r="18" fill="none" stroke="#7F8C8D" stroke-width="6"/>
     <circle cx="350" cy="480" r="6" fill="#2C3E50"/>
     
+    <g><animateTransform attributeName="transform" type="rotate" from="0 350 480" to="360 350 480" dur="2s" repeatCount="indefinite"/>
     <!-- Top Crank and Pedal -->
     <line x1="350" y1="480" x2="350" y2="425" stroke="#2C3E50" stroke-width="8" stroke-linecap="round"/>
     <rect x="335" y="420" width="30" height="10" rx="3" fill="#2C3E50"/>
@@ -430,6 +440,7 @@
     <!-- Bottom Crank and Pedal -->
     <line x1="350" y1="480" x2="350" y2="535" stroke="#2C3E50" stroke-width="8" stroke-linecap="round"/>
     <rect x="335" y="530" width="30" height="10" rx="3" fill="#2C3E50"/>
+    </g>
   </g>
 
   <!-- Pelican -->
@@ -487,7 +498,8 @@
     <path d="M 300,320 Q 310,400 350,535" fill="none" stroke="#E67E22" stroke-width="12" stroke-linecap="round"/>
     <path d="M 350,535 L 370,540 L 365,550 L 350,545 Z" fill="#E67E22" stroke="#2C3E50" stroke-width="3"/>
   </g>
-</svg></div><figcaption>deepseek-v4-flash-0731 · 6 KB，未做任何人工修改，原样内嵌</figcaption></figure>
+  </g>
+</svg></div><figcaption>deepseek-v4-flash-0731 · 原作 + SMIL 动画：轮转/颠簸/蹬踏</figcaption></figure>
 
         <p>意外的惊喜卷：别人都没画的<strong>黄色挡泥板</strong>它画了，还给了鹈鹕两片<strong>腮红</strong>。结构上曲柄上下双踏板、双腿各自对应，喉囊也有褶皱细节。羽冠只画了一小撮，翅膀分了前后两层。整体是「小而全」的路线。</p>
 
@@ -527,6 +539,7 @@
   <!-- Ground Line -->
   <line x1="0" y1="540" x2="800" y2="540" stroke="#000" stroke-width="8" />
 
+  <g><animateTransform attributeName="transform" type="translate" values="0 0; 0 2.5; 0 0" dur="0.9s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/>
   <!-- BICYCLE -->
   <g id="bicycle">
     <!-- Back Wheel -->
@@ -534,20 +547,24 @@
     <circle cx="250" cy="450" r="75" fill="none" stroke="#CCC" stroke-width="8"/>
     <circle cx="250" cy="450" r="10" fill="#000"/>
     <!-- Spokes Back -->
+    <g><animateTransform attributeName="transform" type="rotate" from="0 250 450" to="360 250 450" dur="2s" repeatCount="indefinite"/>
     <line x1="250" y1="360" x2="250" y2="540" stroke="#000" stroke-width="6"/>
     <line x1="160" y1="450" x2="340" y2="450" stroke="#000" stroke-width="6"/>
     <line x1="186" y1="386" x2="314" y2="514" stroke="#000" stroke-width="6"/>
     <line x1="186" y1="514" x2="314" y2="386" stroke="#000" stroke-width="6"/>
+    </g>
 
     <!-- Front Wheel -->
     <circle cx="550" cy="450" r="90" fill="none" stroke="#000" stroke-width="16"/>
     <circle cx="550" cy="450" r="75" fill="none" stroke="#CCC" stroke-width="8"/>
     <circle cx="550" cy="450" r="10" fill="#000"/>
     <!-- Spokes Front -->
+    <g><animateTransform attributeName="transform" type="rotate" from="0 550 450" to="360 550 450" dur="2s" repeatCount="indefinite"/>
     <line x1="550" y1="360" x2="550" y2="540" stroke="#000" stroke-width="6"/>
     <line x1="460" y1="450" x2="640" y2="450" stroke="#000" stroke-width="6"/>
     <line x1="486" y1="386" x2="614" y2="514" stroke="#000" stroke-width="6"/>
     <line x1="486" y1="514" x2="614" y2="386" stroke="#000" stroke-width="6"/>
+    </g>
 
     <!-- Bicycle Frame (Bright Red) -->
     <path d="M 250 450 L 350 250 L 400 450 L 550 450" fill="none" stroke="#FF3B30" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/>
@@ -564,10 +581,12 @@
 
     <!-- Pedals & Cranks -->
     <circle cx="400" cy="450" r="20" fill="#000"/>
+    <g><animateTransform attributeName="transform" type="rotate" from="0 400 450" to="360 400 450" dur="2s" repeatCount="indefinite"/>
     <line x1="400" y1="450" x2="350" y2="400" stroke="#000" stroke-width="12" stroke-linecap="round"/>
     <line x1="400" y1="450" x2="450" y2="500" stroke="#000" stroke-width="12" stroke-linecap="round"/>
     <rect x="330" y="390" width="40" height="20" rx="5" fill="#000" transform="rotate(-30 350 400)"/>
     <rect x="430" y="490" width="40" height="20" rx="5" fill="#000" transform="rotate(-30 450 500)"/>
+    </g>
   </g>
 
   <!-- PELICAN -->
@@ -617,7 +636,8 @@
     <path d="M 400 350 L 450 400 L 450 500" fill="none" stroke="#000" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/>
     <path d="M 450 400 L 430 430 L 460 430 Z" fill="#FFA500" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
   </g>
-</svg></div><figcaption>qwen3.6-flash · 6 KB，未做任何人工修改，原样内嵌</figcaption></figure>
+  </g>
+</svg></div><figcaption>qwen3.6-flash · 原作 + SMIL 动画：轮转/颠簸/蹬踏</figcaption></figure>
 
         <p>风格上最自洽的一家：全场统一 8px 粗黑描边，绒毛身体用 <strong>10 个圆形叠出来</strong>（思路清奇），金色喉囊配鼻孔细节，双腿黑色火柴腿踩在踏板上。代价是云朵画得像三个齿轮，车座大得像一块黑板——但你要说它不像「一张画」，它比谁都像一张画。</p>
 
@@ -644,12 +664,13 @@
   <!-- 地面阴影 -->
   <ellipse cx="250" cy="360" rx="120" ry="10" fill="#B3E5FC"/>
 
+  <g><animateTransform attributeName="transform" type="translate" values="0 0; 0 2.5; 0 0" dur="0.9s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/>
   <!-- 自行车 -->
   <g transform="translate(0, 20)" filter="url(#shadow)">
     <!-- 后轮 -->
     <circle cx="150" cy="320" r="55" fill="none" stroke="#37474F" stroke-width="6"/>
     <circle cx="150" cy="320" r="12" fill="#37474F"/>
-    <g stroke="#90A4AE" stroke-width="2">
+    <g stroke="#90A4AE" stroke-width="2"><animateTransform attributeName="transform" type="rotate" from="0 150 320" to="360 150 320" dur="2s" repeatCount="indefinite"/>
       <line x1="150" y1="265" x2="150" y2="375"/>
       <line x1="95" y1="320" x2="205" y2="320"/>
       <line x1="110" y1="280" x2="190" y2="360"/>
@@ -659,7 +680,7 @@
     <!-- 前轮 -->
     <circle cx="350" cy="320" r="55" fill="none" stroke="#37474F" stroke-width="6"/>
     <circle cx="350" cy="320" r="12" fill="#37474F"/>
-    <g stroke="#90A4AE" stroke-width="2">
+    <g stroke="#90A4AE" stroke-width="2"><animateTransform attributeName="transform" type="rotate" from="0 350 320" to="360 350 320" dur="2s" repeatCount="indefinite"/>
       <line x1="350" y1="265" x2="350" y2="375"/>
       <line x1="295" y1="320" x2="405" y2="320"/>
       <line x1="310" y1="280" x2="390" y2="360"/>
@@ -714,7 +735,8 @@
       <path d="M200,290 L200,330 L210,330"/> <!-- 前腿 -->
     </g>
   </g>
-</svg></div><figcaption>glm-4.7-flash · 3 KB，未做任何人工修改，原样内嵌</figcaption></figure>
+  </g>
+</svg></div><figcaption>glm-4.7-flash · 原作 + SMIL 动画：轮转/颠簸/蹬踏</figcaption></figure>
 
         <p>最简的一份：轮子只有 4 根辐条，没有链条，鹈鹕的嘴小得不像鹈鹕，腿悬在半空没踩任何东西。最出圈的是<strong>踏板被安装在了后轮的轴心上</strong>——机械结构上属于车祸现场。但公平地说，两个轮子、车架、鸟、嘴、眼睛都在，「一只鸟和一辆车」的意象是成立的，只是「骑」的动作没做出来。</p>
 
