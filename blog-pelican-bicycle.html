@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="经典 AI 考题「鹈鹕骑自行车」最新战报：内网中转站 9 个模型同台竞技，7 个交卷 2 个限流弃考。文生图组照片级、SVG 组风格迥异，附全部原始作品。">
+    <meta name="theme-color" content="#0a0e16">
+    <title>鹈鹕骑自行车测试：中转站 9 模型横评 — Easin's Blog</title>
+    <link rel="shortcut icon" href="icon_logo.png" type="image/png">
+    <link rel="icon" href="icon_logo.png" type="image/png">
+    <link rel="stylesheet" href="css/blog.css?v=20260824">
+    <style>
+        .pc-fig { margin: 18px 0 26px; }
+        .pc-svgbox { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; }
+        .pc-svgbox svg { width: 100%; height: auto; display: block; max-height: 560px; }
+        .pc-fig figcaption { color: #8a94a6; font-size: 12.5px; margin-top: 8px; text-align: center; }
+        .pc-img img { width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .pc-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 16px 0 24px; }
+        .pc-table th, .pc-table td { border: 1px solid #d8dee9; padding: 8px 12px; text-align: left; }
+        .pc-table th { background: rgba(0,0,0,0.04); }
+        .pc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 900px) { .pc-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+
+<body>
+    <div class="article-wrap">
+
+        <a class="back-home" href="easin.html">← 返回主页</a>
+
+        <div class="article-meta">
+            <span class="tag hot">AI</span>
+            <span class="tag">模型横评</span>
+            <span class="tag">文生图</span>
+            <span class="tag">SVG</span>
+        </div>
+
+        <h1 class="article-title">鹈鹕骑自行车测试：让内网中转站的 9 个模型同台竞技</h1>
+        <div class="article-date">
+            2026.09 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a>
+        </div>
+
+        <blockquote>
+            <p>一道流传多年的 AI 考题，一句不带任何修饰词的题面。7 个模型交卷，2 个限流弃考——最有趣的是，弃考原因居然是评测员自己。</p>
+        </blockquote>
+
+        <h2>一、这道题是哪来的</h2>
+
+        <p>「鹈鹕骑自行车」是 Simon Willison 多年前带火的一个 LLM 视觉测试：让模型<strong>直接生成一段 SVG 代码</strong>，画出一只骑自行车的鹈鹕。题面看似简单，实际上同时考察三件事：自行车的机械结构对不对（两个轮子、车架、脚踏）、鹈鹕的物种特征在不在（大嘴、喉囊、蹼掌）、以及模型能不能把「骑」这个动作关系画对——腿要够到踏板，翅膀要够到车把。</p>
+
+        <p>最近这题在国内文生图圈又翻红了一轮，各家图像模型轮流被这道题「处刑」。于是我把手里那台内网 New API 中转站（192.168.1.61:3000）上能用的 <strong>9 个模型</strong>全部拉来同台竞技。</p>
+
+        <h2>二、参赛名单与方法</h2>
+
+        <table class="pc-table">
+            <tr><th>模型</th><th>组别</th><th>题面</th><th>结果</th></tr>
+            <tr><td>qwen-image-2.0-pro</td><td rowspan="2">文生图</td><td rowspan="2">一只骑自行车的鹈鹕（零修饰词）</td><td>✅ 交卷</td></tr>
+            <tr><td>wan2.7-image-pro</td><td>✅ 交卷</td></tr>
+            <tr><td>qwen3.7-plus</td><td rowspan="5">文本 → SVG</td><td rowspan="5">请用SVG代码画一只骑自行车的鹈鹕。只输出SVG代码，不要任何解释。</td><td>✅ 交卷</td></tr>
+            <tr><td>qwen3.6-flash</td><td>✅ 交卷</td></tr>
+            <tr><td>deepseek-v4-pro</td><td>✅ 交卷</td></tr>
+            <tr><td>deepseek-v4-flash-0731</td><td>✅ 交卷</td></tr>
+            <tr><td>glm-4.7-flash</td><td>✅ 交卷</td></tr>
+            <tr><td>glm-5.3</td><td rowspan="2">文本 → SVG</td><td rowspan="2">同上</td><td>❌ 限流弃考（429）</td></tr>
+            <tr><td>glm-5.3-flash</td><td>❌ 限流弃考（429）</td></tr>
+        </table>
+
+        <p>全部走内网中转站的 OpenAI 兼容接口：图像模型打 <code>/v1/images/generations</code>，文本模型打 <code>/v1/chat/completions</code>。文本组的 SVG <strong>未做任何人工修改</strong>，从返回里截出 <code>&lt;svg&gt;…&lt;/svg&gt;</code> 原样内嵌到本文——包括那些画错的。</p>
+
+        <hr>
+
+        <h2>三、文生图组：一张完美理解题意，一张「最美但没骑」</h2>
+
+        <p><strong>qwen-image-2.0-pro</strong> 交出了全场最符合题意的作品：鹈鹕端端正正坐在红色自行车的车座上，<strong>脚踩踏板</strong>，车把、辐条、车筐结构完整，背景是海边公路。最绝的是它给鹈鹕脚上<strong>画了两只黑色小皮鞋</strong>——蹼掌配皮鞋，荒诞感和完成度双满分。</p>
+
+        <figure class="pc-fig pc-img">
+            <img src="image/pelican/qwen-image-2.0-pro.jpg" alt="qwen-image-2.0-pro 生成的鹈鹕骑自行车">
+            <figcaption>qwen-image-2.0-pro · 注意脚上的小皮鞋</figcaption>
+        </figure>
+
+        <p><strong>wan2.7-image-pro</strong> 的照片是全场<strong>美术质量最高</strong>的：黄金时刻的光线、复古绿色自行车、海边草甸、后轮扬起的尘土，氛围感直接拉满。但是——鹈鹕是<strong>站在车架上摆拍</strong>的，不是骑。题意理解这一题，它交了个「最美错题」。</p>
+
+        <figure class="pc-fig pc-img">
+            <img src="image/pelican/wan2.7-image-pro.jpg" alt="wan2.7-image-pro 生成的鹈鹕与自行车">
+            <figcaption>wan2.7-image-pro · 光影满分，但鹈鹕在摆拍，没在骑</figcaption>
+        </figure>
+
+        <hr>
+
+        <h2>四、SVG 组：五份代码，五种性格</h2>
+
+        <h3>qwen3.7-plus：机械结构最严谨</h3>
+
+        <figure class="pc-fig"><div class="pc-svgbox"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400">
+  <!-- Ground -->
+  <rect x="0" y="373" width="500" height="27" fill="#8B7355"/>
+  <line x1="0" y1="375" x2="500" y2="375" stroke="#6B5335" stroke-width="2"/>
+
+  <!-- REAR WHEEL -->
+  <circle cx="140" cy="320" r="55" fill="none" stroke="#444" stroke-width="5"/>
+  <circle cx="140" cy="320" r="6" fill="#555"/>
+  <g stroke="#999" stroke-width="1">
+    <line x1="140" y1="268" x2="140" y2="372"/>
+    <line x1="88" y1="320" x2="192" y2="320"/>
+    <line x1="101" y1="281" x2="179" y2="359"/>
+    <line x1="179" y1="281" x2="101" y2="359"/>
+    <line x1="117" y1="270" x2="163" y2="370"/>
+    <line x1="163" y1="270" x2="117" y2="370"/>
+    <line x1="90" y1="300" x2="190" y2="340"/>
+    <line x1="90" y1="340" x2="190" y2="300"/>
+  </g>
+
+  <!-- FRONT WHEEL -->
+  <circle cx="360" cy="320" r="55" fill="none" stroke="#444" stroke-width="5"/>
+  <circle cx="360" cy="320" r="6" fill="#555"/>
+  <g stroke="#999" stroke-width="1">
+    <line x1="360" y1="268" x2="360" y2="372"/>
+    <line x1="308" y1="320" x2="412" y2="320"/>
+    <line x1="321" y1="281" x2="399" y2="359"/>
+    <line x1="399" y1="281" x2="321" y2="359"/>
+    <line x1="337" y1="270" x2="383" y2="370"/>
+    <line x1="383" y1="270" x2="337" y2="370"/>
+    <line x1="310" y1="300" x2="410" y2="340"/>
+    <line x1="310" y1="340" x2="410" y2="300"/>
+  </g>
+
+  <!-- BICYCLE FRAME -->
+  <g stroke="#cc2222" stroke-width="5" stroke-linecap="round" fill="none">
+    <line x1="210" y1="300" x2="140" y2="320"/>
+    <line x1="180" y1="218" x2="140" y2="320"/>
+    <line x1="180" y1="218" x2="210" y2="300"/>
+    <line x1="180" y1="218" x2="335" y2="215"/>
+    <line x1="335" y1="215" x2="210" y2="300"/>
+    <line x1="335" y1="215" x2="360" y2="320"/>
+  </g>
+
+  <!-- Handlebar stem -->
+  <line x1="335" y1="215" x2="340" y2="188" stroke="#555" stroke-width="4" stroke-linecap="round"/>
+  <!-- Handlebars -->
+  <path d="M320,192 Q340,178 360,192" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="320" cy="192" r="4" fill="#222"/>
+  <circle cx="360" cy="192" r="4" fill="#222"/>
+
+  <!-- Seat post -->
+  <line x1="180" y1="218" x2="178" y2="205" stroke="#555" stroke-width="4" stroke-linecap="round"/>
+  <!-- Seat -->
+  <ellipse cx="178" cy="204" rx="18" ry="5" fill="#333"/>
+
+  <!-- Chainring -->
+  <circle cx="210" cy="300" r="14" fill="none" stroke="#555" stroke-width="2.5"/>
+  <circle cx="210" cy="300" r="8" fill="#666"/>
+
+  <!-- Chain -->
+  <path d="M196,300 Q170,318 140,322" fill="none" stroke="#444" stroke-width="2" stroke-dasharray="3,2"/>
+  <path d="M224,300 Q180,325 140,318" fill="none" stroke="#444" stroke-width="2" stroke-dasharray="3,2"/>
+
+  <!-- Crank arms and pedals -->
+  <line x1="210" y1="300" x2="195" y2="320" stroke="#555" stroke-width="4" stroke-linecap="round"/>
+  <rect x="186" y="318" width="16" height="5" rx="2" fill="#444"/>
+  <line x1="210" y1="300" x2="225" y2="280" stroke="#555" stroke-width="4" stroke-linecap="round"/>
+  <rect x="218" y="277" width="16" height="5" rx="2" fill="#444"/>
+
+  <!-- ===== PELICAN ===== -->
+
+  <!-- Pelican legs -->
+  <path d="M195,192 Q188,255 194,320" fill="none" stroke="#e89040" stroke-width="5" stroke-linecap="round"/>
+  <path d="M218,192 Q222,238 226,280" fill="none" stroke="#e89040" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Webbed feet -->
+  <path d="M186,320 L178,328 L188,324 L183,332 L193,326 L190,334 L198,324 Z" fill="#e89040"/>
+  <path d="M218,280 L210,288 L220,284 L215,292 L225,286 L222,294 L230,284 Z" fill="#e89040"/>
+
+  <!-- Pelican body -->
+  <ellipse cx="205" cy="165" rx="52" ry="40" fill="#f5f5f0" stroke="#e0e0d8" stroke-width="1.5"/>
+  <!-- Belly highlight -->
+  <ellipse cx="205" cy="178" rx="35" ry="22" fill="#fafaf8" opacity="0.5"/>
+
+  <!-- Wing -->
+  <path d="M168,148 Q195,122 240,138 Q228,158 200,168 Q178,172 168,160 Z" fill="#e2e2da" stroke="#ccc" stroke-width="1"/>
+  <path d="M178,150 Q200,136 225,143" fill="none" stroke="#ccc" stroke-width="1"/>
+  <path d="M175,158 Q198,146 222,150" fill="none" stroke="#ccc" stroke-width="1"/>
+
+  <!-- Wing reaching to handlebar -->
+  <path d="M242,152 Q285,168 322,190" fill="none" stroke="#e2e2da" stroke-width="7" stroke-linecap="round"/>
+  <path d="M242,152 Q285,168 322,190" fill="none" stroke="#d8d8d0" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Tail feathers -->
+  <path d="M153,158 Q138,145 130,132" fill="none" stroke="#ddddd5" stroke-width="5" stroke-linecap="round"/>
+  <path d="M153,164 Q135,153 125,143" fill="none" stroke="#d5d5cd" stroke-width="4" stroke-linecap="round"/>
+  <path d="M155,170 Q140,162 132,155" fill="none" stroke="#ddddd5" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- Neck -->
+  <path d="M248,152 Q268,135 280,115 Q288,98 298,88" fill="none" stroke="#f5f5f0" stroke-width="22" stroke-linecap="round"/>
+  <path d="M248,152 Q268,135 280,115 Q288,98 298,88" fill="none" stroke="#eeeee8" stroke-width="17" stroke-linecap="round"/>
+
+  <!-- Head -->
+  <ellipse cx="303" cy="80" rx="22" ry="18" fill="#f5f5f0" stroke="#e0e0d8" stroke-width="1"/>
+
+  <!-- Eye -->
+  <circle cx="312" cy="75" r="5.5" fill="white" stroke="#333" stroke-width="1.5"/>
+  <circle cx="313" cy="74" r="3" fill="#222"/>
+  <circle cx="314" cy="73" r="1.2" fill="white"/>
+
+  <!-- Beak upper -->
+  <path d="M320,80 L388,86 L386,92 L320,88 Z" fill="#f0a030" stroke="#d08020" stroke-width="1"/>
+  <!-- Beak tip hook -->
+  <path d="M386,86 Q392,89 388,93 L386,92 Z" fill="#d08020"/>
+
+  <!-- Beak lower / pouch -->
+  <path d="M320,88 L386,92 Q372,122 345,120 Q325,117 320,100 Z" fill="#f5b840" stroke="#d08020" stroke-width="1" opacity="0.85"/>
+  <!-- Pouch line detail -->
+  <path d="M330,94 Q350,112 368,100" fill="none" stroke="#e0a030" stroke-width="1" opacity="0.5"/>
+
+  <!-- Head tuft -->
+  <path d="M292,65 Q287,52 292,48 Q294,55 298,62" fill="#eaeae2" stroke="#ddd" stroke-width="1"/>
+  <path d="M296,63 Q293,50 298,46 Q299,53 302,60" fill="#e5e5dd" stroke="#ddd" stroke-width="1"/>
+
+  <!-- Smile line -->
+  <path d="M320,88 Q325,92 320,95" fill="none" stroke="#d08020" stroke-width="1"/>
+</svg></div><figcaption>qwen3.7-plus · 5 KB，未做任何人工修改，原样内嵌</figcaption></figure>
+
+        <p>自行车该有的机械件一个不落：双层辐条、链传动（虚线画出了链线）、曲柄双踏板、弯形车把。鹈鹕的配件也最全——嘴尖的钩、头冠羽、尾羽、翅膀一根根羽毛线。两条腿从身体跨过车架伸向踏板，唯一的小瑕疵是腿的落点和踏板差了几个像素，属于「姿势到位、脚没踩实」。</p>
+
+        <h3>deepseek-v4-pro：细节狂魔</h3>
+
+        <figure class="pc-fig"><div class="pc-svgbox"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" height="100%">
+  <!-- 背景 -->
+  <rect width="800" height="600" fill="#a8e6cf" />
+  
+  <!-- 云朵 -->
+  <path d="M 100 100 Q 120 80 140 100 Q 160 80 180 100 Q 190 120 170 130 L 110 130 Q 90 120 100 100 Z" fill="#FFF" opacity="0.8" />
+  <path d="M 600 150 Q 620 130 640 150 Q 660 130 680 150 Q 690 170 670 180 L 610 180 Q 590 170 600 150 Z" fill="#FFF" opacity="0.8" />
+  <path d="M 350 80 Q 370 60 390 80 Q 410 60 430 80 Q 440 100 420 110 L 360 110 Q 340 100 350 80 Z" fill="#FFF" opacity="0.8" />
+
+  <!-- 街道与路缘 -->
+  <rect x="0" y="520" width="800" height="80" fill="#e0e0e0" />
+  <rect x="0" y="520" width="800" height="10" fill="#c0c0c0" />
+
+  <!-- 运动线与灰尘 -->
+  <path d="M 120 440 L 80 440 M 130 420 L 100 400 M 130 460 L 100 480" stroke="#333" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 6" opacity="0.5" />
+  <path d="M 660 440 L 700 440 M 650 420 L 680 400 M 650 460 L 680 480" stroke="#333" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 6" opacity="0.5" />
+  <path d="M 140 480 L 120 500 M 160 490 L 140 520 M 180 495 L 170 530" fill="none" stroke="#888" stroke-width="6" stroke-linecap="round" opacity="0.6" />
+
+  <!-- 右翼（在身体后面） -->
+  <path d="M 260 180 C 200 160, 180 100, 220 80 L 260 110 Z" fill="#e0e0e0" stroke="#333" stroke-width="6" stroke-linejoin="round" />
+  <path d="M 230 130 L 215 100 M 245 140 L 235 110 M 260 155 L 255 125" fill="none" stroke="#555" stroke-width="4" stroke-linecap="round" />
+
+  <!-- 尾巴 -->
+  <path d="M 240 230 L 140 250 L 150 280 L 220 290 Z" fill="#fff" stroke="#333" stroke-width="6" stroke-linejoin="round" />
+  <line x1="210" y1="245" x2="150" y2="265" stroke="#333" stroke-width="4" stroke-linecap="round" />
+
+  <!-- 后腿（连接到左踏板） -->
+  <path d="M 290 270 L 320 340 L 340 400" fill="none" stroke="#e76f51" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M 340 400 L 320 420 M 340 400 L 340 425 M 340 400 L 355 420" fill="none" stroke="#e76f51" stroke-width="8" stroke-linecap="round" />
+
+  <!-- 自行车 - 后轮 -->
+  <g transform="translate(200, 440)">
+    <circle cx="0" cy="0" r="70" fill="none" stroke="#1d3557" stroke-width="12" />
+    <circle cx="0" cy="0" r="64" fill="none" stroke="#ccc" stroke-width="2" />
+    <line x1="0" y1="-64" x2="0" y2="64" stroke="#999" stroke-width="2" />
+    <line x1="-64" y1="0" x2="64" y2="0" stroke="#999" stroke-width="2" />
+    <line x1="-45" y1="-45" x2="45" y2="45" stroke="#999" stroke-width="2" />
+    <line x1="-45" y1="45" x2="45" y2="-45" stroke="#999" stroke-width="2" />
+    <line x1="-32" y1="-55" x2="32" y2="55" stroke="#999" stroke-width="2" />
+    <line x1="-32" y1="55" x2="32" y2="-55" stroke="#999" stroke-width="2" />
+    <circle cx="0" cy="0" r="10" fill="#fff" stroke="#333" stroke-width="4" />
+  </g>
+
+  <!-- 自行车 - 前轮 -->
+  <g transform="translate(580, 440)">
+    <circle cx="0" cy="0" r="70" fill="none" stroke="#1d3557" stroke-width="12" />
+    <circle cx="0" cy="0" r="64" fill="none" stroke="#ccc" stroke-width="2" />
+    <line x1="0" y1="-64" x2="0" y2="64" stroke="#999" stroke-width="2" />
+    <line x1="-64" y1="0" x2="64" y2="0" stroke="#999" stroke-width="2" />
+    <line x1="-45" y1="-45" x2="45" y2="45" stroke="#999" stroke-width="2" />
+    <line x1="-45" y1="45" x2="45" y2="-45" stroke="#999" stroke-width="2" />
+    <line x1="-32" y1="-55" x2="32" y2="55" stroke="#999" stroke-width="2" />
+    <line x1="-32" y1="55" x2="32" y2="-55" stroke="#999" stroke-width="2" />
+    <circle cx="0" cy="0" r="10" fill="#fff" stroke="#333" stroke-width="4" />
+  </g>
+
+  <!-- 链条 -->
+  <path d="M 200 420 L 380 400 M 200 460 L 380 480" stroke="#555" stroke-width="4" stroke-dasharray="6 4" />
+
+  <!-- 牙盘与曲柄 -->
+  <circle cx="380" cy="440" r="40" fill="none" stroke="#333" stroke-width="8" />
+  <circle cx="380" cy="440" r="30" fill="none" stroke="#666" stroke-width="4" />
+  
+  <!-- 后曲柄与踏板 -->
+  <line x1="380" y1="440" x2="340" y2="400" stroke="#333" stroke-width="12" stroke-linecap="round" />
+  <g transform="translate(340, 400) rotate(-45)">
+    <rect x="-25" y="-10" width="50" height="20" rx="6" fill="#333" />
+    <rect x="-20" y="-6" width="40" height="12" fill="#666" />
+  </g>
+
+  <!-- 前曲柄与踏板 -->
+  <line x1="380" y1="440" x2="420" y2="480" stroke="#333" stroke-width="12" stroke-linecap="round" />
+  <g transform="translate(420, 480) rotate(-45)">
+    <rect x="-25" y="-10" width="50" height="20" rx="6" fill="#333" />
+    <rect x="-20" y="-6" width="40" height="12" fill="#666" />
+  </g>
+
+  <circle cx="380" cy="440" r="10" fill="#fff" stroke="#333" stroke-width="6" />
+
+  <!-- 自行车架 -->
+  <g stroke="#e63946" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <line x1="200" y1="440" x2="380" y2="440" /> <!-- 后下叉 -->
+    <line x1="380" y1="440" x2="360" y2="280" /> <!-- 立管 -->
+    <line x1="360" y1="280" x2="550" y2="320" /> <!-- 上管 -->
+    <line x1="380" y1="440" x2="540" y2="380" /> <!-- 下管 -->
+    <line x1="540" y1="380" x2="580" y2="440" /> <!-- 前叉 -->
+  </g>
+
+  <!-- 头管与座管 -->
+  <line x1="540" y1="380" x2="550" y2="320" stroke="#333" stroke-width="14" stroke-linecap="round" />
+  <line x1="360" y1="280" x2="350" y2="260" stroke="#333" stroke-width="12" stroke-linecap="round" />
+
+  <!-- 车把与座垫 -->
+  <rect x="310" y="255" width="80" height="20" rx="10" fill="#333" />
+  <line x1="550" y1="320" x2="560" y2="280" stroke="#333" stroke-width="12" stroke-linecap="round" />
+  
+  <path d="M 520 270 C 550 260, 570 280, 590 290" fill="none" stroke="#333" stroke-width="12" stroke-linecap="round" />
+  <path d="M 585 286 L 605 300" fill="none" stroke="#777" stroke-width="14" stroke-linecap="round" />
+
+  <!-- 鹈鹕身体 -->
+  <ellipse cx="310" cy="200" rx="75" ry="85" transform="rotate(-15 310 200)" fill="#fff" stroke="#333" stroke-width="6" />
+
+  <!-- 鹈鹕脖子 -->
+  <path d="M 340 160 C 400 170, 420 100, 420 100 L 390 90 C 370 140, 320 140, 320 140 Z" fill="#fff" stroke="#333" stroke-width="6" />
+
+  <!-- 鹈鹕头部 -->
+  <circle cx="420" cy="100" r="35" fill="#fff" stroke="#333" stroke-width="6" />
+  <circle cx="435" cy="85" r="6" fill="#333" />
+  
+  <!-- 头部羽毛（羽冠） -->
+  <path d="M 455 65 Q 475 50 485 60 Q 475 75 460 80 Z" fill="#fff" stroke="#333" stroke-width="4" stroke-linejoin="round" />
+
+  <!-- 鹈鹕喙与喉囊 -->
+  <path d="M 445 85 C 520 70, 560 80, 570 95 C 550 105, 500 100, 455 95 Z" fill="#f4a261" stroke="#333" stroke-width="6" stroke-linejoin="round" />
+  
+  <path d="M 445 110 C 460 200, 540 190, 550 130 C 520 110, 480 105, 455 105 Z" fill="#e76f51" stroke="#333" stroke-width="6" stroke-linejoin="round" />
+  
+  <!-- 喉囊细节（皮肤褶皱） -->
+  <path d="M 455 115 Q 480 150 510 145 M 460 120 Q 485 140 505 135 M 465 125 Q 485 130 500 125" fill="none" stroke="#c14c33" stroke-width="4" stroke-linecap="round" />
+
+  <!-- 前腿（连接到右踏板） -->
+  <path d="M 320 270 L 370 380 L 420 480" fill="none" stroke="#e76f51" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M 420 480 L 400 500 M 420 480 L 420 505 M 420 480 L 435 500" fill="none" stroke="#e76f51" stroke-width="8" stroke-linecap="round" />
+
+  <!-- 左翼（握住车把） -->
+  <path d="M 300 200 C 400 180, 500 220, 580 280 L 540 300 C 460 260, 370 240, 280 240 Z" fill="#fff" stroke="#333" stroke-width="6" stroke-linejoin="round" />
+  
+  <!-- 左翼羽毛细节 -->
+  <path d="M 340 220 L 410 250 M 370 230 L 440 265 M 400 240 L 470 275 M 430 250 L 500 280" fill="none" stroke="#555" stroke-width="5" stroke-linecap="round" />
+
+</svg></div><figcaption>deepseek-v4-pro · 7 KB，未做任何人工修改，原样内嵌</figcaption></figure>
+
+        <p>全场元素量最大的一家：云朵、路缘石、双向运动线、扬尘、羽冠、翅膀上的羽毛线条都有。最见功力的是<strong>喉囊上画了皮肤褶皱</strong>，这是真的理解了鹈鹕的解剖特征。双腿分别连到两个踏板上，踏板还带了旋钮细节。缺点是画面元素太挤，鹈鹕的身子被车架穿插得有点乱。</p>
+
+        <h3>deepseek-v4-flash-0731：全场唯一有挡泥板的</h3>
+
+        <figure class="pc-fig"><div class="pc-svgbox"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" height="100%">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#87CEEB"/>
+      <stop offset="100%" stop-color="#E0F6FF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#skyGrad)"/>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="380" cy="540" rx="260" ry="20" fill="rgba(0,0,0,0.1)"/>
+
+  <!-- Bicycle -->
+  <g id="bicycle">
+    <!-- Rear Wheel -->
+    <circle cx="200" cy="480" r="60" fill="none" stroke="#2C3E50" stroke-width="10"/>
+    <circle cx="200" cy="480" r="50" fill="none" stroke="#BDC3C7" stroke-width="4"/>
+    <g stroke="#95A5A6" stroke-width="2">
+      <line x1="200" y1="430" x2="200" y2="530"/>
+      <line x1="150" y1="480" x2="250" y2="480"/>
+      <line x1="165" y1="445" x2="235" y2="515"/>
+      <line x1="165" y1="515" x2="235" y2="445"/>
+    </g>
+    <circle cx="200" cy="480" r="8" fill="#2C3E50"/>
+
+    <!-- Front Wheel -->
+    <circle cx="550" cy="480" r="60" fill="none" stroke="#2C3E50" stroke-width="10"/>
+    <circle cx="550" cy="480" r="50" fill="none" stroke="#BDC3C7" stroke-width="4"/>
+    <g stroke="#95A5A6" stroke-width="2">
+      <line x1="550" y1="430" x2="550" y2="530"/>
+      <line x1="500" y1="480" x2="600" y2="480"/>
+      <line x1="515" y1="445" x2="585" y2="515"/>
+      <line x1="515" y1="515" x2="585" y2="445"/>
+    </g>
+    <circle cx="550" cy="480" r="8" fill="#2C3E50"/>
+
+    <!-- Bicycle Frame -->
+    <g stroke="#E74C3C" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 200,480 L 350,480 L 300,340 Z"/>
+      <path d="M 350,480 L 500,340 L 300,340"/>
+      <line x1="500" y1="340" x2="550" y2="480"/>
+    </g>
+
+    <!-- Fenders -->
+    <path d="M 140,460 A 70,70 0 0,1 260,460" fill="none" stroke="#F1C40F" stroke-width="8" stroke-linecap="round"/>
+    <path d="M 490,460 A 70,70 0 0,1 610,460" fill="none" stroke="#F1C40F" stroke-width="8" stroke-linecap="round"/>
+
+    <!-- Seat -->
+    <path d="M 280,340 C 280,330 320,330 320,340 C 320,350 280,350 280,340 Z" fill="#2C3E50" stroke="#1A252F" stroke-width="2"/>
+    <line x1="300" y1="340" x2="300" y2="350" stroke="#2C3E50" stroke-width="4"/>
+
+    <!-- Handlebars -->
+    <line x1="500" y1="340" x2="500" y2="300" stroke="#BDC3C7" stroke-width="8" stroke-linecap="round"/>
+    <path d="M 460,300 L 540,300" stroke="#2C3E50" stroke-width="10" stroke-linecap="round"/>
+    <line x1="460" y1="300" x2="450" y2="310" stroke="#E74C3C" stroke-width="12" stroke-linecap="round"/>
+    <line x1="540" y1="300" x2="550" y2="310" stroke="#E74C3C" stroke-width="12" stroke-linecap="round"/>
+
+    <!-- Pedals and Cranks -->
+    <circle cx="350" cy="480" r="18" fill="none" stroke="#7F8C8D" stroke-width="6"/>
+    <circle cx="350" cy="480" r="6" fill="#2C3E50"/>
+    
+    <!-- Top Crank and Pedal -->
+    <line x1="350" y1="480" x2="350" y2="425" stroke="#2C3E50" stroke-width="8" stroke-linecap="round"/>
+    <rect x="335" y="420" width="30" height="10" rx="3" fill="#2C3E50"/>
+    
+    <!-- Bottom Crank and Pedal -->
+    <line x1="350" y1="480" x2="350" y2="535" stroke="#2C3E50" stroke-width="8" stroke-linecap="round"/>
+    <rect x="335" y="530" width="30" height="10" rx="3" fill="#2C3E50"/>
+  </g>
+
+  <!-- Pelican -->
+  <g id="pelican">
+    <!-- Right Wing (Background) -->
+    <path d="M 360,260 C 420,290 480,300 540,310 C 500,280 430,250 370,230 Z" fill="#E0E0E0" stroke="#2C3E50" stroke-width="4" stroke-linejoin="round"/>
+
+    <!-- Right Leg (Background, attached to top pedal) -->
+    <path d="M 320,320 Q 340,380 350,425" fill="none" stroke="#D35400" stroke-width="12" stroke-linecap="round"/>
+    <path d="M 350,425 L 370,430 L 365,440 L 350,435 Z" fill="#D35400" stroke="#2C3E50" stroke-width="3"/>
+
+    <!-- Tail -->
+    <path d="M 230,280 C 180,270 160,300 180,320 C 200,330 220,320 230,300 Z" fill="#FFFFFF" stroke="#2C3E50" stroke-width="4" stroke-linejoin="round"/>
+
+    <!-- Main Body -->
+    <ellipse cx="310" cy="270" rx="90" ry="70" fill="#FFFFFF" stroke="#2C3E50" stroke-width="4"/>
+
+    <!-- Neck -->
+    <path d="M 370,240 C 410,190 440,170 470,170 L 480,210 C 440,220 410,250 390,290 Z" fill="#FFFFFF" stroke="#2C3E50" stroke-width="4" stroke-linejoin="round"/>
+
+    <!-- Head -->
+    <ellipse cx="470" cy="170" rx="30" ry="25" fill="#FFFFFF" stroke="#2C3E50" stroke-width="4"/>
+
+    <!-- Crest -->
+    <path d="M 450,150 Q 460,130 480,145 Q 470,140 460,150 Z" fill="#FFFFFF" stroke="#2C3E50" stroke-width="3" stroke-linejoin="round"/>
+
+    <!-- Eye -->
+    <circle cx="465" cy="165" r="6" fill="#2C3E50"/>
+    <circle cx="467" cy="163" r="2" fill="#FFFFFF"/>
+
+    <!-- Blush -->
+    <circle cx="455" cy="180" r="6" fill="#FFB6C1" opacity="0.8"/>
+
+    <!-- Upper Beak -->
+    <path d="M 490,160 Q 580,150 640,175 Q 560,175 490,175 Z" fill="#F1C40F" stroke="#2C3E50" stroke-width="4" stroke-linejoin="round"/>
+    
+    <!-- Beak Smile Line -->
+    <path d="M 490,165 Q 540,165 580,170" fill="none" stroke="#D35400" stroke-width="2"/>
+
+    <!-- Lower Beak / Pouch -->
+    <path d="M 490,175 Q 560,180 640,175 Q 560,270 490,175 Z" fill="#E67E22" stroke="#2C3E50" stroke-width="4" stroke-linejoin="round"/>
+
+    <!-- Pouch Detail Lines -->
+    <path d="M 510,190 Q 560,220 610,195" fill="none" stroke="#D35400" stroke-width="2"/>
+    <path d="M 520,200 Q 560,230 590,205" fill="none" stroke="#D35400" stroke-width="2"/>
+
+    <!-- Left Wing (Foreground) -->
+    <path d="M 260,250 C 300,300 380,320 460,310 C 400,290 320,260 270,230 Z" fill="#FFFFFF" stroke="#2C3E50" stroke-width="4" stroke-linejoin="round"/>
+    
+    <!-- Wing Feather Details -->
+    <path d="M 290,270 C 330,290 390,300 440,300" fill="none" stroke="#BDC3C7" stroke-width="3" stroke-linecap="round"/>
+    <path d="M 300,285 C 340,300 380,305 420,305" fill="none" stroke="#BDC3C7" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Left Leg (Foreground, attached to bottom pedal) -->
+    <path d="M 300,320 Q 310,400 350,535" fill="none" stroke="#E67E22" stroke-width="12" stroke-linecap="round"/>
+    <path d="M 350,535 L 370,540 L 365,550 L 350,545 Z" fill="#E67E22" stroke="#2C3E50" stroke-width="3"/>
+  </g>
+</svg></div><figcaption>deepseek-v4-flash-0731 · 6 KB，未做任何人工修改，原样内嵌</figcaption></figure>
+
+        <p>意外的惊喜卷：别人都没画的<strong>黄色挡泥板</strong>它画了，还给了鹈鹕两片<strong>腮红</strong>。结构上曲柄上下双踏板、双腿各自对应，喉囊也有褶皱细节。羽冠只画了一小撮，翅膀分了前后两层。整体是「小而全」的路线。</p>
+
+        <h3>qwen3.6-flash：粗描边卡通自成一派</h3>
+
+        <figure class="pc-fig"><div class="pc-svgbox"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" height="100%">
+  <!-- Sky Background -->
+  <rect width="800" height="600" fill="#87CEEB" />
+
+  <!-- Clouds -->
+  <g id="clouds">
+    <!-- Cloud 1 (Top Left) -->
+    <g transform="translate(100, 80)">
+      <circle cx="0" cy="0" r="30" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="40" cy="-20" r="40" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="80" cy="0" r="30" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <rect x="0" y="-20" width="80" height="50" fill="#FFF" stroke="#000" stroke-width="8"/>
+    </g>
+    
+    <!-- Cloud 2 (Top Right) -->
+    <g transform="translate(550, 60)">
+      <circle cx="0" cy="0" r="25" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="30" cy="-15" r="35" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="60" cy="0" r="25" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <rect x="0" y="-15" width="60" height="40" fill="#FFF" stroke="#000" stroke-width="8"/>
+    </g>
+
+    <!-- Cloud 3 (Middle Left) -->
+    <g transform="translate(50, 250)">
+      <circle cx="0" cy="0" r="20" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="25" cy="-10" r="30" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="50" cy="0" r="20" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <rect x="0" y="-10" width="50" height="30" fill="#FFF" stroke="#000" stroke-width="8"/>
+    </g>
+  </g>
+
+  <!-- Ground Line -->
+  <line x1="0" y1="540" x2="800" y2="540" stroke="#000" stroke-width="8" />
+
+  <!-- BICYCLE -->
+  <g id="bicycle">
+    <!-- Back Wheel -->
+    <circle cx="250" cy="450" r="90" fill="none" stroke="#000" stroke-width="16"/>
+    <circle cx="250" cy="450" r="75" fill="none" stroke="#CCC" stroke-width="8"/>
+    <circle cx="250" cy="450" r="10" fill="#000"/>
+    <!-- Spokes Back -->
+    <line x1="250" y1="360" x2="250" y2="540" stroke="#000" stroke-width="6"/>
+    <line x1="160" y1="450" x2="340" y2="450" stroke="#000" stroke-width="6"/>
+    <line x1="186" y1="386" x2="314" y2="514" stroke="#000" stroke-width="6"/>
+    <line x1="186" y1="514" x2="314" y2="386" stroke="#000" stroke-width="6"/>
+
+    <!-- Front Wheel -->
+    <circle cx="550" cy="450" r="90" fill="none" stroke="#000" stroke-width="16"/>
+    <circle cx="550" cy="450" r="75" fill="none" stroke="#CCC" stroke-width="8"/>
+    <circle cx="550" cy="450" r="10" fill="#000"/>
+    <!-- Spokes Front -->
+    <line x1="550" y1="360" x2="550" y2="540" stroke="#000" stroke-width="6"/>
+    <line x1="460" y1="450" x2="640" y2="450" stroke="#000" stroke-width="6"/>
+    <line x1="486" y1="386" x2="614" y2="514" stroke="#000" stroke-width="6"/>
+    <line x1="486" y1="514" x2="614" y2="386" stroke="#000" stroke-width="6"/>
+
+    <!-- Bicycle Frame (Bright Red) -->
+    <path d="M 250 450 L 350 250 L 400 450 L 550 450" fill="none" stroke="#FF3B30" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/>
+    <line x1="550" y1="450" x2="530" y2="280" stroke="#FF3B30" stroke-width="16" stroke-linecap="round"/>
+    <line x1="530" y1="280" x2="480" y2="280" stroke="#FF3B30" stroke-width="16" stroke-linecap="round"/>
+
+    <!-- Seat Post & Seat -->
+    <line x1="350" y1="250" x2="340" y2="220" stroke="#000" stroke-width="12" stroke-linecap="round"/>
+    <path d="M 300 220 Q 340 200 380 220 Q 390 230 380 240 L 300 240 Z" fill="#000" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+
+    <!-- Handlebars -->
+    <path d="M 480 280 Q 470 250 490 230" fill="none" stroke="#000" stroke-width="12" stroke-linecap="round"/>
+    <line x1="470" y1="230" x2="510" y2="230" stroke="#000" stroke-width="12" stroke-linecap="round"/>
+
+    <!-- Pedals & Cranks -->
+    <circle cx="400" cy="450" r="20" fill="#000"/>
+    <line x1="400" y1="450" x2="350" y2="400" stroke="#000" stroke-width="12" stroke-linecap="round"/>
+    <line x1="400" y1="450" x2="450" y2="500" stroke="#000" stroke-width="12" stroke-linecap="round"/>
+    <rect x="330" y="390" width="40" height="20" rx="5" fill="#000" transform="rotate(-30 350 400)"/>
+    <rect x="430" y="490" width="40" height="20" rx="5" fill="#000" transform="rotate(-30 450 500)"/>
+  </g>
+
+  <!-- PELICAN -->
+  <g id="pelican">
+    <!-- Back Leg (Left Leg) -->
+    <path d="M 360 350 L 320 380 L 350 400" fill="none" stroke="#000" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M 320 380 L 300 410 L 330 410 Z" fill="#FFA500" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+
+    <!-- Fluffy Body Layers -->
+    <g id="body-fluff">
+      <circle cx="380" cy="280" r="70" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="330" cy="250" r="50" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="430" cy="250" r="50" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="310" cy="310" r="45" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="450" cy="310" r="45" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="350" cy="210" r="45" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="410" cy="210" r="45" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="380" cy="330" r="50" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="300" cy="280" r="35" fill="#FFF" stroke="#000" stroke-width="8"/>
+      <circle cx="460" cy="280" r="35" fill="#FFF" stroke="#000" stroke-width="8"/>
+    </g>
+
+    <!-- Wing -->
+    <path d="M 330 280 Q 380 350 440 280 Q 380 250 330 280 Z" fill="#FFF" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M 350 300 Q 380 330 410 300" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+
+    <!-- Neck -->
+    <path d="M 410 220 Q 450 180 430 150 Q 400 180 380 220 Z" fill="#FFF" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+
+    <!-- Head -->
+    <circle cx="430" cy="150" r="35" fill="#FFF" stroke="#000" stroke-width="8"/>
+
+    <!-- Eye -->
+    <circle cx="445" cy="140" r="6" fill="#000"/>
+    <circle cx="447" cy="138" r="2" fill="#FFF"/>
+
+    <!-- Beak Top -->
+    <path d="M 450 140 Q 550 140 620 180 Q 550 200 450 180 Z" fill="#FFA500" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+    
+    <!-- Beak Pouch -->
+    <path d="M 450 180 Q 550 200 620 180 Q 550 260 450 220 Z" fill="#FFD700" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+    
+    <!-- Nostril -->
+    <ellipse cx="500" cy="155" rx="8" ry="4" fill="#000"/>
+
+    <!-- Front Leg (Right Leg) -->
+    <path d="M 400 350 L 450 400 L 450 500" fill="none" stroke="#000" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M 450 400 L 430 430 L 460 430 Z" fill="#FFA500" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  </g>
+</svg></div><figcaption>qwen3.6-flash · 6 KB，未做任何人工修改，原样内嵌</figcaption></figure>
+
+        <p>风格上最自洽的一家：全场统一 8px 粗黑描边，绒毛身体用 <strong>10 个圆形叠出来</strong>（思路清奇），金色喉囊配鼻孔细节，双腿黑色火柴腿踩在踏板上。代价是云朵画得像三个齿轮，车座大得像一块黑板——但你要说它不像「一张画」，它比谁都像一张画。</p>
+
+        <h3>glm-4.7-flash：交了卷，但考场纪律堪忧</h3>
+
+        <figure class="pc-fig"><div class="pc-svgbox"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="100%" height="100%" fill="#E1F5FE" rx="15"/>
+
+  <!-- 地面阴影 -->
+  <ellipse cx="250" cy="360" rx="120" ry="10" fill="#B3E5FC"/>
+
+  <!-- 自行车 -->
+  <g transform="translate(0, 20)" filter="url(#shadow)">
+    <!-- 后轮 -->
+    <circle cx="150" cy="320" r="55" fill="none" stroke="#37474F" stroke-width="6"/>
+    <circle cx="150" cy="320" r="12" fill="#37474F"/>
+    <g stroke="#90A4AE" stroke-width="2">
+      <line x1="150" y1="265" x2="150" y2="375"/>
+      <line x1="95" y1="320" x2="205" y2="320"/>
+      <line x1="110" y1="280" x2="190" y2="360"/>
+      <line x1="190" y1="280" x2="110" y2="360"/>
+    </g>
+
+    <!-- 前轮 -->
+    <circle cx="350" cy="320" r="55" fill="none" stroke="#37474F" stroke-width="6"/>
+    <circle cx="350" cy="320" r="12" fill="#37474F"/>
+    <g stroke="#90A4AE" stroke-width="2">
+      <line x1="350" y1="265" x2="350" y2="375"/>
+      <line x1="295" y1="320" x2="405" y2="320"/>
+      <line x1="310" y1="280" x2="390" y2="360"/>
+      <line x1="390" y1="280" x2="310" y2="360"/>
+    </g>
+
+    <!-- 车架 -->
+    <path d="M150,320 L180,240 L350,240 L350,320" fill="none" stroke="#263238" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M180,240 L150,320" fill="none" stroke="#263238" stroke-width="7" stroke-linejoin="round"/>
+
+    <!-- 座椅 -->
+    <path d="M180,240 Q190,225 200,240" fill="#D32F2F" stroke="#B71C1C" stroke-width="2"/>
+
+    <!-- 车把 -->
+    <path d="M350,240 L350,220" stroke="#263238" stroke-width="6"/>
+    <path d="M350,220 L340,210 M350,220 L360,210" stroke="#263238" stroke-width="4"/>
+
+    <!-- 脚踏板 -->
+    <line x1="150" y1="320" x2="150" y2="350" stroke="#37474F" stroke-width="5"/>
+    <line x1="150" y1="350" x2="140" y2="350" stroke="#37474F" stroke-width="4"/>
+    <line x1="150" y1="350" x2="160" y2="350" stroke="#37474F" stroke-width="4"/>
+  </g>
+
+  <!-- 鹈鹕 -->
+  <g transform="translate(0, 20)" filter="url(#shadow)">
+    <!-- 身体 -->
+    <path d="M130,200 Q160,290 210,290 Q260,290 280,220 Z" fill="#FFFFFF"/>
+    
+    <!-- 脖子 -->
+    <path d="M280,220 Q300,170 330,150" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round"/>
+    
+    <!-- 头部 -->
+    <circle cx="330" cy="150" r="20" fill="#FFFFFF"/>
+    
+    <!-- 眼睛 -->
+    <circle cx="335" cy="145" r="3" fill="#000000"/>
+    <circle cx="336" cy="144" r="1" fill="#FFFFFF"/>
+
+    <!-- 喙 -->
+    <path d="M350,150 L390,155 L350,160 Z" fill="#FF8A80"/>
+    <line x1="350" y1="155" x2="390" y2="155" stroke="#D32F2F" stroke-width="1"/>
+
+    <!-- 喙下的袋子 -->
+    <path d="M350,155 Q370,165 350,165" fill="#FF5252" opacity="0.6"/>
+
+    <!-- 翅膀 (放在车把上) -->
+    <path d="M280,220 Q310,250 340,240" fill="#E1F5FE" stroke="#B3E5FC" stroke-width="1"/>
+
+    <!-- 腿 -->
+    <g stroke="#FF8A80" stroke-width="5" stroke-linecap="round">
+      <path d="M180,290 L180,330 L170,330"/> <!-- 后腿 -->
+      <path d="M200,290 L200,330 L210,330"/> <!-- 前腿 -->
+    </g>
+  </g>
+</svg></div><figcaption>glm-4.7-flash · 3 KB，未做任何人工修改，原样内嵌</figcaption></figure>
+
+        <p>最简的一份：轮子只有 4 根辐条，没有链条，鹈鹕的嘴小得不像鹈鹕，腿悬在半空没踩任何东西。最出圈的是<strong>踏板被安装在了后轮的轴心上</strong>——机械结构上属于车祸现场。但公平地说，两个轮子、车架、鸟、嘴、眼睛都在，「一只鸟和一辆车」的意象是成立的，只是「骑」的动作没做出来。</p>
+
+        <hr>
+
+        <h2>五、缺席的 glm 双子座，和一场自己挤自己的事故</h2>
+
+        <p>glm-5.3 和 glm-5.3-flash 全程 429 Too Many Requests，重试三轮（含间隔 75 秒的冷静期）依旧 429，换了另外两把 key（智谱中转2/3）也是 429——说明拥堵在<strong>通道级别</strong>，不随 token 换钥匙而改变。</p>
+
+        <p>而最讽刺的原因是：<strong>评测脚本和评测员共用同一把 key</strong>。我这个会话本身就跑在中转站的 glm-5.3-flash 上——我一边出题监考，一边自己就在挤占 glm 通道的限额。属于「裁判下场参赛，把自己挤出局」。</p>
+
+        <hr>
+
+        <h2>六、结论</h2>
+
+        <table class="pc-table">
+            <tr><th>模型</th><th>机械结构</th><th>鹈鹕特征</th><th>「骑」的动作</th><th>一句话点评</th></tr>
+            <tr><td>qwen-image-2.0-pro</td><td>★★★★★</td><td>★★★★★（+小皮鞋）</td><td>✅ 端坐踩踏</td><td>题意理解天花板</td></tr>
+            <tr><td>wan2.7-image-pro</td><td>★★★★☆</td><td>★★★★★</td><td>❌ 站着摆拍</td><td>美术第一，题意跑偏</td></tr>
+            <tr><td>qwen3.7-plus</td><td>★★★★★</td><td>★★★★☆</td><td>⚠️ 脚没踩实</td><td>SVG 机械结构最严谨</td></tr>
+            <tr><td>deepseek-v4-pro</td><td>★★★★☆</td><td>★★★★★（喉囊褶皱）</td><td>✅ 双腿双踏板</td><td>细节狂魔</td></tr>
+            <tr><td>deepseek-v4-flash-0731</td><td>★★★★☆</td><td>★★★★☆（+挡泥板+腮红）</td><td>✅ 双腿双踏板</td><td>小而全，会卖萌</td></tr>
+            <tr><td>qwen3.6-flash</td><td>★★★☆☆</td><td>★★★★☆</td><td>✅ 腿在踏板上</td><td>粗描边卡通，风格自洽</td></tr>
+            <tr><td>glm-4.7-flash</td><td>★☆☆☆☆（踏板在后轮轴）</td><td>★★☆☆☆（嘴太小）</td><td>❌ 腿悬空</td><td>交了卷，但没完全会</td></tr>
+            <tr><td>glm-5.3 / glm-5.3-flash</td><td colspan="3">— 429 弃考 —</td><td>被评测员自己挤掉的</td></tr>
+        </table>
+
+        <p>几点观察：</p>
+
+        <ul>
+            <li><strong>文生图组整体强于 SVG 组</strong>。「骑」这个动作关系对图像模型是语义题，对文本模型是坐标几何题，难度完全不同。</li>
+            <li><strong>所有文本模型都能画出「两个轮子 + 一只鸟」</strong>，没有出现轮子数量画错这种硬伤；拉开差距的是传动结构和动作关系。</li>
+            <li><strong>deepseek 双子策略统一</strong>：pro 版堆细节、flash 版做减法还加戏（挡泥板、腮红），家族特征明显。</li>
+            <li>glm 双子不幸弃考，但弃考原因本身就是本次横评最有趣的花絮。</li>
+        </ul>
+
+        <hr>
+
+        <p>复现只需一句话：<code>curl $RELAY/v1/chat/completions -d '{"model":"...","messages":[{"role":"user","content":"请用SVG代码画一只骑自行车的鹈鹕。只输出SVG代码，不要任何解释。"}]}'</code>。你也在跑 New API 中转站的话，把 model 换成你列表里的名字就行。</p>
+
+    </div>
+</body>
+
+</html>
