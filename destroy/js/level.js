@@ -341,9 +341,19 @@
             }
         }
 
+        /* ===== 出生龛：保证任何页面都有确定可站的出生点 =====
+           密集文字页里找不到天然净空（13px 身体净空 + 双脚同时踩实
+           的位置几乎不存在），所以在版心中部强行：
+           ① clearRect 清空一条竖井（身体区 + 上方跳跃空间）
+           ② 铺一根绿色出生平台
+           之后 buildMask 扫描画布，自动把平台记为实心、竖井记为空 */
+        var sx0 = Math.floor(W / 2), sy0 = 120;
+        b.ctx.clearRect(sx0 - 10, sy0 - 80, 20, 94);     // 竖井：身体 + 跳跃空间
+        b.ctx.fillStyle = '#3ddc84';                     // 出生平台（品牌绿）
+        b.ctx.fillRect(sx0 - 26, sy0 + 14, 52, 5);
+
         onStep('生成实心掩码（碰撞数据）…');
         var m = buildMask(b);
-
         /* 底部通关区标记：最后 120px 是「页脚」，冲进去即胜利 */
         onStep('完成！关卡高度 ' + b.H + 'px · 墨水 ' + m.totalInk + ' 粒');
 
@@ -424,6 +434,11 @@
             b.drawText('相关阅读：像素美学 / 破坏的艺术 / 页脚哲学 / 论 div 的百种死法', 12, INK_LINK, false, true);
             b.drawHr();
         }
+        /* 出生龛：与 DLevel.build 同款，保证演示关也有确定出生点 */
+        var dsx = Math.floor(W / 2), dsy = 120;
+        b.ctx.clearRect(dsx - 10, dsy - 80, 20, 94);
+        b.ctx.fillStyle = '#3ddc84';
+        b.ctx.fillRect(dsx - 26, dsy + 14, 52, 5);
         var m = buildMask(b);
         return {
             canvas: b.cv, W: W, H: b.H,

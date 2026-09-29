@@ -63,6 +63,10 @@
     var input = { left: false, right: false, jump: false, fire: false };
     var keys = {};
 
+    /* 调试钩子：console 里可用 __DBG 查看实时状态（不影响游戏） */
+    window.__DBG = G;
+    window.__IN = input;
+
     /* ============================================================
      * 二、极简音效：WebAudio 现场合成，零音频文件
      * ============================================================ */
@@ -375,13 +379,18 @@
         }
         ctx.globalAlpha = 1;
 
-        /* 玩家：像素小人（无敌帧闪烁） */
+        /* 玩家：像素小人（无敌帧闪烁）。
+           白色描边打底，保证在深浅不一的网页内容上都看得清 */
         var px = p.x, py = p.y - cam;
         if (!(p.iframe > 0 && Math.floor(p.iframe / 4) % 2 === 0)) {
+            ctx.fillStyle = '#ffffff';                       // 描边层（大一圈）
+            ctx.fillRect(px - 1, py - 1, 10, 15);
             ctx.fillStyle = '#1c2540';                       // 身体
             ctx.fillRect(px + 1, py + 4, 6, 8);
             ctx.fillStyle = '#f0c75e';                       // 头
             ctx.fillRect(px + 1, py, 6, 4);
+            ctx.fillStyle = '#e0364a';                       // 帽子（红，更醒目）
+            ctx.fillRect(px, py - 2, 8, 3);
             ctx.fillStyle = '#1c2540';                       // 眼睛
             ctx.fillRect(px + (p.dir > 0 ? 5 : 2), py + 1, 1, 1);
             ctx.fillStyle = '#3ddc84';                       // 枪
@@ -446,22 +455,10 @@
         ui.hpfill.style.width = '100%';
         ui.panelEnd.classList.remove('on');
 
-        /* 出生点：从顶部往下找第一个「身体悬空 + 脚下实地」的位置。
-           逐行扫描身体区无碰撞且脚底两像素是实心，避免出生在
-           文字/图片内部被碰撞解算顶出屏幕外的bug */
-        var sx = Math.floor(VIEW_W / 2) - 4;
-        var sy = 20;
-        var found = false;
-        /* 从 y=120 开始扫：跳过页首大标题，让玩家出生在正文区，
-           头顶留出跳跃空间，摄像机也有余量 */
-        for (var cy2 = 120; cy2 < lv.H - 300; cy2 += 4) {
-            if (!hitMask(sx, cy2, 8, 13) &&
-                window.DLevel.solidAt(lv, sx + 1, cy2 + 14) &&
-                window.DLevel.solidAt(lv, sx + 6, cy2 + 14)) {
-                sy = cy2; found = true; break;
-            }
-        }
-        if (!found) sy = 20;                             // 兜底：原逻辑
+        /* 出生点：关卡生成时已在版心中部（x=240）清出竖井并铺好
+           绿色出生平台（y=134），这里直接落到平台上，稳定可靠 */
+        var sx = Math.floor(VIEW_W / 2) - 4;                 // 236，角色宽8居中
+        var sy = 116;                                        // 脚底 129，落在平台 134 上方
         G.player = makePlayer(sx, sy);
 
         /* 敌人出生：跳过离玩家太近的（开局别被咬） */
