@@ -79,8 +79,12 @@
         shake: 0, toastT: 0
     };
 
-    /* 输入状态 */
-    var input = { left: false, right: false, jump: false, fire: false };
+    /* 输入状态。aim 为瞄准点（关卡逻辑坐标）：桌面端跟鼠标，
+       移动端跟手指——子弹射向瞄准点，实现 360° 全向射击 */
+    var input = {
+        left: false, right: false, jump: false, fire: false,
+        aim: { x: 0, y: 0, active: false }
+    };
     var keys = {};
 
     /* 调试钩子：console 里可用 __DBG 查看实时状态（不影响游戏） */
@@ -207,6 +211,15 @@
         updateHUD();
     }
 
+    /** 当前枪口指向的角度：优先瞄准点，无瞄准点时水平朝向 */
+    function aimAngle() {
+        var p = G.player;
+        if (input.aim.active) {
+            return Math.atan2(input.aim.y - (p.y + 5), input.aim.x - (p.x + p.w / 2));
+        }
+        return p.dir > 0 ? 0 : Math.PI;
+    }
+
     function fire() {
         if (G.fireCd > 0) return;
         var w = curWeapon();
@@ -214,22 +227,29 @@
         G.fireCd = w.cd;
         if (!w.auto) G.fireLatch = true;             // 半自动：松开才能再打
 
-        /* 扇形散射：多弹丸在 spread 角度内均匀偏转 */
+        /* 角色朝向跟随瞄准点 */
+        var baseAng = aimAngle();
+        p.dir = Math.cos(baseAng) >= 0 ? 1 : -1;
+
+        /* 扇形散射：多弹丸在 spread 角度内均匀偏转（围绕瞄准角） */
         for (var i = 0; i < w.pellets; i++) {
-            var ang = 0;
-            if (w.pellets > 1) ang = (i / (w.pellets - 1) - 0.5) * w.spread;
-            else ang = (Math.random() - 0.5) * w.spread;
-            var rad = ang * Math.PI / 180;
+            var off = 0;
+            if (w.pellets > 1) off = (i / (w.pellets - 1) - 0.5) * w.spread;
+            else off = (Math.random() - 0.5) * w.spread;
+            var a = baseAng + off * Math.PI / 180;
             var spd = w.spd * (0.94 + Math.random() * 0.12);
             G.bullets.push({
-                x: p.x + p.w / 2 + p.dir * 7, y: p.y + 5,
-                vx: Math.cos(rad) * p.dir * spd,
-                vy: Math.sin(rad) * spd,
+                x: p.x + p.w / 2 + p.dir * 5, y: p.y + 5,
+                vx: Math.cos(a) * spd, vy: Math.sin(a) * spd,
                 r: w.r, rocket: !!w.rocket
             });
         }
-        /* 后坐力：火箭/霰弹把玩家往后推 */
-        if (w.kick) { p.x -= p.dir * w.kick; G.shake = Math.max(G.shake, w.kick); }
+        /* 后坐力：沿射击反方向推玩家 */
+        if (w.kick) {
+            p.x -= Math.cos(baseAng) * w.kick;
+            p.y += Math.sin(baseAng) * w.kick * 0.4;
+            G.shake = Math.max(G.shake, w.kick);
+        }
         sfx.shoot();
     }
 
@@ -381,9 +401,17 @@
         moveBody(p);
         p.animT += Math.abs(p.vx);
 
+        /* 世界天花板：页面顶端以上不再是虚空，防止玩家跳出画面外 */
+        if (p.y < 2) { p.y = 2; if (p.vy < 0) p.vy = 0; }
+
         /* 防止顶出世界 & 卡进墙的兜底 */
         if (p.x < 2) p.x = 2;
         if (p.x > G.lv.W - p.w - 2) p.x = G.lv.W - p.w - 2;
+
+        /* 有瞄准点时（鼠标/触屏），角色朝向跟随瞄准方向 */
+        if (input.aim.active) {
+            p.dir = input.aim.x >= p.x + p.w / 2 ? 1 : -1;
+        }
 
         /* 冲到底部页脚区 → 通关 */
         if (p.y + p.h >= G.lv.H - FOOTEER_H) { endGame(true); return; }
@@ -514,8 +542,13 @@
             ctx.fillRect(px, py - 2, 8, 3);
             ctx.fillStyle = '#1c2540';                       // 眼睛
             ctx.fillRect(px + (p.dir > 0 ? 5 : 2), py + 1, 1, 1);
-            ctx.fillStyle = '#3ddc84';                       // 枪
-            ctx.fillRect(px + (p.dir > 0 ? p.w : -4), py + 5, 4, 2);
+            /* 枪管：旋转指向瞄准方向（360° 全向） */
+            ctx.save();
+            ctx.translate(px + p.w / 2, py + 6);
+            ctx.rotate(aimAngle());
+            ctx.fillStyle = '#3ddc84';
+            ctx.fillRect(2, -1, 5, 2);
+            ctx.restore();
             /* 走路摆腿 */
             if (p.onGround && Math.abs(p.vx) > 0.1) {
                 var legPhase = Math.floor(p.animT / 6) % 2;
@@ -679,15 +712,45 @@
             if (e.code === 'KeyJ' || e.code === 'KeyX') input.fire = false;
         });
 
-        /* 鼠标：点画布开火，位置决定朝向 */
+        /* 屏幕坐标 → 关卡逻辑坐标（含镜头偏移） */
+        function toLogical(cx, cy) {
+            var rect = ui.cv.getBoundingClientRect();
+            return {
+                x: (cx - rect.left) / G.scale + G.camX,
+                y: (cy - rect.top) / G.scale + G.camY
+            };
+        }
+        function updateAim(cx, cy) {
+            var pt = toLogical(cx, cy);
+            input.aim.x = pt.x; input.aim.y = pt.y; input.aim.active = true;
+        }
+
+        /* 桌面鼠标：移动即瞄准，按住持续射击，360° 全向 */
+        window.addEventListener('mousemove', function (e) {
+            updateAim(e.clientX, e.clientY);
+        }, { passive: true });
         ui.cv.addEventListener('mousedown', function (e) {
             if (G.state !== 'play') return;
-            var rect = ui.cv.getBoundingClientRect();
-            var mx = (e.clientX - rect.left) / G.scale;
-            G.player.dir = mx > G.player.x ? 1 : -1;
+            updateAim(e.clientX, e.clientY);
             input.fire = true;
-            setTimeout(function () { input.fire = false; }, 120);
         });
+        window.addEventListener('mouseup', function () { input.fire = false; });
+
+        /* 移动端触屏：点哪打哪——手指按住画布任意位置即瞄准开火，
+           拖动可实时调整弹道（虚拟按键是独立 DOM，不会误触） */
+        ui.cv.addEventListener('touchstart', function (e) {
+            if (G.state !== 'play') return;
+            e.preventDefault();
+            var t = e.touches[0];
+            updateAim(t.clientX, t.clientY);
+            input.fire = true;
+        }, { passive: false });
+        ui.cv.addEventListener('touchmove', function (e) {
+            if (e.cancelable) e.preventDefault();
+            var t = e.touches[0];
+            updateAim(t.clientX, t.clientY);
+        }, { passive: false });
+        ui.cv.addEventListener('touchend', function () { input.fire = false; });
 
         /* 移动端虚拟按键（仅触屏设备显示） */
         if ('ontouchstart' in window) {

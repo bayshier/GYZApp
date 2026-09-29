@@ -224,6 +224,8 @@
             /* 像素画的灵魂：禁用平滑插值，让每个像素棱角分明 */
             image-rendering: pixelated;
             image-rendering: crisp-edges;
+            /* 触屏瞄准射击：阻止画布上的滑动触发页面滚动 */
+            touch-action: none;
         }
 
         .hud {
@@ -361,8 +363,8 @@
         </div>
         <div class="credit">
             灵感致敬 <a href="https://destroy.spritefusion.com/" target="_blank" rel="noopener">Destroy Any Website</a> · 净室复刻版，全部代码原创<br>
-            桌面端：← → 移动 / ↑ 或空格跳 / J 或鼠标射击 / <b>1-4 或 Q 切枪</b> / <b>G 手雷</b><br>
-            武器：🔫手枪 · ⚡冲锋枪 · 💥霰弹枪 · 🚀火箭筒 · 🧨手雷 —— 移动端右侧两排虚拟键
+            桌面端：← → 移动 / ↑ 或空格跳 / <b>鼠标瞄准 360° 射击</b> / 1-4 或 Q 切枪 / G 手雷<br>
+            移动端：虚拟键移动跳跃 · <b>手指点哪打哪（360°）</b> · 🔁 切枪 · 💣 手雷
         </div>
     </div>
 
