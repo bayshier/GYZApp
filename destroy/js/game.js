@@ -431,7 +431,7 @@
         var pct = Math.min(100, Math.round(G.destroyed / G.lv.totalInk * 100));
         ui.hudDestroy.textContent = pct + '%';
         ui.hudEnemy.textContent = G.enemies.length;
-        ui.hudDepth.textContent = '深度 ' + Math.min(100, Math.round(G.player.y / (G.lv.H - FOOTEER_H) * 100)) + '%';
+        ui.hudDepth.textContent = '深度 ' + Math.max(0, Math.min(100, Math.round(G.player.y / (G.lv.H - FOOTEER_H) * 100))) + '%';
     }
 
     /* ============================================================
@@ -446,11 +446,23 @@
         ui.hpfill.style.width = '100%';
         ui.panelEnd.classList.remove('on');
 
-        /* 出生点：从顶部找一块结实地面 */
-        var sx = Math.floor(VIEW_W / 2);
+        /* 出生点：从顶部往下找第一个「身体悬空 + 脚下实地」的位置。
+           逐行扫描身体区无碰撞且脚底两像素是实心，避免出生在
+           文字/图片内部被碰撞解算顶出屏幕外的bug */
+        var sx = Math.floor(VIEW_W / 2) - 4;
         var sy = 20;
-        while (sy < lv.H - 200 && !window.DLevel.solidAt(lv, sx, sy + 16)) sy++;
-        G.player = makePlayer(sx - 4, Math.max(4, sy - 2));
+        var found = false;
+        /* 从 y=120 开始扫：跳过页首大标题，让玩家出生在正文区，
+           头顶留出跳跃空间，摄像机也有余量 */
+        for (var cy2 = 120; cy2 < lv.H - 300; cy2 += 4) {
+            if (!hitMask(sx, cy2, 8, 13) &&
+                window.DLevel.solidAt(lv, sx + 1, cy2 + 14) &&
+                window.DLevel.solidAt(lv, sx + 6, cy2 + 14)) {
+                sy = cy2; found = true; break;
+            }
+        }
+        if (!found) sy = 20;                             // 兜底：原逻辑
+        G.player = makePlayer(sx, sy);
 
         /* 敌人出生：跳过离玩家太近的（开局别被咬） */
         for (var i = 0; i < lv.enemies.length; i++) {
@@ -580,6 +592,28 @@
         ui.btnGo.addEventListener('click', function () { loadAndStart(ui.inUrl.value); });
         ui.inUrl.addEventListener('keydown', function (e) { if (e.key === 'Enter') loadAndStart(ui.inUrl.value); });
         ui.btnDemo.addEventListener('click', function () { loadAndStart('demo'); });
+        /* 标题页的内置关卡主按钮 */
+        var demoMain = document.getElementById('btn-demo-main');
+        if (demoMain) demoMain.addEventListener('click', function () { loadAndStart('demo'); });
+
+        /* 自定义代理：保存到 localStorage，proxy.js 会自动插到链首 */
+        var inProxy = document.getElementById('in-proxy');
+        var proxyHint = document.getElementById('proxy-hint');
+        try { inProxy.value = localStorage.getItem('destroy_custom_proxy') || ''; } catch (e) { }
+        document.getElementById('btn-proxy').addEventListener('click', function () {
+            var v = inProxy.value.trim();
+            try {
+                if (v && v.indexOf('{url}') === -1) {
+                    proxyHint.textContent = '需包含 {url} 占位符';
+                    setTimeout(function () { proxyHint.textContent = ''; }, 2500);
+                    return;
+                }
+                localStorage.setItem('destroy_custom_proxy', v);
+                proxyHint.textContent = v ? '✓ 已保存，优先使用' : '✓ 已清除';
+                setTimeout(function () { proxyHint.textContent = ''; }, 2500);
+            } catch (e) { /* 隐私模式下忽略 */ }
+        });
+
         ui.btnQuit.addEventListener('click', function () {
             G.state = 'title';
             ui.screenGame.style.display = 'none';

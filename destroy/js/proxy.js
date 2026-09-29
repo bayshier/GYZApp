@@ -14,39 +14,48 @@
     'use strict';
 
     /* ---------- 公共 CORS 代理链（按顺序尝试） ----------
+     * 实测结论（2026.09，国内直连网络）：
+     *   · cors.lol   —— 国内可直连，但限流较紧（429 时稍等重试即可）
+     *   · codetabs   —— 时好时坏，作二线
+     *   · allorigins —— 海外主流，国内直连常超时（挂代理的浏览器可用）
+     *   · cors.eu.org—— 兜底，响应不稳定
      * 每项是一个函数：输入原始网址，返回代理后的完整地址 */
     var PROXIES = [
-        // allorigins：最常用的免费 CORS 代理
+        function (u) { return 'https://api.cors.lol/?url=' + encodeURIComponent(u); },
+        function (u) { return 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u); },
         function (u) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); },
-        // corsproxy.io：备选
-        function (u) { return 'https://corsproxy.io/?url=' + encodeURIComponent(u); },
-        // thingproxy：再备选
-        function (u) { return 'https://thingproxy.freeboard.io/fetch/' + u; }
+        function (u) { return 'https://cors.eu.org/' + u; }
     ];
 
-    // 单次抓取超时（毫秒）。公共代理偶尔很慢，超时即换下一个
-    var TIMEOUT = 12000;
+    // 单次抓取超时（毫秒）。失败/超时自动换下一个
+    var TIMEOUT = 9000;
 
     /**
-     * 补全网址：用户可能只输入 "example.com"
-     * @param {string} raw 用户输入
-     * @returns {string} 带 https:// 前缀的完整网址
+     * 组装最终代理链：若用户在界面里保存过自定义代理，则插到最前。
+     * 自定义代理写法用 {url} 作占位符，兼容路径式和查询式：
+     *   https://我的服务器:3000/?url={url}
+     *   https://我的域名/代理/{url}
      */
+    function getProxies() {
+        var list = PROXIES.slice();
+        var custom = null;
+        try { custom = localStorage.getItem('destroy_custom_proxy'); } catch (e) { }
+        if (custom && custom.indexOf('{url}') > -1) {
+            list.unshift(function (u) { return custom.replace('{url}', encodeURIComponent(u)); });
+        }
+        return list;
+    }
+
+    /** 补全网址：用户可能只输入 "example.com" */
     function normalizeUrl(raw) {
         raw = (raw || '').trim();
         if (!raw) return '';
-        // 允许直接输入 "demo" 体验内置关卡
         if (/^demo$/i.test(raw)) return 'demo';
         if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
         return raw;
     }
 
-    /**
-     * 带超时的 fetch
-     * @param {string} url 目标地址
-     * @param {number} ms  超时毫秒数
-     * @returns {Promise<Response>}
-     */
+    /** 带超时的 fetch */
     function fetchWithTimeout(url, ms) {
         return Promise.race([
             fetch(url),
@@ -56,25 +65,32 @@
         ]);
     }
 
+    /** 单个代理抓取：429（限流）自动等 1.5 秒重试一次 */
+    async function tryProxy(via) {
+        var res = await fetchWithTimeout(via, TIMEOUT);
+        if (res.status === 429) {
+            await new Promise(function (r) { setTimeout(r, 1500); });
+            res = await fetchWithTimeout(via, TIMEOUT);
+        }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var html = await res.text();
+        /* 基本校验：内容太短多半是代理报错页 */
+        if (!html || html.length < 200) throw new Error('内容过短');
+        return html;
+    }
+
     /**
-     * 抓取目标网页的 HTML 源码。
-     * 依次尝试代理链上的每一个代理，全部失败则抛错。
-     * @param {string} url 已补全的网址
+     * 抓取目标网页的 HTML 源码。依次尝试代理链，全部失败则抛错。
      * @returns {Promise<{html: string, via: string}>}
      */
     async function fetchPageHtml(url) {
+        var proxies = getProxies();
         var errors = [];
-        for (var i = 0; i < PROXIES.length; i++) {
-            var via = PROXIES[i](url);
+        for (var i = 0; i < proxies.length; i++) {
+            var via = proxies[i](url);
             try {
-                var res = await fetchWithTimeout(via, TIMEOUT);
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                var html = await res.text();
-                // 基本校验：内容太短或不是 HTML 多半是代理报错页
-                if (html && html.length > 200) {
-                    return { html: html, via: via };
-                }
-                throw new Error('内容过短');
+                var html = await tryProxy(via);
+                return { html: html, via: via };
             } catch (e) {
                 errors.push((i + 1) + '号代理失败: ' + e.message);
             }
