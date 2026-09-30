@@ -3,7 +3,7 @@
 > 输入一个网址，它的标题、文字、图片、盒子全部变成**可破坏的像素关卡**——
 > 拿起枪，一路向下轰，把整个页面打成一堆像素渣！
 
-**线上开玩**：<https://bayshier.github.io/GYZApp/destroy/>
+**线上开玩**：<https://bayshier.github.io/destroy/>
 
 灵感致敬 [Destroy Any Website](https://destroy.spritefusion.com/)（Sprite Fusion 出品的闭源小游戏）。本项目为**净室复刻**：只复刻玩法概念，全部代码、注释、美术均为原创，未使用原项目任何代码与素材。纯原生 HTML/CSS/JS 实现，**零依赖、零构建**。
 
