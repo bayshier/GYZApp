@@ -1,0 +1,71 @@
+[2026-08-06 13:42:52.822] [INFO   ] [JuggManagerCreator] Start Init Jugg by embedded_updated on /Users/radar/Downloads/gitlab127001/GYZApp
+[2026-08-06 13:42:53.115] [FINE   ] [JuggServer] init finished, version: 3.1.1-release, projectId: GYZApp, userName: Easin, requestToken: f01e0f29, serverUrl: http://sickworm.com:12305
+[2026-08-06 13:42:53.119] [FINE   ] [JuggServerChooser] isForce=true, update server.
+[2026-08-06 13:42:53.136] [FINE   ] [JuggServerChooser] Update server rules: [ServerRule(url=http://wormchen-any1.devcloud.woa.com:12305, checkReachableHost=wormchen-any1.devcloud.woa.com), ServerRule(url=http://sickworm.com:12305, checkReachableHost=null)]
+[2026-08-06 13:42:53.136] [FINE   ] [JuggServerChooser] Check server rule: ServerRule(url=http://wormchen-any1.devcloud.woa.com:12305, checkReachableHost=wormchen-any1.devcloud.woa.com)
+[2026-08-06 13:42:53.308] [INFO   ] [ConstRefEngine] ConstRefEngine io throttle enabled, fullScan=3000ms/50files, fileChange=500ms/200files, preCompile=0ms/1files, onDemand=0ms/1files
+[2026-08-06 13:42:53.359] [FINE   ] [McpLocalServer] start: MCP Local Server started on port 12320
+[2026-08-06 13:42:53.359] [FINE   ] [JuggManager] job <Init Jugg> waiting for TaskRunnerManager lock, thread=ApplicationImpl pooled thread 9
+[2026-08-06 13:42:53.360] [FINE   ] [JuggManager] job <Init Jugg> acquired TaskRunnerManager lock, waitCost=0ms
+[2026-08-06 13:42:53.360] [FINE   ] [JuggManager] job <Init Jugg> start
+[2026-08-06 13:42:53.360] [FINE   ] [AsDeployerCompat] IDE version: IdeVersion(name=Android Studio Quail 3 | 2026.1.3, type=AI, mainVersion=261.26222.65, fullVersion=261.26222.65.2613.15948027)
+[2026-08-06 13:42:53.361] [WARNING] [AsDeployerCompat] Bad! IDE version higher than IdeVersion(name=Android Studio Quail, type=AI, mainVersion=261.23567.138, fullVersion=261.23567.138), use this for compat, good luck.
+[2026-08-06 13:42:53.361] [FINE   ] [CustomConfigManager] Custom config changed from null to 0_1784790072845, reload it.
+[2026-08-06 13:42:53.365] [FINE   ] [CustomConfigManager] Load default custom config: ProjectCustomConfig(servers=null, buildFileList=[], buildFileRules=[], dontFilterIgnoredFileRules=[], moduleCustomConfigs=[], customCompilers=null, embeddedApksSearchRules=null)
+[2026-08-06 13:42:53.367] [FINE   ] [FileChangesHandler] updateBuildFileRules: [], doNotIgnoreModulePaths: []
+[2026-08-06 13:42:53.368] [FINE   ] [CustomCompilerManager] updateCustomCompilers null
+[2026-08-06 13:42:53.368] [FINE   ] [CustomCompilerManager] updateCustomCompilers with null config, exit.
+[2026-08-06 13:42:53.368] [FINE   ] [JuggServerChooser] Update server rules: [ServerRule(url=http://wormchen-any1.devcloud.woa.com:12305, checkReachableHost=wormchen-any1.devcloud.woa.com), ServerRule(url=http://sickworm.com:12305, checkReachableHost=null)]
+[2026-08-06 13:42:53.368] [FINE   ] [JuggServerChooser] Check server rule: ServerRule(url=http://wormchen-any1.devcloud.woa.com:12305, checkReachableHost=wormchen-any1.devcloud.woa.com)
+[2026-08-06 13:42:53.430] [FINE   ] [JuggManager] JuggConfigurationType currentList: []
+[2026-08-06 13:42:53.433] [FINE   ] [JuggManager] Suggest run configurations: []
+[2026-08-06 13:42:53.434] [FINE   ] [JuggManager] No suggest run configuration
+[2026-08-06 13:42:53.434] [FINE   ] [ProjectInfoReader] IDE version: IdeVersion(name=Android Studio Quail 3 | 2026.1.3, type=AI, mainVersion=261.26222.65, fullVersion=261.26222.65.2613.15948027)
+[2026-08-06 13:42:53.435] [FINE   ] [ProjectInfoReader] plugin info: Version: 3.1.1-release, Compile-Date: 2026-07-27 17:13:48, Compile-Timestamp: 1785143628821, 
+[2026-08-06 13:42:53.435] [FINE   ] [ProjectInfoReader] os.name: Mac OS X, os.version: 26.5.2
+[2026-08-06 13:42:53.435] [FINE   ] [ProjectInfoReader] Idea JVM version: [25, 0, 2]
+[2026-08-06 13:42:53.435] [FINE   ] [ProjectInfoReader] gradleDistributionUrl: [file not found]
+[2026-08-06 13:42:53.435] [FINE   ] [ProjectInfoReader] systemPath: /Users/radar/Library/Caches/Google/AndroidStudio2026.1.3
+[2026-08-06 13:42:53.435] [FINE   ] [ProjectInfoReader] device MIN API: 26
+[2026-08-06 13:42:53.436] [FINE   ] [ProjectInfoReader] printProjectInfo cost: 1 ms
+[2026-08-06 13:42:53.436] [FINE   ] [DeployHistoryManager] checkProjectDirChanged, historyProjectDir: /Users/radar/Downloads/gitlab127001/GYZApp, realProjectDir: /Users/radar/Downloads/gitlab127001/GYZApp
+[2026-08-06 13:42:53.437] [FINE   ] [DeployHistoryManager] Project dir is not changed, continue to recover from deploy history later
+[2026-08-06 13:42:53.437] [INFO   ] [JuggManager] Start jugg finished.
+[2026-08-06 13:42:53.439] [FINE   ] [JuggManager] Checking updates...
+[2026-08-06 13:42:53.440] [FINE   ] [JuggManager] job <Init Jugg> finished, cost 80ms
+[2026-08-06 13:42:53.446] [FINE   ] [JuggManager] JuggDeploymentService.preInit, cost 7ms
+[2026-08-06 13:42:53.799] [FINE   ] [JuggServer] check update response: [200] {"latestVersion":"3.2.2-release","isNeedUpgrade":false,"downloadUrl":"https://jugg.sickworm.com/download_page","templateList":[],"notification":null,"customConfigJson":{"servers":null,"buildFileList":[],"buildFileRules":[],"dontFilterIgnoredFileRules":[],"moduleCustomConfigs":[],"customCompilers":null}}
+[2026-08-06 13:42:53.802] [FINE   ] [CheckUpdateHandler] Check update result: VersionData(latestVersion=3.2.2-release, isNeedUpgrade=false, downloadUrl=https://jugg.sickworm.com/download_page, templateList=[], notification=null, customConfigJson=ProjectCustomConfig(servers=null, buildFileList=[], buildFileRules=[], dontFilterIgnoredFileRules=[], moduleCustomConfigs=[], customCompilers=null, embeddedApksSearchRules=null))
+[2026-08-06 13:42:53.803] [FINE   ] [CustomConfigManager] No need to update default custom config.
+[2026-08-06 13:42:53.804] [FINE   ] [JuggHotUpdateDownloader] notifyHotUpdateIfNeeded false
+[2026-08-06 13:42:53.804] [FINE   ] [JuggHotUpdateDownloader] notifyInstallUpdateIfNeeded false
+[2026-08-06 13:42:53.979] [FINE   ] [JuggManager] job <Init project info> waiting for TaskRunnerManager lock, thread=ApplicationImpl pooled thread 5
+[2026-08-06 13:42:53.979] [FINE   ] [JuggManager] job <Init project info> acquired TaskRunnerManager lock, waitCost=0ms
+[2026-08-06 13:42:53.979] [FINE   ] [JuggManager] job <Init project info> start
+[2026-08-06 13:42:53.979] [FINE   ] [JuggManager] Start recover deploy context
+[2026-08-06 13:42:53.998] [FINE   ] [DeployHistoryManager] tryGetContextRecoverInfoFromDb recover feature is available
+[2026-08-06 13:42:53.998] [FINE   ] [DeployHistoryManager] getChangedFilesSinceLastFullCompiled isOnInit true
+[2026-08-06 13:42:54.001] [INFO   ] [DeployHistoryManager] Project has not been commit yet, fullCompileGitCommitHash is null, need full compile first.
+[2026-08-06 13:42:54.002] [FINE   ] [DeployHistoryManager] No compile context db found
+[2026-08-06 13:42:54.003] [FINE   ] [DeployHistoryManager] tryGetContextRecoverInfoFromDb, changedFiles: null, cost: 4ms; compileContextInfo: null, cost: 0ms; deployedFiles: null,  cost: 0ms.
+[2026-08-06 13:42:54.003] [FINE   ] [DeployHistoryManager] getChangedFilesSinceLastFullCompiled failed, return null
+[2026-08-06 13:42:54.003] [FINE   ] [JuggManager] Can not recover from deploy history, please run gradle compile first
+[2026-08-06 13:42:54.003] [FINE   ] [JuggManager] job <Init project info> finished, cost 24ms
+[2026-08-06 13:42:55.435] [FINE   ] [McpLocalServer] start: Server is already running
+[2026-08-06 13:42:58.336] [FINE   ] [JuggServerChooser] wormchen-any1.devcloud.woa.com is not reachable
+[2026-08-06 13:42:58.336] [FINE   ] [JuggServerChooser] Check server rule: ServerRule(url=http://sickworm.com:12305, checkReachableHost=null)
+[2026-08-06 13:42:58.337] [FINE   ] [JuggServerChooser] Choose server http://sickworm.com:12305 for no check condition.
+[2026-08-06 13:42:58.337] [FINE   ] [JuggServerChooser] No need update server, still use http://sickworm.com:12305
+[2026-08-06 13:42:58.370] [FINE   ] [JuggServerChooser] wormchen-any1.devcloud.woa.com is not reachable
+[2026-08-06 13:42:58.370] [FINE   ] [JuggServerChooser] Check server rule: ServerRule(url=http://sickworm.com:12305, checkReachableHost=null)
+[2026-08-06 13:42:58.370] [FINE   ] [JuggServerChooser] Choose server http://sickworm.com:12305 for no check condition.
+[2026-08-06 13:42:58.370] [FINE   ] [JuggServerChooser] No need update server, still use http://sickworm.com:12305
+[2026-08-06 13:42:59.140] [FINE   ] [McpLocalServer] start: Server is already running
+[2026-08-06 13:43:02.016] [FINE   ] [McpLocalServer] start: Server is already running
+[2026-08-06 13:43:03.455] [FINE   ] [JuggManager] background job <Auto update Jugg CLI> start
+[2026-08-06 13:43:03.495] [INFO   ] [JuggCliAutoUpdater] Jugg CLI bin dir not found, skipping auto-update
+[2026-08-06 13:43:03.495] [FINE   ] [JuggManager] background job <Auto update Jugg CLI> finished, cost 39ms
+[2026-08-06 13:43:06.306] [FINE   ] [McpLocalServer] start: Server is already running
+[2026-08-06 13:43:16.027] [FINE   ] [McpLocalServer] start: Server is already running
+[2026-08-06 13:43:40.650] [INFO   ] [JuggManagerCreator] Release Jugg on /Users/radar/Downloads/gitlab127001/GYZApp
+[2026-08-06 13:43:40.650] [FINE   ] [JuggManager] project /Users/radar/Downloads/gitlab127001/GYZApp dispose

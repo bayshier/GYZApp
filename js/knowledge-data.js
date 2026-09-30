@@ -1,0 +1,1625 @@
+/* ============================================================
+   股宇宙知识库 - 内容数据源
+   五大模块：K线分时 / 均线MA / 技术指标 / 基本面盘口 / 港美股
+   每篇文章：id / 分类 / 标题 / 摘要 / 正文(HTML) / 标签
+   图解采用内联 SVG，零图片依赖
+   ============================================================ */
+
+/* ---------- 五大分类 ---------- */
+var KB_CATEGORIES = [
+    {
+        id: 'kline',
+        name: 'K线与分时图',
+        icon: '📈',
+        desc: '看懂每一根K线与分时走势的基础'
+    },
+    {
+        id: 'ma',
+        name: '均线系统 MA',
+        icon: '〰️',
+        desc: '趋势方向、支撑压力、金叉死叉'
+    },
+    {
+        id: 'indicator',
+        name: '技术指标',
+        icon: '🎯',
+        desc: 'MACD / KDJ / RSI / BOLL 等买卖信号'
+    },
+    {
+        id: 'fundamental',
+        name: '基本面与盘口',
+        icon: '📊',
+        desc: 'PE/PB/ROE 与盘口数据解读'
+    },
+    {
+        id: 'hkus',
+        name: '港美股市场',
+        icon: '🌏',
+        desc: '交易规则、市场结构与中概股'
+    },
+    {
+        id: 'mystic',
+        name: '玄学板块',
+        icon: '🔮',
+        desc: '那些说不清道不明却影响市场的事'
+    }
+];
+
+/* ---------- SVG 图解库 ---------- */
+var KB_SVG = {
+    /* K线解剖图 */
+    klineAnatomy: '<svg viewBox="0 0 300 240" width="300" height="240" xmlns="http://www.w3.org/2000/svg">'
+        + '<text x="150" y="18" text-anchor="middle" font-size="12" fill="#1a2b4a" font-weight="bold">阳线（红）与阴线（绿）</text>'
+        /* 阳线 */
+        + '<line x1="80" y1="40" x2="80" y2="80" stroke="#e74c3c" stroke-width="2"/>'   /* 上影 */
+        + '<rect x="65" y="80" width="30" height="70" fill="#e74c3c" stroke="#e74c3c"/>' /* 实体 */
+        + '<line x1="80" y1="150" x2="80" y2="185" stroke="#e74c3c" stroke-width="2"/>' /* 下影 */
+        + '<text x="105" y="48" font-size="10" fill="#e74c3c">最高价</text>'
+        + '<text x="105" y="88" font-size="10" fill="#e74c3c">收盘价(上)</text>'
+        + '<text x="105" y="140" font-size="10" fill="#e74c3c">开盘价(下)</text>'
+        + '<text x="105" y="185" font-size="10" fill="#e74c3c">最低价</text>'
+        /* 阴线 */
+        + '<line x1="210" y1="45" x2="210" y2="78" stroke="#2ecc71" stroke-width="2"/>'
+        + '<rect x="195" y="78" width="30" height="68" fill="#2ecc71" fill-opacity="0.25" stroke="#2ecc71"/>' /* 空心 */
+        + '<line x1="210" y1="146" x2="210" y2="190" stroke="#2ecc71" stroke-width="2"/>'
+        + '<text x="150" y="218" text-anchor="middle" font-size="10" fill="#7f8c8d">影线表示最高/最低，实体表示开/收盘</text>'
+        + '</svg>',
+
+    /* 常见 K 线形态 */
+    klinePatterns: '<svg viewBox="0 0 320 160" width="320" height="160" xmlns="http://www.w3.org/2000/svg">'
+        + '<text x="160" y="16" text-anchor="middle" font-size="12" fill="#1a2b4a" font-weight="bold">常见单根K线形态</text>'
+        /* 大阳 */
+        + '<rect x="40" y="50" width="20" height="60" fill="#e74c3c"/><line x1="50" y1="42" x2="50" y2="118" stroke="#e74c3c" stroke-width="1.5"/>'
+        + '<text x="50" y="138" text-anchor="middle" font-size="10" fill="#555">大阳线</text>'
+        /* 大阴 */
+        + '<rect x="100" y="50" width="20" height="60" fill="#fff" stroke="#2ecc71" stroke-width="1.5"/><line x1="110" y1="42" x2="110" y2="118" stroke="#2ecc71" stroke-width="1.5"/>'
+        + '<text x="110" y="138" text-anchor="middle" font-size="10" fill="#555">大阴线</text>'
+        /* 十字星 */
+        + '<line x1="170" y1="45" x2="170" y2="115" stroke="#1a2b4a" stroke-width="1.5"/><rect x="166" y="77" width="8" height="8" fill="#1a2b4a"/>'
+        + '<text x="170" y="138" text-anchor="middle" font-size="10" fill="#555">十字星</text>'
+        /* 锤子线 */
+        + '<rect x="226" y="50" width="12" height="25" fill="#e74c3c"/><line x1="232" y1="45" x2="232" y2="55" stroke="#e74c3c" stroke-width="1.5"/><line x1="232" y1="75" x2="232" y2="115" stroke="#e74c3c" stroke-width="1.5"/>'
+        + '<text x="232" y="138" text-anchor="middle" font-size="10" fill="#555">锤子线</text>'
+        /* T字线 */
+        + '<line x1="290" y1="52" x2="290" y2="60" stroke="#1a2b4a" stroke-width="1.5"/><rect x="286" y="52" width="8" height="6" fill="#1a2b4a"/><line x1="290" y1="58" x2="290" y2="115" stroke="#1a2b4a" stroke-width="1.5"/>'
+        + '<text x="290" y="138" text-anchor="middle" font-size="10" fill="#555">T字线</text>'
+        + '</svg>',
+
+    /* 分时图 */
+    timeline: '<svg viewBox="0 0 300 160" width="300" height="160" xmlns="http://www.w3.org/2000/svg">'
+        + '<text x="150" y="16" text-anchor="middle" font-size="12" fill="#1a2b4a" font-weight="bold">分时图：白线与黄线</text>'
+        + '<line x1="20" y1="80" x2="280" y2="80" stroke="#ddd" stroke-width="1" stroke-dasharray="4,3"/>' /* 昨收 */
+        + '<text x="282" y="83" font-size="8" fill="#aaa">昨收</text>'
+        /* 白线（即时价）锯齿 */
+        + '<polyline points="20,90 50,70 80,85 110,55 140,72 170,45 200,60 230,40 260,50 280,48" fill="none" stroke="#1a6ec2" stroke-width="1.8"/>'
+        /* 黄线（均价）平滑 */
+        + '<polyline points="20,90 50,82 80,80 110,70 140,68 170,60 200,56 230,52 260,50 280,49" fill="none" stroke="#d4a644" stroke-width="1.8"/>'
+        + '<text x="120" y="120" font-size="10" fill="#1a6ec2">白线：即时成交价</text>'
+        + '<text x="120" y="135" font-size="10" fill="#d4a644">黄线：当日均价</text>'
+        + '<text x="120" y="150" font-size="9" fill="#aaa">白线在黄线上方→当日买入多数盈利</text>'
+        + '</svg>',
+
+    /* 均线多头排列 */
+    maBullish: '<svg viewBox="0 0 300 160" width="300" height="160" xmlns="http://www.w3.org/2000/svg">'
+        + '<text x="150" y="16" text-anchor="middle" font-size="12" fill="#1a2b4a" font-weight="bold">均线多头排列（上升趋势）</text>'
+        + '<polyline points="20,120 80,100 140,82 200,65 280,45" fill="none" stroke="#e74c3c" stroke-width="1.8"/>' /* MA5 红 最上 */
+        + '<polyline points="20,128 80,112 140,95 200,78 280,60" fill="none" stroke="#d4a644" stroke-width="1.8"/>' /* MA10 金 */
+        + '<polyline points="20,135 80,122 140,108 200,92 280,78" fill="none" stroke="#1a6ec2" stroke-width="1.8"/>' /* MA20 蓝 */
+        + '<polyline points="20,142 80,132 140,120 200,108 280,95" fill="none" stroke="#9b59b6" stroke-width="1.8"/>' /* MA60 紫 最下 */
+        + '<text x="285" y="43" font-size="9" fill="#e74c3c">MA5</text>'
+        + '<text x="285" y="58" font-size="9" fill="#d4a644">MA10</text>'
+        + '<text x="285" y="76" font-size="9" fill="#1a6ec2">MA20</text>'
+        + '<text x="285" y="93" font-size="9" fill="#9b59b6">MA60</text>'
+        + '<text x="150" y="148" text-anchor="middle" font-size="10" fill="#7f8c8d">短期线在上、长期线在下→多头排列</text>'
+        + '</svg>',
+
+    /* 金叉死叉 */
+    maCross: '<svg viewBox="0 0 300 150" width="300" height="150" xmlns="http://www.w3.org/2000/svg">'
+        + '<text x="150" y="16" text-anchor="middle" font-size="12" fill="#1a2b4a" font-weight="bold">金叉与死叉</text>'
+        /* 金叉 */
+        + '<circle cx="80" cy="85" r="4" fill="#e74c3c"/>'
+        + '<polyline points="20,100 80,85 140,60" fill="none" stroke="#e74c3c" stroke-width="1.8"/>' /* 短期上穿 */
+        + '<polyline points="20,70 80,85 140,80" fill="none" stroke="#1a6ec2" stroke-width="1.8"/>' /* 长期 */
+        + '<text x="80" y="110" text-anchor="middle" font-size="10" fill="#e74c3c" font-weight="bold">金叉(买入)</text>'
+        /* 死叉 */
+        + '<circle cx="230" cy="60" r="4" fill="#2ecc71"/>'
+        + '<polyline points="170,40 230,60 280,95" fill="none" stroke="#e74c3c" stroke-width="1.8"/>' /* 短期下穿 */
+        + '<polyline points="170,75 230,60 280,70" fill="none" stroke="#1a6ec2" stroke-width="1.8"/>'
+        + '<text x="230" y="110" text-anchor="middle" font-size="10" fill="#2ecc71" font-weight="bold">死叉(卖出)</text>'
+        + '</svg>',
+
+    /* MACD */
+    macd: '<svg viewBox="0 0 300 160" width="300" height="160" xmlns="http://www.w3.org/2000/svg">'
+        + '<text x="150" y="16" text-anchor="middle" font-size="12" fill="#1a2b4a" font-weight="bold">MACD：DIF / DEA / 红绿柱</text>'
+        + '<line x1="20" y1="80" x2="280" y2="80" stroke="#ccc" stroke-width="1"/>' /* 零轴 */
+        + '<text x="282" y="83" font-size="8" fill="#aaa">0</text>'
+        /* 红柱(零轴上) */
+        + '<rect x="40" y="62" width="8" height="18" fill="#e74c3c"/><rect x="52" y="58" width="8" height="22" fill="#e74c3c"/><rect x="64" y="55" width="8" height="25" fill="#e74c3c"/><rect x="76" y="60" width="8" height="20" fill="#e74c3c"/>'
+        /* 绿柱(零轴下) */
+        + '<rect x="120" y="80" width="8" height="15" fill="#2ecc71"/><rect x="132" y="80" width="8" height="22" fill="#2ecc71"/><rect x="144" y="80" width="8" height="18" fill="#2ecc71"/><rect x="156" y="80" width="8" height="10" fill="#2ecc71"/>'
+        /* DIF 线 */
+        + '<polyline points="20,70 60,45 100,58 140,95 180,105 220,88 280,70" fill="none" stroke="#1a6ec2" stroke-width="1.8"/>'
+        /* DEA 线 */
+        + '<polyline points="20,78 60,60 100,55 140,80 180,98 220,95 280,78" fill="none" stroke="#d4a644" stroke-width="1.8"/>'
+        + '<text x="100" y="145" font-size="9" fill="#1a6ec2">DIF(快线)</text>'
+        + '<text x="170" y="145" font-size="9" fill="#d4a644">DEA(慢线)</text>'
+        + '<text x="220" y="145" font-size="9" fill="#e74c3c">红柱=多头</text>'
+        + '</svg>',
+
+    /* KDJ */
+    kdj: '<svg viewBox="0 0 300 160" width="300" height="160" xmlns="http://www.w3.org/2000/svg">'
+        + '<text x="150" y="16" text-anchor="middle" font-size="12" fill="#1a2b4a" font-weight="bold">KDJ 超买超卖区间</text>'
+        + '<line x1="20" y1="35" x2="280" y2="35" stroke="#e74c3c" stroke-width="1" stroke-dasharray="4,3"/>' /* 80线 */
+        + '<text x="22" y="31" font-size="9" fill="#e74c3c">80 超买区</text>'
+        + '<line x1="20" y1="125" x2="280" y2="125" stroke="#2ecc71" stroke-width="1" stroke-dasharray="4,3"/>' /* 20线 */
+        + '<text x="22" y="138" font-size="9" fill="#2ecc71">20 超卖区</text>'
+        + '<polyline points="20,60 60,40 100,50 140,30 180,55 220,80 280,100" fill="none" stroke="#1a6ec2" stroke-width="1.8"/>' /* K */
+        + '<polyline points="20,68 60,55 100,58 140,45 180,62 220,78 280,95" fill="none" stroke="#d4a644" stroke-width="1.8"/>' /* D */
+        + '<polyline points="20,50 60,20 100,60 140,15 180,80 220,95 280,110" fill="none" stroke="#9b59b6" stroke-width="1.5"/>' /* J 波动大 */
+        + '<text x="250" y="55" font-size="9" fill="#1a6ec2">K</text><text x="250" y="68" font-size="9" fill="#d4a644">D</text><text x="250" y="30" font-size="9" fill="#9b59b6">J</text>'
+        + '</svg>',
+
+    /* 布林带 */
+    boll: '<svg viewBox="0 0 300 160" width="300" height="160" xmlns="http://www.w3.org/2000/svg">'
+        + '<text x="150" y="16" text-anchor="middle" font-size="12" fill="#1a2b4a" font-weight="bold">布林带 BOLL：上中下轨</text>'
+        + '<polyline points="20,35 80,45 140,38 200,55 280,48" fill="none" stroke="#e74c3c" stroke-width="1.8"/>' /* 上轨 */
+        + '<polyline points="20,80 80,82 140,78 200,85 280,80" fill="none" stroke="#1a6ec2" stroke-width="1.8"/>' /* 中轨(MA20) */
+        + '<polyline points="20,125 80,118 140,122 200,112 280,118" fill="none" stroke="#2ecc71" stroke-width="1.8"/>' /* 下轨 */
+        /* 价格K线 */
+        + '<rect x="95" y="60" width="10" height="30" fill="#e74c3c"/><rect x="145" y="95" width="10" height="22" fill="#fff" stroke="#2ecc71"/><rect x="195" y="55" width="10" height="28" fill="#e74c3c"/>'
+        + '<text x="285" y="46" font-size="9" fill="#e74c3c">上轨(压力)</text>'
+        + '<text x="285" y="82" font-size="9" fill="#1a6ec2">中轨(中枢)</text>'
+        + '<text x="285" y="120" font-size="9" fill="#2ecc71">下轨(支撑)</text>'
+        + '<text x="150" y="150" text-anchor="middle" font-size="9" fill="#7f8c8d">通道收口→变盘临近</text>'
+        + '</svg>'
+};
+
+/* ---------- 全部文章 ---------- */
+var KB_ARTICLES = [
+/* ====================================================================
+   一、K线与分时图
+   ==================================================================== */
+{
+    id: 'kline-basic',
+    category: 'kline',
+    title: 'K线的构成：阳线、阴线、实体与影线',
+    summary: '一根K线记录了一段时间内的开盘、收盘、最高、最低四个价位，是技术分析的基石。',
+    tags: ['K线', '阳线', '阴线', '开盘价', '收盘价'],
+    body:
+    '<h2>什么是K线</h2>'
+    + '<p>K线（蜡烛图）由日本人本间宗久发明，是记录价格走势的最常用图形。每一根K线包含<strong>四个关键价位</strong>：开盘价、收盘价、最高价、最低价。</p>'
+
+    + '<h2>阳线与阴线（A股惯例：红涨绿跌）</h2>'
+    + '<ul>'
+    + '<li><strong class="up">阳线（红色）</strong>：收盘价 <strong>高于</strong> 开盘价，表示这段时间<strong>上涨</strong>。实体的下边是开盘价，上边是收盘价。</li>'
+    + '<li><strong class="down">阴线（绿色）</strong>：收盘价 <strong>低于</strong> 开盘价，表示这段时间<strong>下跌</strong>。实体的上边是开盘价，下边是收盘价。</li>'
+    + '</ul>'
+    + '<figure class="kb-figure">' + KB_SVG.klineAnatomy + '<figcaption>阳线与阴线对比</figcaption></figure>'
+
+    + '<h2>实体与影线</h2>'
+    + '<ul>'
+    + '<li><strong>实体</strong>：开盘价与收盘价之间的矩形部分，代表主要的价格区间。实体越长，多空力量越悬殊。</li>'
+    + '<li><strong>上影线</strong>：实体上方延伸到最高价的细线，表示价格曾冲高但被打回，<strong>上影越长，上方压力越大</strong>。</li>'
+    + '<li><strong>下影线</strong>：实体下方延伸到最低价的细线，表示价格曾下探但被拉回，<strong>下影越长，下方支撑越强</strong>。</li>'
+    + '</ul>'
+
+    + '<h2>K线周期</h2>'
+    + '<p>根据统计周期不同，K线分为<strong>分时、日K、周K、月K、分钟K</strong>等。日K反映一天走势，周K/月K用于判断中长期趋势，时间越长，信号越可靠。</p>'
+
+    + '<div class="kb-tip"><strong>实战要点：</strong>单根K线只反映一个时间段的力量对比，必须结合<strong>位置</strong>（高位/低位）和<strong>成交量</strong>综合判断。同样是十字星，出现在高位和低位含义截然相反。</div>'
+},
+
+{
+    id: 'kline-patterns',
+    category: 'kline',
+    title: '常见K线形态：十字星、锤子线、吞没形态',
+    summary: '通过单根或多根K线的组合，判断短期多空力量转折，寻找买卖信号。',
+    tags: ['K线形态', '十字星', '锤子线', '吞没', '反转'],
+    body:
+    '<h2>单根K线形态</h2>'
+    + '<figure class="kb-figure">' + KB_SVG.klinePatterns + '<figcaption>常见单根K线</figcaption></figure>'
+    + '<ul>'
+    + '<li><strong>大阳线/大阴线</strong>：实体很长，几乎没有影线，表示一方力量绝对占优。低位大阳线常是<strong>启动信号</strong>，高位大阴线需警惕。</li>'
+    + '<li><strong>十字星</strong>：开盘价≈收盘价，实体极小形如"十"字。表示多空势均力敌、犹豫不决。<strong>高位十字星</strong>是见顶预警，<strong>低位十字星</strong>可能是见底信号。</li>'
+    + '<li><strong>锤子线</strong>：下影线很长（≥实体2倍），实体很小且位于顶部。出现在<strong>下跌末期</strong>，是潜在反转向上信号（下方有承接）。</li>'
+    + '<li><strong>上吊线</strong>：形态同锤子线，但出现在<strong>上涨末期</strong>高位，是潜在反转向下预警。</li>'
+    + '<li><strong>T字线 / 倒T字</strong>：T字（开盘=收盘=最高，只有下影）显示下方支撑极强；倒T字（只有上影）显示上方压力重。</li>'
+    + '</ul>'
+
+    + '<h2>两根K线组合：吞没形态</h2>'
+    + '<ul>'
+    + '<li><strong>看涨吞没（阳包阴）</strong>：一根大阳线<strong>完全包住</strong>前一根阴线实体。出现在下跌末期，多方强力反转。</li>'
+    + '<li><strong>看跌吞没（阴包阳）</strong>：一根大阴线完全包住前一根阳线实体。出现在上涨末期，空方强力反转。</li>'
+    + '</ul>'
+
+    + '<h2>三根K线组合：早晨之星与黄昏之星</h2>'
+    + '<ul>'
+    + '<li><strong class="up">早晨之星</strong>（底部反转）：①大阴线 → ②小实体/十字星（跳空更佳）→ ③大阳线收回。三根组合预示见底回升。</li>'
+    + '<li><strong class="down">黄昏之星</strong>（顶部反转）：①大阳线 → ②小实体/十字星 → ③大阴线回落。预示见顶下跌。</li>'
+    + '</ul>'
+
+    + '<div class="kb-warn"><strong>注意：</strong>K线形态是<strong>概率信号</strong>而非确定性信号，必须结合成交量验证。形态配合放量，有效性更高。</div>'
+},
+
+{
+    id: 'timeline',
+    category: 'kline',
+    title: '分时图详解：白线、黄线与成交量',
+    summary: '分时图反映当日实时走势，白线是即时价，黄线是均价线，是盯盘和判断当日强弱的核心。',
+    tags: ['分时图', '白线', '黄线', '均价线', '成交量'],
+    body:
+    '<h2>分时图的两条线</h2>'
+    + '<figure class="kb-figure">' + KB_SVG.timeline + '<figcaption>白线（即时价）与黄线（均价）</figcaption></figure>'
+    + '<ul>'
+    + '<li><strong>白色线</strong>：股票<strong>每一分钟的即时成交价</strong>连线，反映价格实时波动。A股分时图横轴是交易时间（9:30-11:30, 13:00-15:00）。</li>'
+    + '<li><strong>黄色线</strong>：当日<strong>成交均价线</strong>，即从开盘到当前的总成交额÷总成交量。代表当日市场的<strong>平均持仓成本</strong>。</li>'
+    + '<li><strong>参考线（虚线）</strong>：通常是<strong>昨日收盘价</strong>，白线在其上为当日上涨，在其下为下跌。</li>'
+    + '</ul>'
+
+    + '<h2>白线与黄线的关系</h2>'
+    + '<ul>'
+    + '<li><strong>白线在黄线上方</strong>：当前价高于均价，当日买入者<strong>多数浮盈</strong>，多头占优。</li>'
+    + '<li><strong>白线在黄线下方</strong>：当前价低于均价，当日买入者<strong>多数浮亏</strong>，空头占优。</li>'
+    + '<li><strong>白线向黄线回归</strong>：价格偏离均价过远时，常有向黄线靠拢的趋势（均价的"引力"作用）。</li>'
+    + '</ul>'
+
+    + '<h2>分时图下方的成交量柱</h2>'
+    + '<p>分时图下方每一根竖条代表<strong>一分钟的成交量</strong>。红柱表示该分钟上涨成交，绿柱表示下跌成交。</p>'
+    + '<ul>'
+    + '<li><strong>放量上涨</strong>：白线上行 + 成交量柱明显放大，量价配合，涨势较真实。</li>'
+    + '<li><strong>缩量上涨</strong>：白线上行但量能不足，上涨可能乏力。</li>'
+    + '<li><strong>放量下跌</strong>：白线下行 + 量能放大，抛压较重，需警惕。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>盯盘技巧：</strong>尾盘（14:30后）白线持续站在黄线上方且回踩不破黄线，往往预示次日偏强；反之尾盘跌破黄线且无力收回，次日偏弱概率增大。</div>'
+},
+
+{
+    id: 'support-resistance',
+    category: 'kline',
+    title: '支撑位与压力位：在哪里买卖',
+    summary: '支撑位是价格下跌时容易止跌的价位，压力位是上涨时容易遇阻的价位，是制定买卖计划的基础。',
+    tags: ['支撑位', '压力位', '阻力位', '趋势线'],
+    body:
+    '<h2>什么是支撑与压力</h2>'
+    + '<ul>'
+    + '<li><strong>支撑位（支撑线）</strong>：价格下跌到某个价位时，买方力量增强、卖方减弱，价格<strong>容易止跌回升</strong>的位置。形象地说，像地板托住价格。</li>'
+    + '<li><strong>压力位（阻力位）</strong>：价格上涨到某个价位时，卖方力量增强、买方减弱，价格<strong>容易遇阻回落</strong>的位置。形象地说，像天花板压住价格。</li>'
+    + '</ul>'
+
+    + '<h2>如何寻找支撑压力位</h2>'
+    + '<ol>'
+    + '<li><strong>前期高点和低点</strong>：历史的高点常成为未来上涨的压力，历史低点常成为下跌的支撑。</li>'
+    + '<li><strong>均线</strong>：MA20、MA60 等均线在上升趋势中常起支撑作用，下降趋势中起压力作用。</li>'
+    + '<li><strong>整数关口</strong>：如10元、50元、100元等心理价位，常有支撑压力作用。</li>'
+    + '<li><strong>缺口</strong>：跳空缺口附近常形成支撑或压力。</li>'
+    + '<li><strong>成交密集区</strong>：价格长时间盘整的区域，积累了大量筹码，突破后角色互换。</li>'
+    + '</ol>'
+
+    + '<h2>角色互换原则</h2>'
+    + '<p>这是一个重要规律：<strong>压力位被有效突破后，会转变为新的支撑位</strong>；<strong>支撑位被有效跌破后，会转变为新的压力位</strong>。这在制定交易计划时非常实用。</p>'
+
+    + '<div class="kb-tip"><strong>实战应用：</strong>不要在压力位正下方追高买入，不要在支撑位正上方恐慌卖出。可在<strong>支撑位附近</strong>寻找买入机会，在<strong>压力位附近</strong>考虑减仓，并设好止损。</div>'
+},
+
+{
+    id: 'prepost-session',
+    category: 'kline',
+    title: '盘前盘后：集合竞价与交易时段',
+    summary: 'A股每个交易日从9:15集合竞价开始，盘前盘后的价格发现机制影响开盘价和收盘价，是每个交易者必懂的基础。',
+    tags: ['盘前', '盘后', '集合竞价', '开盘价', '收盘价', '交易时段'],
+    body:
+    '<h2>A股完整交易时间表</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:8px;border:1px solid #ddd;">时段</th><th style="padding:8px;border:1px solid #ddd;">时间</th><th style="padding:8px;border:1px solid #ddd;">说明</th></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>盘前集合竞价</strong></td><td style="padding:8px;border:1px solid #ddd;">9:15 — 9:25</td><td style="padding:8px;border:1px solid #ddd;">确定开盘价</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;"><strong>早盘</strong></td><td style="padding:8px;border:1px solid #ddd;">9:30 — 11:30</td><td style="padding:8px;border:1px solid #ddd;">连续竞价</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>午盘</strong></td><td style="padding:8px;border:1px solid #ddd;">13:00 — 14:57</td><td style="padding:8px;border:1px solid #ddd;">连续竞价</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;"><strong>盘后集合竞价</strong></td><td style="padding:8px;border:1px solid #ddd;">14:57 — 15:00</td><td style="padding:8px;border:1px solid #ddd;">确定收盘价</td></tr>'
+    + '</table>'
+
+    + '<h2>盘前集合竞价（9:15—9:25）</h2>'
+    + '<p>开盘前的10分钟是<strong>集合竞价</strong>阶段，所有买卖委托集中撮合，最终产生当天的<strong>开盘价</strong>。集合竞价分三个阶段：</p>'
+    + '<ul>'
+    + '<li><strong>9:15—9:20</strong>：可委托、可撤单。这5分钟投资者可以自由挂单和撤销，行情活跃。</li>'
+    + '<li><strong>9:20—9:25</strong>：可委托、<strong class="down">不可撤单</strong>。这5分钟只能挂单不能撤销，主力常在此阶段"做盘"，开盘价即将确定。</li>'
+    + '<li><strong>9:25—9:30</strong>：静默期，接受委托但暂不撮合，9:30开盘后统一进入连续竞价。</li>'
+    + '</ul>'
+
+    + '<h2>开盘价怎么产生</h2>'
+    + '<p>9:25时，交易所系统汇总所有有效委托，按"<strong>最大成交量</strong>"原则计算出一个价格作为开盘价。这个价格使得成交的买单和卖单数量最多。高于开盘价的买单和低于开盘价的卖单都会成交，其余进入连续竞价排队。</p>'
+
+    + '<h2>盘后集合竞价（14:57—15:00）</h2>'
+    + '<p>收盘前最后3分钟也是集合竞价，用来确定当天的<strong>收盘价</strong>。这3分钟同样<strong>不可撤单</strong>。收盘价很重要——它是次日涨跌幅的计算基准，也是技术分析（K线、均线）使用的数据。</p>'
+    + '<div class="kb-tip"><strong>为什么要盘后竞价？</strong>过去收盘价是最后1秒的最后一笔成交价，容易被人为操纵。改为集合竞价后，收盘价更<strong>真实反映全天供需</strong>，不易被操纵。</div>'
+
+    + '<h2>盘前盘后怎么看</h2>'
+    + '<ul>'
+    + '<li><strong>看高开/低开</strong>：开盘价高于昨收为<strong class="up">高开</strong>（偏多），低于昨收为<strong class="down">低开</strong>（偏空）。但高开不一定高走，需结合量能观察。</li>'
+    + '<li><strong>看集合竞价量</strong>：9:25的竞价成交量异常放大，说明资金关注度极高，当天可能有较大行情。</li>'
+    + '<li><strong>看尾盘抢筹/砸盘</strong>：14:57后突然放量拉升（抢筹）或跳水（砸盘），往往反映主力的真实意图，因为收盘价是次日的基准。</li>'
+    + '<li><strong>看收盘价位置</strong>：收盘在全天最高附近=强势，收盘在最低附近=弱势，收盘在均价附近=中性。</li>'
+    + '</ul>'
+
+    + '<div class="kb-warn"><strong>注意：</strong>9:20—9:25 和 14:57—15:00 <strong>不能撤单</strong>。这两个时段挂的单若成交无法撤销，新手切记不要随意挂单，尤其不要在临近收盘时挂"高价买"或"低价卖"的乌龙单。</div>'
+
+    + '<div class="kb-tip"><strong>实战要点：</strong>开盘后前15分钟（9:30—9:45）波动最剧烈、最活跃，是<strong>消化隔夜消息</strong>的时段，方向尚不稳定，新手建议观察不急躁。真正可靠的走势往往在10:00之后才逐步明朗。</div>'
+},
+
+{
+    id: 'call-auction',
+    category: 'kline',
+    title: '集合竞价怎么看：开盘前的信号',
+    summary: '集合竞价是开盘价的诞生过程，通过竞价量、撮合价、挂单变化，可以预判当天强弱，是短线盯盘的第一课。',
+    tags: ['集合竞价', '开盘价', '高开', '低开', '平开', '竞价量', '试单'],
+    body:
+    '<h2>为什么集合竞价这么重要</h2>'
+    + '<p>9:25 产生的<strong>开盘价</strong>，是全天第一个参考锚点。而开盘价怎么来的、竞价过程透露了什么信息，直接反映了隔夜消息和主力意图。读懂集合竞价，等于在开盘前就<strong>摸到了当天的市场温度</strong>。</p>'
+
+    + '<h2>集合竞价的撮合规则（核心）</h2>'
+    + '<p>集合竞价不是一笔笔连续成交，而是在<strong>9:25这一刻</strong>，把所有买卖委托集中起来，按一个统一规则算出一个开盘价：</p>'
+    + '<p style="background:#f5f6f8;padding:12px;border-radius:8px;text-align:center;margin:10px 0;">'
+    + '<strong>最大成交量原则</strong>：选一个价格，使这个价位上能成交的<strong>买方和卖方总和最大</strong>。</p>'
+    + '<ul>'
+    + '<li><strong>高于该价的买单</strong>：全部成交（你出价高，愿意买）。</li>'
+    + '<li><strong>低于该价的卖单</strong>：全部成交（你要价低，愿意卖）。</li>'
+    + '<li><strong>等于该价的买卖单</strong>：按<strong>时间优先</strong>撮合，先排队的先成交。</li>'
+    + '</ul>'
+
+    + '<h2>三个阶段：能撤 / 不能撤 / 静默</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:8px;border:1px solid #ddd;">时段</th><th style="padding:8px;border:1px solid #ddd;">操作</th><th style="padding:8px;border:1px solid #ddd;">主力在干什么</th></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>9:15-9:20</strong></td><td style="padding:8px;border:1px solid #ddd;">可挂单 + <strong>可撤单</strong></td><td style="padding:8px;border:1px solid #ddd;">主力常在此"试单"——挂大单测试市场反应，随时撤</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;"><strong>9:20-9:25</strong></td><td style="padding:8px;border:1px solid #ddd;">可挂单 + <strong class="down">不可撤单</strong></td><td style="padding:8px;border:1px solid #ddd;">主力意图开始"做实"，这是开盘前最关键的5分钟</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>9:25-9:30</strong></td><td style="padding:8px;border:1px solid #ddd;">可挂单（静默期，不撮合）</td><td style="padding:8px;border:1px solid #ddd;">9:30开盘后统一进入连续竞价</td></tr>'
+    + '</table>'
+
+    + '<div class="kb-warn"><strong>关键陷阱：</strong>9:15-9:20 的竞价数据<strong>最不可信</strong>。主力可能挂出巨额买单吸引跟风，到 9:19 突然撤单，留下散户高位接盘。<strong>看竞价要看 9:20 之后的数据</strong>，那时撤不了单，主力意图更真实。</div>'
+
+    + '<h2>高开 / 平开 / 低开</h2>'
+    + '<p>开盘价相对<strong>昨日收盘价</strong>的位置，是判断当天强弱的第一信号：</p>'
+    + '<ul>'
+    + '<li><strong class="up">高开</strong>：开盘价 > 昨收。说明竞价阶段买方积极，<strong>看多情绪占上风</strong>。但要注意：高开太多（如+5%以上）易遭获利盘抛压，高开低走是常见坑。</li>'
+    + '<li><strong>平开</strong>：开盘价 ≈ 昨收。多空均衡，需看开盘后的走势判断方向。</li>'
+    + '<li><strong class="down">低开</strong>：开盘价 < 昨收。说明卖压较重，<strong>偏空</strong>。但低开高走（低开后被拉起）反而是强势信号——说明有资金逢低承接。</li>'
+    + '</ul>'
+
+    + '<h2>看集合竞价的 4 个维度</h2>'
+
+    + '<h3>1. 竞价量：是否异常放大</h3>'
+    + '<p>9:25 的撮合成交量（竞价量）如果<strong>明显大于平时</strong>（比如平时的3-5倍），说明资金关注度极高，当天可能有<strong>大行情</strong>（无论涨跌）。竞价量平淡，则当天多为震荡。</p>'
+
+    + '<h3>2. 撮合价的变动方向</h3>'
+    + '<p>盯着 9:20-9:25 这5分钟，撮合参考价是<strong>逐步抬高还是逐步走低</strong>：</p>'
+    + '<ul>'
+    + '<li>撮合价<strong>持续上移</strong> → 买盘踊跃，开盘强势。</li>'
+    + '<li>撮合价<strong>持续下移</strong> → 卖压增加，开盘偏弱。</li>'
+    + '<li>撮合价<strong>剧烈跳动</strong> → 多空分歧大，开盘后波动剧烈。</li>'
+    + '</ul>'
+
+    + '<h3>3. 撤单变化：识别"试单"</h3>'
+    + '<p>观察 9:15-9:20 的<strong>挂单数量变化</strong>。如果某价位突然出现巨额挂单（如买一挂几万手），9:19 又突然消失——这是典型的<strong>试单/诱单</strong>，目的是测试跟风盘或制造假象。<strong>真正要动手的主力，会在 9:20 后才挂实单</strong>（因为撤不了）。</p>'
+
+    + '<h3>4. 匹配量与未匹配量</h3>'
+    + '<p>Level-2 行情会显示两个数据：</p>'
+    + '<ul>'
+    + '<li><strong>匹配量</strong>：已经撮合的量（将计入开盘成交）。</li>'
+    + '<li><strong>未匹配量</strong>：排队等着的量。买方未匹配大 → 开盘后可能继续涨；卖方未匹配大 → 开盘后可能继续跌。</li>'
+    + '</ul>'
+
+    + '<h2>常见集合竞价形态</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:8px;border:1px solid #ddd;">形态</th><th style="padding:8px;border:1px solid #ddd;">特征</th><th style="padding:8px;border:1px solid #ddd;">含义</th></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">放量高开</td><td style="padding:8px;border:1px solid #ddd;">高开 + 竞价量大</td><td style="padding:8px;border:1px solid #ddd;">资金看好，可能有大行情（关注是否高开高走）</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">缩量高开</td><td style="padding:8px;border:1px solid #ddd;">高开但竞价量小</td><td style="padding:8px;border:1px solid #ddd;">跟风不足，易高开低走回落</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">跳空高开</td><td style="padding:8px;border:1px solid #ddd;">高开幅度大（如+5%以上）</td><td style="padding:8px;border:1px solid #ddd;">利好刺激，但获利盘抛压重，追高风险大</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">放量低开</td><td style="padding:8px;border:1px solid #ddd;">低开 + 竞价量大</td><td style="padding:8px;border:1px solid #ddd;">抛压重，偏空（关注低开后是否被拉起）</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">平量平开</td><td style="padding:8px;border:1px solid #ddd;">平开 + 竞价量正常</td><td style="padding:8px;border:1px solid #ddd;">无明确信号，看开盘后走势</td></tr>'
+    + '</table>'
+
+    + '<div class="kb-tip"><strong>实战用法：</strong>集合竞价是<strong>预判</strong>工具，不是<strong>决策</strong>工具。竞价强≠一定涨，竞价弱≠一定跌。真正确认方向要看<strong>开盘后前15分钟的走势</strong>（9:30-9:45）。竞价给的是概率倾向，开盘走势才是验证。</div>'
+
+    + '<div class="kb-warn"><strong>新手切记：</strong>① 不要在 9:15-9:20 跟风挂单（容易被主力撤单坑）；② 不要在 9:20 后挂离谱价格的"乌龙单"（撤不了）；③ 开盘前5分钟波动最大，新手建议<strong>多看少动</strong>，等 9:35 后方向明朗再考虑操作。</div>'
+},
+
+/* ====================================================================
+   二、均线系统 MA
+   ==================================================================== */
+{
+    id: 'ma-intro',
+    category: 'ma',
+    title: '移动平均线 MA：趋势的指南针',
+    summary: 'MA是把一段时间内的收盘价平均后连成的曲线，反映价格趋势方向，是最基础的趋势指标。',
+    tags: ['均线', 'MA', '趋势', 'MA5', 'MA20', 'MA60'],
+    body:
+    '<h2>什么是移动平均线</h2>'
+    + '<p>移动平均线（Moving Average，简称MA）是将<strong>连续若干天的收盘价求平均</strong>，然后把每天的均值连成一条曲线。它平滑了日常波动，直观看清<strong>趋势方向</strong>。</p>'
+    + '<p>计算公式：MA(N) = 最近 N 天收盘价之和 ÷ N</p>'
+
+    + '<h2>常用均线周期与含义</h2>'
+    + '<ul>'
+    + '<li><strong>MA5（攻击线）</strong>：5日均线，反映近一周走势，最灵敏，用于<strong>判断短期强弱</strong>。</li>'
+    + '<li><strong>MA10（操盘线）</strong>：10日均线，短期操作的重要参考。</li>'
+    + '<li><strong>MA20（生命线/波段线）</strong>：20日均线（约一个月），中线趋势的核心参考，价格在其上多为强势。</li>'
+    + '<li><strong>MA60（决策线/季线）</strong>：60日均线（约一个季度），判断中长期趋势，是<strong>牛熊分界</strong>的重要参考之一。</li>'
+    + '<li><strong>MA120（半年线）</strong>、<strong>MA250（年线/牛熊线）</strong>：长期趋势分水岭。价格站上250日线，常被视为进入长期上升通道。</li>'
+    + '</ul>'
+
+    + '<h2>均线的作用</h2>'
+    + '<ul>'
+    + '<li><strong>揭示趋势</strong>：均线向上倾斜=上升趋势，向下=下降趋势，走平=震荡。</li>'
+    + '<li><strong>支撑压力</strong>：上升途中均线是支撑，下降途中是压力。</li>'
+    + '<li><strong>金叉死叉信号</strong>（见下篇）。</li>'
+    + '</ul>'
+
+    + '<figure class="kb-figure">' + KB_SVG.maBullish + '<figcaption>多头排列：短中长均线自上而下</figcaption></figure>'
+
+    + '<div class="kb-tip"><strong>记住：</strong>均线反映的是<strong>过去</strong>的趋势，有滞后性。周期越长越稳定但越滞后，周期越短越灵敏但信号越频繁（假信号多）。实战中常短中长结合使用。</div>'
+},
+
+{
+    id: 'golden-cross',
+    category: 'ma',
+    title: '金叉与死叉：均线的买卖信号',
+    summary: '短期均线上穿长期均线为金叉（买入信号），下穿为死叉（卖出信号），是均线最经典的用法。',
+    tags: ['金叉', '死叉', '均线交叉', '买卖信号'],
+    body:
+    '<h2>金叉（Golden Cross）</h2>'
+    + '<p><strong>短期均线上穿长期均线</strong>（如MA5上穿MA20），形成"金叉"，是<strong>看多买入信号</strong>。表示短期平均成本已高于长期成本之前的弱势格局，多方开始占据主动。</p>'
+    + '<ul>'
+    + '<li>金叉出现时，若<strong>伴随成交量放大</strong>，信号更可靠。</li>'
+    + '<li>金叉出现在<strong>低位/长期下跌后</strong>，反转意义更强；出现在高位则可能是诱多。</li>'
+    + '</ul>'
+
+    + '<h2>死叉（Death Cross）</h2>'
+    + '<p><strong>短期均线下穿长期均线</strong>（如MA5下穿MA20），形成"死叉"，是<strong>看空卖出信号</strong>。表示短期走势转弱，空头开始占据主动。</p>'
+    + '<ul>'
+    + '<li>死叉出现在<strong>高位/长期上涨后</strong>，见顶风险更大。</li>'
+    + '<li>长期均线（如MA60）出现死叉，信号级别更大、持续更久。</li>'
+    + '</ul>'
+    + '<figure class="kb-figure">' + KB_SVG.maCross + '<figcaption>金叉（短上穿长）与死叉（短下穿长）</figcaption></figure>'
+
+    + '<h2>多头排列与空头排列</h2>'
+    + '<ul>'
+    + '<li><strong>多头排列</strong>：MA5 > MA10 > MA20 > MA60，短期线在上、长期线在下，全部向上发散。<strong>典型的强势上涨形态</strong>，持股待涨。</li>'
+    + '<li><strong>空头排列</strong>：MA5 < MA10 < MA20 < MA60，短期线在下、长期线在上，全部向下发散。<strong>典型的弱势下跌形态</strong>，不宜恋战。</li>'
+    + '</ul>'
+
+    + '<div class="kb-warn"><strong>注意：</strong>均线交叉是<strong>滞后指标</strong>，金叉/死叉形成时趋势往往已走了一段。震荡市中频繁出现"假金叉假死叉"，此时应结合趋势方向和成交量过滤信号，不宜机械执行。</div>'
+},
+
+{
+    id: 'granville',
+    category: 'ma',
+    title: '葛兰碧八大买卖法则',
+    summary: '美国投资专家葛兰碧提出的均线八大法则，系统总结了均线与价格的四种买点和四种卖点。',
+    tags: ['葛兰碧', '均线法则', '买点', '卖点'],
+    body:
+    '<h2>概述</h2>'
+    + '<p>葛兰碧（Joseph Granville）根据价格与均线（通常用200日均线）的关系，总结出经典的<strong>八大法则</strong>，包含四个买点、四个卖点，至今仍是均线应用的核心。</p>'
+
+    + '<h2>四个买点</h2>'
+    + '<ol>'
+    + '<li><strong>买点一</strong>：均线由下降转为走平或上升，价格<strong>从下方上穿均线</strong>。——趋势由弱转强的初期信号。</li>'
+    + '<li><strong>买点二</strong>：价格虽跌破均线，但<strong>均线仍向上</strong>，价格很快回升到均线之上。——上升途中的回踩，是加仓良机。</li>'
+    + '<li><strong>买点三</strong>：价格在均线之上<strong>回调，但未跌破均线即再度上涨</strong>。——均线作为支撑有效，强势特征。</li>'
+    + '<li><strong>买点四</strong>：价格<strong>暴跌远离均线</strong>（乖离过大），存在反弹回归均线的动力。——抢反弹机会，但属短线。</li>'
+    + '</ol>'
+
+    + '<h2>四个卖点</h2>'
+    + '<ol>'
+    + '<li><strong>卖点一</strong>：均线由上升转为走平或下降，价格<strong>从上方下穿均线</strong>。——趋势由强转弱信号。</li>'
+    + '<li><strong>卖点二</strong>：价格虽升破均线，但<strong>均线仍向下</strong>，很快跌回均线之下。——下跌途中的反弹，是减仓时机。</li>'
+    + '<li><strong>卖点三</strong>：价格在均线之下<strong>反弹，但未突破均线即再度下跌</strong>。——均线压力有效，弱势特征。</li>'
+    + '<li><strong>卖点四</strong>：价格<strong>暴涨远离均线</strong>（乖离过大），有回落风险。——获利了结时机。</li>'
+    + '</ol>'
+
+    + '<div class="kb-tip"><strong>核心思想：</strong>均线反映平均成本。价格围绕均线波动，过度偏离会回归。葛兰碧法则本质是<strong>"顺势而为 + 极端回归"</strong>。实战中买点一二三、卖点一二三胜率较高，买卖点四（乖离回归）属短线，需谨慎。</div>'
+},
+
+/* ====================================================================
+   三、技术指标
+   ==================================================================== */
+{
+    id: 'macd',
+    category: 'indicator',
+    title: 'MACD 指标：趋势与背离的利器',
+    summary: 'MACD由DIF快线、DEA慢线和红绿柱组成，是判断趋势方向、强弱和顶底背离的经典指标。',
+    tags: ['MACD', 'DIF', 'DEA', '红绿柱', '背离'],
+    body:
+    '<h2>MACD 的构成</h2>'
+    + '<p>MACD（指数平滑异同移动平均线）由三部分组成：</p>'
+    + '<figure class="kb-figure">' + KB_SVG.macd + '<figcaption>MACD：DIF、DEA 与红绿柱</figcaption></figure>'
+    + '<ul>'
+    + '<li><strong>DIF（快线/白线）</strong>：短期指数平均与长期指数平均之差，最敏感。</li>'
+    + '<li><strong>DEA（慢线/黄线）</strong>：DIF 的移动平均，较平缓。</li>'
+    + '<li><strong>MACD柱（红绿柱）</strong>=（DIF − DEA）×2。零轴上方为红柱（多头），下方为绿柱（空头）。</li>'
+    + '<li><strong>零轴（0线）</strong>：多空分界线。DIF/DEA在零轴上方为多头市场，下方为空头市场。</li>'
+    + '</ul>'
+
+    + '<h2>核心用法一：金叉死叉</h2>'
+    + '<ul>'
+    + '<li><strong>金叉</strong>：DIF 上穿 DEA → <strong>买入信号</strong>。零轴上方的金叉（强势金叉）比零轴下方的更可靠。</li>'
+    + '<li><strong>死叉</strong>：DIF 下穿 DEA → <strong>卖出信号</strong>。</li>'
+    + '</ul>'
+
+    + '<h2>核心用法二：红绿柱</h2>'
+    + '<ul>'
+    + '<li>红柱<strong>放大</strong>：多头力量增强，涨势加速。</li>'
+    + '<li>红柱<strong>缩短</strong>：多头力量减弱，涨势可能乏力（预警）。</li>'
+    + '<li>绿柱<strong>放大</strong>：空头力量增强；绿柱<strong>缩短</strong>：空头力量减弱，跌势可能见底。</li>'
+    + '</ul>'
+
+    + '<h2>核心用法三：背离（MACD 最精华）</h2>'
+    + '<ul>'
+    + '<li><strong class="up">底背离</strong>：价格<strong>创新低</strong>，但 MACD 的低点<strong>反而抬高</strong>。预示下跌动能衰竭，<strong>见底回升</strong>信号，是较好的买入时机。</li>'
+    + '<li><strong class="down">顶背离</strong>：价格<strong>创新高</strong>，但 MACD 的高点<strong>反而降低</strong>。预示上涨动能衰竭，<strong>见顶回落</strong>风险，是卖出/减仓信号。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>实战精华：</strong>MACD 是<strong>趋势型指标</strong>，在单边行情中表现优秀，但在<strong>震荡市中容易频繁假信号</strong>。背离信号比金叉死叉更值得重视，尤其是<strong>多次背离后的转折</strong>。</div>'
+    + '<div class="kb-warn"><strong>注意：</strong>背离可能"再背离"，即背离后价格仍沿原方向走一段才真正转折。建议背离配合其他信号（如突破关键位、成交量）综合判断。</div>'
+},
+
+{
+    id: 'kdj',
+    category: 'indicator',
+    title: 'KDJ 指标：超买超卖的短线利器',
+    summary: 'KDJ由K、D、J三条线组成，通过0-100区间判断超买超卖，是短线捕捉高低点的常用指标。',
+    tags: ['KDJ', '超买', '超卖', '短线', 'K线', 'D线', 'J线'],
+    body:
+    '<h2>KDJ 的构成</h2>'
+    + '<figure class="kb-figure">' + KB_SVG.kdj + '<figcaption>KDJ 的超买(80)与超卖(20)区间</figcaption></figure>'
+    + '<ul>'
+    + '<li><strong>K 线（蓝）</strong>：RSV的平滑值，反应较快。</li>'
+    + '<li><strong>D 线（黄）</strong>：K线的平滑值，较慢较稳，是核心参考。</li>'
+    + '<li><strong>J 线（紫）</strong>：3K−2D，波动最剧烈，可超出0-100范围。J线敏感度最高。</li>'
+    + '</ul>'
+    + '<p>KDJ的值在0-100之间波动（J线可略超）。</p>'
+
+    + '<h2>超买与超卖</h2>'
+    + '<ul>'
+    + '<li><strong class="down">超买（K、D > 80）</strong>：短期涨幅过大，有<strong>回调风险</strong>，是卖出/减仓参考。</li>'
+    + '<li><strong class="up">超卖（K、D < 20）</strong>：短期跌幅过大，有<strong>反弹需求</strong>，是买入参考。</li>'
+    + '<li>J线 > 100 为极度超买，< 0（甚至为负）为极度超卖，反转概率增大。</li>'
+    + '</ul>'
+
+    + '<h2>金叉死叉</h2>'
+    + '<ul>'
+    + '<li><strong>金叉</strong>：K线（或J线）在<strong>低位（20以下）</strong>上穿D线 → 强烈<strong>买入信号</strong>。</li>'
+    + '<li><strong>死叉</strong>：K线在<strong>高位（80以上）</strong>下穿D线 → 强烈<strong>卖出信号</strong>。</li>'
+    + '</ul>'
+
+    + '<div class="kb-warn"><strong>注意"钝化"现象：</strong>KDJ在<strong>单边强趋势</strong>中会长时间停留在超买或超卖区（高位钝化/低位钝化），此时金叉死叉会失灵。<strong>切勿在强势上涨中因KDJ超买就卖出，或在暴跌中因超卖就抄底</strong>。KDJ更适合震荡市和盘整市。</div>'
+    + '<div class="kb-tip"><strong>搭配建议：</strong>KDJ（震荡型）+ MACD（趋势型）配合使用：MACD判断大方向，KDJ寻找短线高低点，互补长短。</div>'
+},
+
+{
+    id: 'rsi',
+    category: 'indicator',
+    title: 'RSI 相对强弱指标',
+    summary: 'RSI衡量一段时间内上涨幅度占总波动的比例，0-100取值，判断超买超卖和强弱转折。',
+    tags: ['RSI', '相对强弱', '超买', '超卖', '背离'],
+    body:
+    '<h2>RSI 是什么</h2>'
+    + '<p>RSI（Relative Strength Index，相对强弱指标）通过计算一段时间内<strong>上涨幅度之和</strong>占<strong>总波动幅度</strong>的比例，得到0-100的数值。反映多空双方力量的相对强弱。</p>'
+    + '<p>常用周期：<strong>RSI(6)</strong>短期、<strong>RSI(12)</strong>、<strong>RSI(24)</strong>长期。</p>'
+
+    + '<h2>超买超卖判断</h2>'
+    + '<ul>'
+    + '<li><strong class="down">RSI > 70（或80）</strong>：超买，短期涨幅过大，回调风险增加。</li>'
+    + '<li><strong class="up">RSI < 30（或20）</strong>：超卖，短期跌幅过大，反弹机会增加。</li>'
+    + '<li><strong>50 为多空分界</strong>：RSI在50以上为多头占优，以下为空头占优。</li>'
+    + '</ul>'
+
+    + '<h2>背离信号</h2>'
+    + '<ul>'
+    + '<li><strong>底背离</strong>：价格创新低，RSI低点抬高 → 见底信号。</li>'
+    + '<li><strong>顶背离</strong>：价格创新高，RSI高点降低 → 见顶预警。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>与KDJ异同：</strong>RSI和KDJ都是震荡型超买超卖指标，用法相似。RSI相对平稳，KDJ（尤其J线）更灵敏波动更大。两者可互为印证。</div>'
+    + '<div class="kb-warn"><strong>注意：</strong>强趋势中RSI同样会钝化（长期超买/超卖），此时超买卖信号失效，应结合趋势指标使用。</div>'
+},
+
+{
+    id: 'boll',
+    category: 'indicator',
+    title: '布林带 BOLL：通道、缩口与突破',
+    summary: '布林带由上中下三轨组成，中轨是MA20，上下轨基于标准差，反映价格波动范围和通道变化。',
+    tags: ['布林带', 'BOLL', '上轨', '下轨', '缩口', '突破'],
+    body:
+    '<h2>布林带的构成</h2>'
+    + '<figure class="kb-figure">' + KB_SVG.boll + '<figcaption>布林带：上轨(压力)、中轨、下轨(支撑)</figcaption></figure>'
+    + '<ul>'
+    + '<li><strong>中轨（MB）</strong>：20日移动平均线 MA20，是价格的中枢。</li>'
+    + '<li><strong>上轨（UP）</strong>：中轨 + 2倍标准差，是<strong>压力位</strong>。</li>'
+    + '<li><strong>下轨（DN）</strong>：中轨 − 2倍标准差，是<strong>支撑位</strong>。</li>'
+    + '</ul>'
+    + '<p>约95%的价格波动会落在上下轨之间的"通道"内。</p>'
+
+    + '<h2>核心用法</h2>'
+    + '<ul>'
+    + '<li><strong>触上轨</strong>：价格触及或突破上轨，短期偏强，但有<strong>回调压力</strong>（除非强趋势开口放大）。</li>'
+    + '<li><strong>触下轨</strong>：价格触及或跌破下轨，短期偏弱，但有<strong>反弹支撑</strong>。</li>'
+    + '<li><strong>中轨</strong>：上升途中中轨是支撑，下降途中中轨是压力。</li>'
+    + '</ul>'
+
+    + '<h2>缩口与开口（最重要）</h2>'
+    + '<ul>'
+    + '<li><strong class="down">缩口（收口）</strong>：上下轨间距变小，价格波动收敛，<strong>预示变盘即将来临</strong>（方向待定，需结合其他信号判断）。</li>'
+    + '<li><strong class="up">开口（张口）</strong>：缩口后价格<strong>突破上轨或下轨，上下轨张开</strong>，往往是一波<strong>新趋势启动</strong>的信号。开口方向即趋势方向。</li>'
+    + '</ul>'
+
+    + '<h2>"喇叭口"战法</h2>'
+    + '<p>价格长期在中轨附近横盘（缩口），某日<strong>放量突破上轨</strong>且上轨向上、下轨向下（形成张开的喇叭）→ 看多突破信号；反之<strong>跌破下轨</strong>张口向下 → 看空信号。</p>'
+
+    + '<div class="kb-tip"><strong>实战要点：</strong>布林带特别适合判断<strong>波动节奏的变化</strong>——缩口意味着"暴风雨前的宁静"。但缩口后突破方向需要结合成交量、K线形态、大趋势综合判断，不可仅凭开口方向就下重注。</div>'
+},
+
+{
+    id: 'volume',
+    category: 'indicator',
+    title: '成交量 VOL：量价关系的核心',
+    summary: '成交量是市场人气的温度计，价格变化需要成交量配合验证，量价关系是技术分析的基石。',
+    tags: ['成交量', '量价关系', '放量', '缩量', '量比'],
+    body:
+    '<h2>成交量的含义</h2>'
+    + '<p>成交量（VOL）指一段时间内股票的<strong>成交股数或成交金额</strong>，是衡量市场活跃度和资金参与度的核心数据。常说的"量在价先"——成交量的变化往往领先于价格。</p>'
+
+    + '<h2>基本量价关系（最重要）</h2>'
+    + '<ul>'
+    + '<li><strong class="up">放量上涨</strong>：价格上涨 + 成交量放大 → 多方力量充沛，<strong>涨势健康</strong>，可持续。</li>'
+    + '<li><strong>缩量上涨</strong>：价格上涨但成交量萎缩 → 跟风不足，上涨乏力，需警惕。</li>'
+    + '<li><strong class="down">放量下跌</strong>：价格下跌 + 成交量放大 → 抛压沉重，<strong>跌势较强</strong>，宜观望。</li>'
+    + '<li><strong>缩量下跌</strong>：价格下跌但成交量萎缩 → 抛压减轻，下跌动能减弱，可能接近底部。</li>'
+    + '<li><strong>天量天价</strong>：成交量和价格同时创出历史新高 → 往往是<strong>见顶信号</strong>（主力出货）。</li>'
+    + '<li><strong>地量地价</strong>：成交量和价格都极度萎缩 → 抛压枯竭，可能是<strong>阶段性底部</strong>。</li>'
+    + '</ul>'
+
+    + '<h2>成交量的特殊信号</h2>'
+    + '<ul>'
+    + '<li><strong>底部放量</strong>：长期下跌后低位突然放量，常是<strong>主力进场建仓</strong>信号。</li>'
+    + '<li><strong>顶部放量滞涨</strong>：高位放量但价格涨不动，是<strong>主力出货</strong>的危险信号。</li>'
+    + '<li><strong>突破需放量</strong>：突破重要压力位/前高，必须<strong>伴随放量</strong>才有效；缩量突破多为假突破。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>一句话总结：</strong>上涨要量（量价齐升），下跌不怕缩量。真正的趋势行情一定有成交量配合，无量上涨是空中楼阁。把成交量作为价格信号的"验证器"。</div>'
+},
+
+{
+    id: 'other-indicators',
+    category: 'indicator',
+    title: 'OBV、CCI、WR 等辅助指标速览',
+    summary: '能量潮OBV、CCI顺势指标、威廉指标WR等辅助指标的快速入门，作为主指标的补充。',
+    tags: ['OBV', 'CCI', 'WR', '威廉指标', '能量潮'],
+    body:
+    + '<h2>OBV 能量潮（量能累积）</h2>'
+    + '<ul>'
+    + '<li><strong>原理</strong>：上涨日成交量计入正值，下跌日计入负值，累加成一条线，反映<strong>资金累积进出</strong>。</li>'
+    + '<li><strong>用法</strong>：OBV<strong>领先于价格</strong>。OBV稳步上升而价格盘整 → 资金暗中流入，后市看多；OBV下降而价格盘整 → 资金流出，警惕。</li>'
+    + '<li>OBV创新高 → 价格有望跟创新高。</li>'
+    + '</ul>'
+
+    + '<h2>CCI 顺势指标</h2>'
+    + '<ul>'
+    + '<li><strong>原理</strong>：测量价格偏离其平均值的程度，可正可负，波动范围大。</li>'
+    + '<li><strong>用法</strong>：<strong>+100 以上为超买</strong>（强势），<strong>−100 以下为超卖</strong>（弱势）。CCI 上穿 +100 为买入信号，下穿 +100 为卖出信号。适合捕捉<strong>极端行情的转折</strong>。</li>'
+    + '</ul>'
+
+    + '<h2>WR 威廉指标（Williams %R）</h2>'
+    + '<ul>'
+    + '<li><strong>原理</strong>：衡量收盘价在近期高低区间的位置，取值 0 到 -100（注意是负值）。</li>'
+    + '<li><strong>用法</strong>：<strong>−20 以上（接近0）为超买</strong>，<strong>−80 以下为超卖</strong>。WR 进入超卖区后回升，是买入参考；进入超买区后回落，是卖出参考。与KDJ、RSI类似，适合震荡市。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>使用建议：</strong>这些指标作为<strong>辅助验证</strong>，不宜单独决策。实战中选 1-2 个趋势指标（如MACD）+ 1-2 个震荡指标（如KDJ/RSI）+ 成交量，形成自己的指标组合，比堆砌指标更有效。指标多 ≠ 判断准，信号冲突时反而无所适从。</div>'
+},
+
+/* ====================================================================
+   四、基本面与盘口
+   ==================================================================== */
+{
+    id: 'pe',
+    category: 'fundamental',
+    title: '市盈率 PE：股价是贵还是便宜',
+    summary: '市盈率=股价÷每股收益，衡量投资回本年限，是最常用的估值指标，但要分清静态、动态和TTM。',
+    tags: ['市盈率', 'PE', '估值', 'TTM'],
+    body:
+    '<h2>什么是市盈率</h2>'
+    + '<p>市盈率（Price Earnings Ratio，PE）= <strong>股价 ÷ 每股收益（EPS）</strong>，或 = <strong>总市值 ÷ 净利润</strong>。</p>'
+    + '<p>通俗理解：PE代表<strong>"按当前盈利水平，多少年能回本"</strong>。PE=20，意味着假设盈利不变，约20年回本。</p>'
+
+    + '<h2>三种市盈率的区别</h2>'
+    + '<ul>'
+    + '<li><strong>静态PE</strong>：用上一年度已公布的净利润计算。数据确定但<strong>滞后</strong>。</li>'
+    + '<li><strong>动态PE（预测PE）</strong>：用预测的全年净利润计算。前瞻但<strong>预测有不确定性</strong>。</li>'
+    + '<li><strong>TTM（滚动市盈率）</strong>：用<strong>最近12个月（四个季度）</strong>的净利润计算。<strong>最常用、最客观</strong>，兼顾时效和准确性。</li>'
+    + '</ul>'
+
+    + '<h2>怎么看 PE 高低</h2>'
+    + '<ul>'
+    + '<li><strong>不能孤立看绝对值</strong>。PE=50未必贵，PE=5未必便宜，要看<strong>行业平均水平</strong>和<strong>公司成长性</strong>。</li>'
+    + '<li><strong>与同行比</strong>：同行业内 PE 低于平均，可能是被低估。</li>'
+    + '<li><strong>与历史比</strong>：处于自身历史 PE 低位区间，相对便宜。</li>'
+    + '<li><strong>成长性补偿</strong>：高成长公司（如科技股）PE 高些合理，因为盈利在快速增长会摊低未来PE。</li>'
+    + '</ul>'
+
+    + '<div class="kb-warn"><strong>PE 的陷阱：</strong></div>'
+    + '<ul>'
+    + '<li><strong>负PE</strong>：公司亏损（EPS为负），PE无意义，不能简单比较。</li>'
+    + '<li><strong>极低PE</strong>：可能是"价值陷阱"——市场预期业绩将大幅下滑，看似便宜实则危险。</li>'
+    + '<li><strong>周期股</strong>：周期股在<strong>盈利高点时PE反而低</strong>（此时应警惕），盈利低点时PE反而高（可能接近底部）。需逆向思维。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>配合 PEG：</strong>PEG = PE ÷ 盈利增长率。PEG < 1 常被视为低估（增速高于估值），比单纯看PE更能衡量"成长性价比"。</div>'
+},
+
+{
+    id: 'pb-ps',
+    category: 'fundamental',
+    title: '市净率 PB 与市销率 PS',
+    summary: 'PB衡量股价相对每股净资产的高低，PS衡量相对每股销售收入，是PE之外的重要估值补充。',
+    tags: ['市净率', 'PB', '市销率', 'PS', '估值', '净资产'],
+    body:
+    '<h2>市净率 PB</h2>'
+    + '<p>市净率（Price to Book）= <strong>股价 ÷ 每股净资产</strong>，或 = <strong>总市值 ÷ 净资产</strong>。</p>'
+    + '<p>净资产 = 总资产 − 总负债，是公司"清算价值"的近似。PB衡量<strong>股价相对于账面价值的倍数</strong>。</p>'
+    + '<ul>'
+    + '<li><strong>PB < 1（破净）</strong>：股价低于净资产，理论上"打折买资产"，常见于银行、钢铁等重资产行业。</li>'
+    + '<li><strong>重资产行业</strong>（银行、地产、钢铁）多用 PB 估值。</li>'
+    + '<li><strong>轻资产/服务业</strong>（科技、消费）净资产意义有限，PB参考价值小。</li>'
+    + '</ul>'
+
+    + '<h2>市销率 PS</h2>'
+    + '<p>市销率（Price to Sales）= <strong>总市值 ÷ 年营业收入</strong>，或 = <strong>股价 ÷ 每股营业收入</strong>。</p>'
+    + '<p>PS衡量<strong>股价相对于销售收入的倍数</strong>。</p>'
+    + '<ul>'
+    + '<li><strong>适用场景</strong>：<strong>尚未盈利的成长型公司</strong>（如互联网、生物医药初创），PE为负无法用，此时PS是重要参考。</li>'
+    + '<li>PS低表示市场给予每元收入的定价低，可能被低估（前提是收入真实且有成长性）。</li>'
+    + '</ul>'
+
+    + '<h2>三个估值指标的搭配</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:8px;border:1px solid #ddd;">指标</th><th style="padding:8px;border:1px solid #ddd;">公式</th><th style="padding:8px;border:1px solid #ddd;">适用</th></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">PE</td><td style="padding:8px;border:1px solid #ddd;">市值÷净利润</td><td style="padding:8px;border:1px solid #ddd;">盈利稳定的成熟公司</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">PB</td><td style="padding:8px;border:1px solid #ddd;">市值÷净资产</td><td style="padding:8px;border:1px solid #ddd;">重资产行业（银行/地产）</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">PS</td><td style="padding:8px;border:1px solid #ddd;">市值÷营收</td><td style="padding:8px;border:1px solid #ddd;">高成长未盈利公司</td></tr>'
+    + '</table>'
+
+    + '<div class="kb-tip"><strong>核心原则：</strong>没有万能的估值指标。不同行业、不同生命周期阶段的公司，适用不同指标。一定要<strong>同行业内横向比较</strong>，并结合成长性综合判断，单一指标的绝对值意义有限。</div>'
+},
+
+{
+    id: 'roe',
+    category: 'fundamental',
+    title: 'ROE 净资产收益率：衡量赚钱能力',
+    summary: 'ROE=净利润÷净资产，衡量公司用股东的钱创造利润的效率，是巴菲特最看重的财务指标。',
+    tags: ['ROE', '净资产收益率', '盈利能力', '财务', '巴菲特'],
+    body:
+    '<h2>什么是 ROE</h2>'
+    + '<p>净资产收益率（Return on Equity，ROE）= <strong>净利润 ÷ 净资产</strong>，以百分比表示。</p>'
+    + '<p>ROE衡量<strong>公司用股东投入的每元净资产能赚回多少利润</strong>，是评价企业盈利能力的核心指标。巴菲特极为看重 ROE，认为持续高 ROE 是优秀公司的标志。</p>'
+
+    + '<h2>ROE 高低的判断</h2>'
+    + '<ul>'
+    + '<li><strong>ROE > 15%</strong>：通常被认为是<strong>优秀公司</strong>的水平（巴菲特的标准之一）。</li>'
+    + '<li><strong>ROE > 20%</strong>：盈利能力<strong>非常强</strong>，但需警惕是否靠高负债撑起。</li>'
+    + '<li><strong>ROE < 10%</strong>：盈利能力一般。</li>'
+    + '<li><strong>关键看持续性</strong>：一两年的高ROE不算什么，<strong>连续多年稳定在15%以上</strong>才是真本事。</li>'
+    + '</ul>'
+
+    + '<h2>杜邦分析：ROE 的三要素</h2>'
+    + '<p>ROE 可拆解为三个驱动因素（杜邦公式）：</p>'
+    + '<p style="text-align:center;background:#f5f6f8;padding:12px;border-radius:8px;margin:10px 0;"><strong>ROE = 净利率 × 资产周转率 × 权益乘数</strong></p>'
+    + '<ul>'
+    + '<li><strong>净利率</strong>（净利润÷营收）：产品赚钱能力，越高说明利润空间大。</li>'
+    + '<li><strong>资产周转率</strong>（营收÷总资产）：资产运营效率，越高说明资产转得快。</li>'
+    + '<li><strong>权益乘数</strong>（总资产÷净资产）：财务杠杆，越高说明负债越多。</li>'
+    + '</ul>'
+    + '<p>同样高的ROE，靠<strong>高净利率和高周转</strong>撑起的是"好生意"；靠<strong>高杠杆（高负债）</strong>撑起的风险较大。杜邦分析帮你看清ROE的<strong>质量</strong>。</p>'
+
+    + '<div class="kb-warn"><strong>注意：</strong>高ROE若是靠<strong>大额负债</strong>（高权益乘数）实现，看似赚钱实则风险高——经济下行时利息负担和偿债压力会拖垮公司。分析ROE务必结合资产负债率。</div>'
+    + '<div class="kb-tip"><strong>选股思路：</strong>"高ROE + 低负债 + 稳定增长 + 合理估值"是价值投资的经典筛选条件。ROE是"质"的指标，PE/PB是"价"的指标，质价结合才能找到好公司好价格。</div>'
+},
+
+{
+    id: 'turnover',
+    category: 'fundamental',
+    title: '换手率：市场活跃度的温度计',
+    summary: '换手率=成交量÷流通股本，反映股票交易的活跃程度和资金关注度，是判断主力动向的重要参考。',
+    tags: ['换手率', '成交量', '活跃度', '主力', '资金'],
+    body:
+    '<h2>什么是换手率</h2>'
+    + '<p>换手率 = <strong>当日成交量 ÷ 流通股本 × 100%</strong>。</p>'
+    + '<p>换手率反映<strong>股票流通筹码在当日被买卖的频率</strong>，是衡量个股活跃度的直观指标。换手率越高，说明交易越活跃、资金关注度越高。</p>'
+
+    + '<h2>换手率高低的市场含义</h2>'
+    + '<ul>'
+    + '<li><strong>换手率 < 1%</strong>：<strong>低迷</strong>。成交冷清，关注度低，多为冷门股或盘整期。</li>'
+    + '<li><strong>换手率 1%-3%</strong>：<strong>正常</strong>。交易温和，是大部分股票的常态。</li>'
+    + '<li><strong>换手率 3%-7%</strong>：<strong>活跃</strong>。资金参与度提升，常有行情启动迹象。</li>'
+    + '<li><strong>换手率 7%-15%</strong>：<strong>高度活跃</strong>。多空分歧大，可能是<strong>主力大幅运作</strong>（建仓或出货），需结合位置判断。</li>'
+    + '<li><strong>换手率 > 15%</strong>：<strong>异常活跃</strong>。往往是<strong>阶段性顶部或重大消息</strong>引发的剧烈换手，需高度警惕。</li>'
+    + '</ul>'
+
+    + '<h2>换手率的实战意义</h2>'
+    + '<ul>'
+    + '<li><strong>底部放量高换手</strong>：长期低位后突然高换手 + 上涨，可能是<strong>主力建仓</strong>，看好后市。</li>'
+    + '<li><strong>高位高换手滞涨</strong>：涨幅较大后高换手但价格不涨，是<strong>主力出货</strong>的危险信号。</li>'
+    + '<li><strong>持续高换手</strong>：说明筹码松动、分歧加剧，行情进入活跃期，波动加大。</li>'
+    + '<li><strong>新股/次新股</strong>：上市初期换手率极高（常>50%），属正常，后续会逐步降低。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>结合量比看：</strong>换手率看"绝对活跃度"，量比看"相对活跃度"（相对过去5日均量）。两者配合：换手率高 + 量比大 → 当日异常活跃，是重要关注信号。</div>'
+},
+
+{
+    id: 'market-data',
+    category: 'fundamental',
+    title: '盘口数据：量比、委比、内外盘',
+    summary: '盘口实时数据反映当日买卖力量对比，量比看活跃度突变，委比看挂单倾向，内外盘看主动买卖。',
+    tags: ['量比', '委比', '内盘', '外盘', '盘口', '买卖五档'],
+    body:
+    + '<h2>量比</h2>'
+    + '<p>量比 = <strong>当日开盘后平均每分钟成交量 ÷ 过去5个交易日平均每分钟成交量</strong>。</p>'
+    + '<p>量比衡量<strong>今日成交活跃度相对近期的变化</strong>，是发现"放量"的利器。</p>'
+    + '<ul>'
+    + '<li><strong>量比 < 0.8</strong>：缩量，成交清淡。</li>'
+    + '<li><strong>量比 0.8-1.5</strong>：正常水平。</li>'
+    + '<li><strong>量比 1.5-2.5</strong>：温和放量，资金开始关注。</li>'
+    + '<li><strong>量比 2.5-5</strong>：明显放量，可能有<strong>异动</strong>。</li>'
+    + '<li><strong>量比 > 5</strong>：剧烈放量，常有重大消息或主力动作，是<strong>重点关注信号</strong>。</li>'
+    + '</ul>'
+
+    + '<h2>委比</h2>'
+    + '<p>委比 = <strong>（委买手数 − 委卖手数）÷（委买手数 + 委卖手数）× 100%</strong>。</p>'
+    + '<p>委买/委卖手数通常取<strong>买卖五档</strong>（即五档买盘+五档卖盘）的挂单总量。委比反映<strong>盘口挂单的买卖倾向</strong>。</p>'
+    + '<ul>'
+    + '<li><strong>委比为正</strong>（如+30%）：买盘挂单多于卖盘，<strong>多头气氛浓厚</strong>。</li>'
+    + '<li><strong>委比为负</strong>：卖盘挂单多于买盘，<strong>空头气氛浓厚</strong>。</li>'
+    + '</ul>'
+
+    + '<h2>内盘与外盘</h2>'
+    + '<ul>'
+    + '<li><strong class="up">外盘</strong>：以<strong>卖方报价（卖一及更高价）成交</strong>的量。买方主动追价买入，反映<strong>主动买盘</strong>（买方急迫）。外盘大 → 买方积极，偏多。</li>'
+    + '<li><strong class="down">内盘</strong>：以<strong>买方报价（买一及更低价）成交</strong>的量。卖方主动杀跌卖出，反映<strong>主动卖盘</strong>（卖方急迫）。内盘大 → 卖方积极，偏空。</li>'
+    + '</ul>'
+    + '<p>外盘 > 内盘，多头略占优；内盘 > 外盘，空头略占优。两者差距越大，方向倾向越明显。</p>'
+
+    + '<div class="kb-warn"><strong>注意盘口"假象"：</strong>主力常通过挂大单（虚假委托）来影响委比、制造盘口强势/弱势假象，诱导散户跟风，随后撤单。这就是"骗线"。盘口数据是<strong>动态、瞬时</strong>的，参考价值有限，不能作为唯一依据，务必结合价格走势和成交量。</div>'
+    + '<div class="kb-tip"><strong>综合判断：</strong>盘口数据适合<strong>短线盯盘</strong>参考。真正的趋势判断仍需 K线、均线、成交量等中观指标。新手不必过度纠结盘口的每个数字，把握"量价配合 + 大方向"更重要。</div>'
+},
+
+{
+    id: 'bid-ask',
+    category: 'fundamental',
+    title: '买卖盘：买一卖一与五档行情',
+    summary: '盘口五档显示当前排队买卖的价位和数量，买一卖一是最优报价，理解它就看懂了撮合成交的本质。',
+    tags: ['买卖盘', '买一', '卖一', '五档', '盘口', '撮合', '成交价', '分时成交'],
+    body:
+    '<h2>什么是买卖盘</h2>'
+    + '<p>打开任意一只股票的分时界面，右侧（电脑端）或下方（手机端）会显示一排排数字，这就是<strong>买卖盘</strong>——实时展示当前市场上<strong>谁在排队买、谁在排队卖、各挂在什么价位、各挂多少</strong>。它是市场供需最直接的呈现。</p>'
+
+    + '<h2>买一价与卖一价</h2>'
+    + '<p>买卖盘按价格优先排序，最优的报价排在最前面：</p>'
+    + '<ul>'
+    + '<li><strong class="up">买一价（买一）</strong>：当前所有买单中<strong>出价最高</strong>的那一个。买方愿意花的最多的钱。</li>'
+    + '<li><strong class="down">卖一价（卖一）</strong>：当前所有卖单中<strong>要价最低</strong>的那一个。卖方愿意接受的最少的钱。</li>'
+    + '</ul>'
+    + '<p>买一价和卖一价之间通常有一个<strong>微小价差</strong>（最小跳动0.01元）。比如买一10.00、卖一10.01，价差就是1分钱。</p>'
+
+    + '<figure class="kb-figure">'
+    + '<svg viewBox="0 0 300 200" width="300" height="200" xmlns="http://www.w3.org/2000/svg">'
+    + '<text x="150" y="20" text-anchor="middle" font-size="13" fill="#1a2b4a" font-weight="bold">买卖五档示意图</text>'
+    /* 卖档（上，绿）从卖五到卖一 */
+    + '<rect x="40" y="35" width="220" height="20" fill="#2ecc71" fill-opacity="0.15"/><text x="50" y="49" font-size="11" fill="#2ecc71">卖五 10.05</text><text x="230" y="49" font-size="11" fill="#888" text-anchor="end">200手</text>'
+    + '<rect x="40" y="58" width="220" height="20" fill="#2ecc71" fill-opacity="0.25"/><text x="50" y="72" font-size="11" fill="#2ecc71">卖四 10.04</text><text x="230" y="72" font-size="11" fill="#888" text-anchor="end">150手</text>'
+    + '<rect x="40" y="81" width="220" height="20" fill="#2ecc71" fill-opacity="0.4"/><text x="50" y="95" font-size="11" fill="#2ecc71">卖三 10.03</text><text x="230" y="95" font-size="11" fill="#888" text-anchor="end">500手</text>'
+    + '<rect x="40" y="104" width="220" height="20" fill="#2ecc71" fill-opacity="0.6"/><text x="50" y="118" font-size="11" fill="#2ecc71">卖二 10.02</text><text x="230" y="118" font-size="11" fill="#888" text-anchor="end">300手</text>'
+    + '<rect x="40" y="127" width="220" height="20" fill="#2ecc71" fill-opacity="0.85"/><text x="50" y="141" font-size="12" fill="#1a7a3a" font-weight="bold">卖一 10.01</text><text x="230" y="141" font-size="11" fill="#333" text-anchor="end" font-weight="bold">800手</text>'
+    /* 最新价 */
+    + '<line x1="40" y1="150" x2="260" y2="150" stroke="#d4a644" stroke-width="2" stroke-dasharray="4,2"/>'
+    + '<text x="150" y="162" text-anchor="middle" font-size="11" fill="#d4a644">最新成交 10.00</text>'
+    /* 买档（下，红）从买一到买五 */
+    + '<rect x="40" y="168" width="220" height="20" fill="#e74c3c" fill-opacity="0.85"/><text x="50" y="182" font-size="12" fill="#a02020" font-weight="bold">买一 10.00</text><text x="230" y="182" font-size="11" fill="#333" text-anchor="end" font-weight="bold">1000手</text>'
+    + '</svg>'
+    + '<figcaption>卖档在上（绿色）、买档在下（红色），中间虚线为最新成交价</figcaption>'
+    + '</figure>'
+
+    + '<h2>五档行情</h2>'
+    + '<p>A股免费行情一般显示<strong>买卖各五档</strong>（买一到买五、卖一到卖五），共10个价位：</p>'
+    + '<ul>'
+    + '<li><strong>卖一 ~ 卖五</strong>：从最低要价到第五低要价，越往上越贵。</li>'
+    + '<li><strong>买一 ~ 买五</strong>：从最高出价到第五高出价，越往下越便宜。</li>'
+    + '<li>每档后面跟着<strong>挂单数量（手数）</strong>，代表这个价位排队等成交的量。</li>'
+    + '</ul>'
+    + '<div class="kb-tip"><strong>十档/千档：</strong>付费Level-2行情可看买卖各十档，甚至千档委托队列，信息更全。普通投资者看五档基本够用。</div>'
+
+    + '<h2>成交是怎么发生的（撮合机制）</h2>'
+    + '<p>A股采用<strong>价格优先、时间优先</strong>的连续竞价撮合：</p>'
+    + '<ol>'
+    + '<li><strong>价格优先</strong>：买价高的优先买，卖价低的优先卖。</li>'
+    + '<li><strong>时间优先</strong>：同价位先挂单的先成交。</li>'
+    + '</ol>'
+    + '<p><strong>举例</strong>：你想立刻买入，可以挂一个<strong>≥卖一价</strong>的买单（比如直接出10.01元），就会和排在前面的卖一撮合成交。如果你想便宜点买，就挂在买一（10.00）排队，等有人愿意10.00卖给你。</p>'
+
+    + '<h2>分时成交价（最新价）从哪来</h2>'
+    + '<p>盘面跳动的"最新价"，就是<strong>刚刚发生的那一笔撮合成交的价格</strong>。每一笔成交都对应四个信息：</p>'
+    + '<ul>'
+    + '<li><strong>成交价</strong>：这笔交易的价格。</li>'
+    + '<li><strong>成交量</strong>：成交了多少手。</li>'
+    + '<li><strong>买卖方向</strong>：<strong class="up">红色（外盘/主动买）</strong>——买方主动按卖方价买入；<strong class="down">绿色（内盘/主动卖）</strong>——卖方主动按买方价卖出。</li>'
+    + '<li><strong>成交时间</strong>：精确到秒。</li>'
+    + '</ul>'
+    + '<p>分时图上的白线，就是把这些<strong>每一笔成交价</strong>按时间连起来的曲线。</p>'
+
+    + '<h2>看买卖盘能读出什么</h2>'
+    + '<ul>'
+    + '<li><strong>买一挂单远大于卖一</strong>：买方力量看似强（但小心主力挂大单诱多，随时撤单）。</li>'
+    + '<li><strong>卖一挂单巨大</strong>：上方压力大，上涨困难（同样可能是压单洗盘）。</li>'
+    + '<li><strong>买卖盘频繁跳价</strong>：成交活跃，多空争夺激烈。</li>'
+    + '<li><strong>买一卖一价差突然拉大</strong>：流动性变差，可能临近涨跌停或停牌。</li>'
+    + '</ul>'
+
+    + '<div class="kb-warn"><strong>警惕"假盘口"：</strong>挂单≠成交。主力常挂出巨额买卖单制造强势/弱势假象，诱导散户跟风后再<strong>撤单</strong>。看到买一几万手大单别激动，它可能下一秒就消失。判断真假要看<strong>是否真的成交</strong>（看分时成交明细），而不是看挂了多少。</div>'
+
+    + '<div class="kb-tip"><strong>新手建议：</strong>不必纠结每一笔挂单。把握大方向——<strong>买卖盘整体结构 + 分时成交的红绿比例 + 量价配合</strong>，比盯某个具体数字更有意义。盘口是短线工具，中长线投资更应关注基本面和趋势。</div>'
+},
+
+{
+    id: 'etf',
+    category: 'fundamental',
+    title: 'ETF 基金：一篮子股票的投资利器',
+    summary: 'ETF 是像股票一样交易的基金，买入一只就等于买入一篮子股票，分散风险、费用低廉，是新手的优选。',
+    tags: ['ETF', '指数基金', '宽基', '行业ETF', '场内基金', 'LOF'],
+    body:
+    '<h2>什么是 ETF</h2>'
+    + '<p>ETF（Exchange Traded Fund，<strong>交易所交易基金</strong>）是一种<strong>在证券交易所上市、可以像股票一样实时买卖</strong>的基金。它跟踪某个指数（如沪深300、创业板指）或某个行业、主题，买入一份ETF，就等于同时买入了它背后<strong>一篮子股票</strong>。</p>'
+    + '<div class="kb-tip"><strong>一句话理解：</strong>ETF = 一篮子股票打包成"一只股票"，你可以像买卖股票一样买卖它，但它内含几十上百只股票，天然分散风险。</div>'
+
+    + '<h2>ETF vs 普通基金 vs 股票</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:7px;border:1px solid #ddd;">对比项</th><th style="padding:7px;border:1px solid #ddd;">单只股票</th><th style="padding:7px;border:1px solid #ddd;">ETF（场内基金）</th><th style="padding:7px;border:1px solid #ddd;">普通基金（场外）</th></tr>'
+    + '<tr><td style="padding:7px;border:1px solid #ddd;">交易场所</td><td style="padding:7px;border:1px solid #ddd;">证券交易所</td><td style="padding:7px;border:1px solid #ddd;">证券交易所</td><td style="padding:7px;border:1px solid #ddd;">基金公司/平台</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:7px;border:1px solid #ddd;">交易时间</td><td style="padding:7px;border:1px solid #ddd;">交易时段实时</td><td style="padding:7px;border:1px solid #ddd;">交易时段实时</td><td style="padding:7px;border:1px solid #ddd;">当日收盘后撮合</td></tr>'
+    + '<tr><td style="padding:7px;border:1px solid #ddd;">风险</td><td style="padding:7px;border:1px solid #ddd;">高（单只暴雷）</td><td style="padding:7px;border:1px solid #ddd;">中（分散一篮子）</td><td style="padding:7px;border:1px solid #ddd;">中（分散）</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:7px;border:1px solid #ddd;">费用</td><td style="padding:7px;border:1px solid #ddd;">佣金</td><td style="padding:7px;border:1px solid #ddd;"><strong>佣金低、无印花税</strong></td><td style="padding:7px;border:1px solid #ddd;">申购费/赎回费/管理费</td></tr>'
+    + '<tr><td style="padding:7px;border:1px solid #ddd;">门槛</td><td style="padding:7px;border:1px solid #ddd;">100股起</td><td style="padding:7px;border:1px solid #ddd;"><strong>100份起（几十~几百元）</strong></td><td style="padding:7px;border:1px solid #ddd;">10元起</td></tr>'
+    + '</table>'
+
+    + '<h2>ETF 的两大类型</h2>'
+
+    + '<h3>1. 宽基 ETF（跟踪大盘指数）</h3>'
+    + '<p>覆盖整个市场、不分行业的ETF，是最基础的配置工具：</p>'
+    + '<ul>'
+    + '<li><strong>沪深300 ETF</strong>（510300等）：A股最大300家公司，代表大盘蓝筹。</li>'
+    + '<li><strong>中证500 ETF</strong>（510500等）：中等市值500家，代表中盘成长。</li>'
+    + '<li><strong>创业板 ETF</strong>（159915等）：创业板50只龙头，高成长高波动。</li>'
+    + '<li><strong>上证50 ETF</strong>（510050等）：沪市最大50家，超级蓝筹。</li>'
+    + '<li><strong>科创50 ETF</strong>（588000等）：科创板核心科技股。</li>'
+    + '</ul>'
+    + '<p>宽基ETF适合<strong>看好A股整体、不想选股</strong>的投资者，相当于"买国运"。</p>'
+
+    + '<h3>2. 行业/主题 ETF（跟踪特定方向）</h3>'
+    + '<p>聚焦某个行业或投资主题，弹性更大：</p>'
+    + '<ul>'
+    + '<li><strong>行业ETF</strong>：券商ETF、半导体ETF、医药ETF、新能源ETF、消费ETF、银行ETF。</li>'
+    + '<li><strong>主题ETF</strong>：人工智能ETF、碳中和ETF、芯片ETF、黄金ETF。</li>'
+    + '</ul>'
+    + '<p>行业/主题ETF适合<strong>看好某个方向但不知选哪只股</strong>的投资者——比如看好AI，买AI ETF就一网打尽所有AI概念股，不怕踩中个别暴雷股。</p>'
+
+    + '<h2>ETF 的核心优势</h2>'
+    + '<ol>'
+    + '<li><strong>分散风险</strong>：一只ETF内含几十上百只股票，单只暴雷影响有限，不会"一损俱损"。</li>'
+    + '<li><strong>费用低廉</strong>：交易仅收佣金（与股票同），<strong>免印花税</strong>，管理费也远低于主动基金。</li>'
+    + '<li><strong>交易灵活</strong>：像股票一样实时买卖，T+1交收，流动性好（主流ETF成交活跃）。</li>'
+    + '<li><strong>透明度高</strong>：持仓每天公布，你知道自己买的是什么。</li>'
+    + '<li><strong>门槛低</strong>：100份起买，几十到几百元就能投资整个行业或指数。</li>'
+    + '</ol>'
+
+    + '<h2>新手怎么选 ETF</h2>'
+    + '<ul>'
+    + '<li><strong>看规模</strong>：选规模大的（>10亿），流动性好、跟踪误差小，避免清盘风险。</li>'
+    + '<li><strong>看成交额</strong>：日均成交额高，买卖不愁，别选日成交几百万的冷门ETF。</li>'
+    + '<li><strong>看跟踪误差</strong>：ETF净值与指数走势的偏差越小越好。</li>'
+    + '<li><strong>看费率</strong>：管理费+托管费，越低越省（主流宽基已低至0.15%/年+0.05%/年）。</li>'
+    + '<li><strong>同指数多选一</strong>：跟踪同一指数（如沪深300）有多只ETF，选规模最大、流动性最好的那只。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>新手首选：</strong>不熟悉选股的新手，从<strong>宽基ETF（沪深300/中证500）</strong>开始，等于一键买入A股核心资产，省心省力。等熟悉了，再用少量资金尝试行业/主题ETF。</div>'
+
+    + '<h2>ETF 与 LOF 的区别</h2>'
+    + '<p>两者都在交易所上市，但：</p>'
+    + '<ul>'
+    + '<li><strong>ETF</strong>：跟踪指数为主，被动管理，申赎用"一篮子股票"换份额，费率更低。</li>'
+    + '<li><strong>LOF</strong>（上市开放式基金）：既可场内交易也可场外申赎，主动/被动都有，用现金申赎，费率略高。</li>'
+    + '</ul>'
+
+    + '<div class="kb-warn"><strong>风险提示：</strong>ETF分散的是<strong>个股风险</strong>，不是<strong>系统性风险</strong>——大盘大跌时，宽基ETF照样会跌；行业ETF则会随整个行业波动，弹性甚至大于单只股票。ETF≠保本，投资仍需择时和控仓。</div>'
+},
+
+{
+    id: 'f10',
+    category: 'fundamental',
+    title: 'F10：一键看懂一只股票的基本面',
+    summary: 'F10是行情软件里查看个股基本面的功能键，集成了公司资料、股东、财务、分红等核心信息，是基本面研究的起点。',
+    tags: ['F10', '基本面', '公司资料', '股东', '十大股东', '分红', '研报'],
+    body:
+    '<h2>什么是 F10</h2>'
+    + '<p>在大部分行情软件（同花顺、东方财富、通达信等）里，选中一只股票后按键盘<strong>F10</strong>键，就会弹出该股票的<strong>基本面资料页</strong>。F10 是股民最常用的"查公司"入口，相当于一份<strong>股票的身份证+体检报告</strong>。</p>'
+    + '<div class="kb-tip"><strong>为什么叫 F10？</strong>因为早期软件把它绑定在键盘的 F10 功能键上，沿用至今。手机端一般在个股页面点"资讯"或"F10"标签进入。</div>'
+
+    + '<h2>F10 里有哪些核心信息</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:8px;border:1px solid #ddd;">栏目</th><th style="padding:8px;border:1px solid #ddd;">看什么</th><th style="padding:8px;border:1px solid #ddd;">重点关注</th></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>公司概况</strong></td><td style="padding:8px;border:1px solid #ddd;">公司全称、所属行业、主营业务、上市日期</td><td style="padding:8px;border:1px solid #ddd;">公司到底靠什么赚钱</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;"><strong>股本结构</strong></td><td style="padding:8px;border:1px solid #ddd;">总股本、流通股本、限售股</td><td style="padding:8px;border:1px solid #ddd;">有没有大量解禁压力</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>股东研究</strong></td><td style="padding:8px;border:1px solid #ddd;">十大股东、股东变动、机构持仓</td><td style="padding:8px;border:1px solid #ddd;">大股东在增持还是减持</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;"><strong>财务分析</strong></td><td style="padding:8px;border:1px solid #ddd;">营收、净利润、ROE、资产负债率</td><td style="padding:8px;border:1px solid #ddd;">业绩是增长还是下滑</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>分红融资</strong></td><td style="padding:8px;border:1px solid #ddd;">历年的分红记录、增发/配股</td><td style="padding:8px;border:1px solid #ddd;">是分红回报还是圈钱</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;"><strong>新闻公告</strong></td><td style="padding:8px;border:1px solid #ddd;">最新公告、重大事项、新闻</td><td style="padding:8px;border:1px solid #ddd;">有没有利空利好</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;"><strong>研究报告</strong></td><td style="padding:8px;border:1px solid #ddd;">券商对该公司的研报与评级</td><td style="padding:8px;border:1px solid #ddd;">机构怎么看这家公司</td></tr>'
+    + '</table>'
+
+    + '<h2>新手必看的 4 个栏目</h2>'
+
+    + '<h3>1. 公司概况——搞清楚"它是干嘛的"</h3>'
+    + '<p>很多人买股票连公司做什么的都不知道。F10 第一栏就写清楚了<strong>主营业务</strong>。比如某只股票名字像科技股，F10 一看主营业务其实是房地产——这就是"名不副实"，投资前必须搞清。</p>'
+
+    + '<h3>2. 十大股东——谁在持仓</h3>'
+    + '<p>十大股东列表能看到<strong>谁在重仓这只股票</strong>：</p>'
+    + '<ul>'
+    + '<li><strong>机构云集</strong>（公募、社保、QFII）→ 受机构认可，相对稳健。</li>'
+    + '<li><strong>大股东减持</strong> → 连续几个季度大股东在卖，需警惕（连大股东都不看好）。</li>'
+    + '<li><strong>股东人数骤减</strong> → 筹码在集中（可能主力吸筹）；骤增 → 筹码分散（可能出货）。</li>'
+    + '</ul>'
+
+    + '<h3>3. 财务分析——业绩好不好</h3>'
+    + '<p>核心看几个数字的<strong>同比变化</strong>（和去年同期比）：</p>'
+    + '<ul>'
+    + '<li><strong>营收</strong>：卖了多少，增长说明在扩张。</li>'
+    + '<li><strong>净利润</strong>：赚了多少，这才是真金白银。</li>'
+    + '<li><strong>ROE</strong>：净资产收益率，>15%算优秀（详见 ROE 专篇）。</li>'
+    + '<li><strong>经营现金流</strong>：赚的是不是真钱——净利润高但现金流为负，可能是"纸面利润"。</li>'
+    + '</ul>'
+
+    + '<h3>4. 分红融资——回报还是圈钱</h3>'
+    + '<p>这一栏能看出公司对股东的态度：</p>'
+    + '<ul>'
+    + '<li><strong>常年稳定高分红</strong>（如银行、公用事业）→ 重视股东回报，适合长线。</li>'
+    + '<li><strong>反复增发圈钱、很少分红</strong> → 把股市当提款机，需谨慎。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>实战用法：</strong>买入任何一只股票前，<strong>至少按一次 F10</strong>。花 5 分钟看公司概况+十大股东+财务趋势+近期公告，能避开大量"地雷股"。这是性价比最高的基本功。</div>'
+
+    + '<div class="kb-warn"><strong>注意：</strong>F10 数据有<strong>滞后性</strong>——财务数据按季披露，股东数据更是延迟公布。F10 看的是"历史快照"，不能完全代表当下。结合最新公告和盘面动态综合判断。</div>'
+},
+
+/* ====================================================================
+   五、港美股市场
+   ==================================================================== */
+{
+    id: 'hk-rules',
+    category: 'hkus',
+    title: '港股交易规则：无涨跌停的T+0市场',
+    summary: '港股没有涨跌幅限制，支持T+0回转交易，交易单位不统一，规则与A股差异较大。',
+    tags: ['港股', '交易规则', 'T+0', '涨跌停', '交易单位', '手'],
+    body:
+    '<h2>港股核心交易规则</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:8px;border:1px solid #ddd;">项目</th><th style="padding:8px;border:1px solid #ddd;">港股</th></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">交易时间</td><td style="padding:8px;border:1px solid #ddd;">9:30-12:00 / 13:00-16:00</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">交易制度</td><td style="padding:8px;border:1px solid #ddd;"><strong>T+0</strong>（当日买当日卖）</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">交收制度</td><td style="padding:8px;border:1px solid #ddd;">T+2（资金T+2到账）</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">涨跌幅限制</td><td style="padding:8px;border:1px solid #ddd;"><strong class="down">无</strong>（可暴涨暴跌）</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">交易单位</td><td style="padding:8px;border:1px solid #ddd;">不统一（每手股数由公司定）</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">报价货币</td><td style="padding:8px;border:1px solid #ddd;">港币 HKD</td></tr>'
+    + '</table>'
+
+    + '<h2>无涨跌停意味着什么</h2>'
+    + '<p>港股<strong>没有10%或20%的涨跌幅限制</strong>，单日可以涨几倍，也可以跌去大半。利好消息下可能一天翻倍，利空时（如业绩暴雷、退市风险）可能单日暴跌50%以上。这是港股最大的特征，也是最大的风险。</p>'
+    + '<div class="kb-warn"><strong>风险提示：</strong>无涨跌停意味着<strong>风险和收益都被放大</strong>。务必做好风控、设止损，切勿重仓单只个股，尤其是基本面不明的仙股（低价股）。</div>'
+
+    + '<h2>T+0 回转交易</h2>'
+    + '<p>港股支持<strong>T+0</strong>：当天买入的股票当天就能卖出，不限次数。相比A股的T+1，港股交易更灵活，适合做短线和日内交易。但灵活也意味着<strong>容易频繁操作、追涨杀跌</strong>，新手需克制。</p>'
+
+    + '<h2>交易单位：每手股数不统一</h2>'
+    + '<p>A股统一100股为1手，而港股<strong>每手股数由上市公司自行决定</strong>，从100股到10000股不等：</p>'
+    + '<ul>'
+    + '<li>腾讯：每手100股</li>'
+    + '<li>汇丰：每手400股</li>'
+    + '<li>部分股票：每手1000股、2000股甚至更高</li>'
+    + '</ul>'
+    + '<p>买入必须按<strong>整手</strong>交易，不能零买。所以同样资金，能买不同股票的"手数"差别很大。</p>'
+
+    + '<div class="kb-tip"><strong>交易费用：</strong>港股交易费用比A股高，包括佣金、交易征费、交易费、交收费等。频繁交易成本不低，做T+0前务必算清手续费。</div>'
+},
+
+{
+    id: 'us-rules',
+    category: 'hkus',
+    title: '美股交易规则：做空与盘前盘后',
+    summary: '美股交易时段分盘前、正常、盘后三段，支持做空和T+0，最小单位1股，规则成熟灵活。',
+    tags: ['美股', '交易规则', '做空', '盘前盘后', 'T+0', '1股'],
+    body:
+    '<h2>美股核心交易规则</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:8px;border:1px solid #ddd;">项目</th><th style="padding:8px;border:1px solid #ddd;">美股</th></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">交易时间（东部）</td><td style="padding:8px;border:1px solid #ddd;">9:30-16:00（北京时间晚）</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">交易制度</td><td style="padding:8px;border:1px solid #ddd;"><strong>T+0</strong>（融资账户可日内交易）</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">交收制度</td><td style="padding:8px;border:1px solid #ddd;">T+1（2024年起）</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">涨跌幅限制</td><td style="padding:8px;border:1px solid #ddd;">有个股熔断（非每日限制）</td></tr>'
+    + '<tr><td style="padding:8px;border:1px solid #ddd;">交易单位</td><td style="padding:8px;border:1px solid #ddd;"><strong>1股起</strong>（可零股交易）</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:8px;border:1px solid #ddd;">报价货币</td><td style="padding:8px;border:1px solid #ddd;">美元 USD</td></tr>'
+    + '</table>'
+
+    + '<h2>交易时段（北京时间）</h2>'
+    + '<p>美股分为三个时段（以美东时间计，冬令时比夏令时晚1小时）：</p>'
+    + '<ul>'
+    + '<li><strong>盘前</strong>：4:00-9:30（流动性低，波动大）</li>'
+    + '<li><strong>正常交易</strong>：9:30-16:00</li>'
+    + '<li><strong>盘后</strong>：16:00-20:00（流动性低，波动大）</li>'
+    + '</ul>'
+    + '<p>对应北京时间：夏令时晚上21:30开盘，冬令时晚上22:30开盘。所以美股投资者常需<strong>熬夜看盘</strong>。</p>'
+
+    + '<h2>做空机制</h2>'
+    + '<p>美股<strong>做空非常成熟</strong>——先借股票卖出，等跌了再买回归还，赚下跌的钱。机构常用做空对冲风险或表达看空观点。做空机制使美股定价更有效，但也可能引发<strong>逼空行情</strong>（如2021年游戏驿站GME事件）。</p>'
+
+    + '<h2>个股熔断（LULD机制）</h2>'
+    + '<p>美股没有A股那样的每日涨跌停板，但有<strong>个股熔断</strong>（Limit Up-Limit Down）：5分钟内涨跌超过一定幅度会触发短暂停牌，冷却后恢复交易。此外还有<strong>大盘熔断</strong>（市场下跌7%/13%/20%三级）。</p>'
+
+    + '<h2>1股起买，可买零股</h2>'
+    + '<p>美股最小交易单位是<strong>1股</strong>，甚至支持<strong>碎股（零股）</strong>交易。像伯克希尔（巴菲特公司）股价几十万美元一股，普通人买不起整手，但可以买0.1股。资金门槛很低。</p>'
+
+    + '<div class="kb-tip"><strong>交易费用：</strong>美股主流券商已普遍<strong>零佣金</strong>（如盈透、富途、老虎等），但买卖会有微小的<strong>SEC费、交易活动费</strong>。相比港股，美股交易成本更低。</div>'
+},
+
+{
+    id: 'hk-us-structure',
+    category: 'hkus',
+    title: '港美股市场结构：主板、创业板与板块',
+    summary: '港股分主板与GEM创业板，美股有纽交所、纳斯达克等交易所，各自定位不同类型企业。',
+    tags: ['港交所', '纽交所', '纳斯达克', '主板', '创业板', '市场结构'],
+    body:
+    '<h2>香港市场结构</h2>'
+    + '<p>香港交易所（HKEX）主要分两个板块：</p>'
+    + '<ul>'
+    + '<li><strong>主板</strong>：成熟大型企业上市地，门槛较高（盈利、市值、现金流等要求）。绝大多数知名公司都在主板，如腾讯、美团、阿里。</li>'
+    + '<li><strong>GEM（创业板）</strong>：面向中小型成长企业，门槛较低，风险较高，流动性差。过去是"跳板"，但近年来活跃度很低。</li>'
+    + '</ul>'
+
+    + '<h3>港股的特色板块</h3>'
+    + '<ul>'
+    + '<li><strong>蓝筹股</strong>：恒生指数成分股，市值大、流动性好、分红稳定（如汇丰、腾讯、友邦）。</li>'
+    + '<li><strong>红筹股</strong>：在港注册上市、但主要业务在境内的中资公司。</li>'
+    + '<li><strong>H股</strong>：在内地注册、香港上市的公司（如工商银行、中国平安）。</li>'
+    + '<li><strong>仙股</strong>：股价低于1港元的低价股，风险极高，易被操控，新手慎碰。</li>'
+    + '</ul>'
+
+    + '<h2>美国市场结构</h2>'
+    + '<p>美国有<strong>两大主流交易所</strong>，各具特色：</p>'
+
+    + '<h3>1. 纽交所（NYSE）</h3>'
+    + '<ul>'
+    + '<li>全球市值最大的交易所。</li>'
+    + '<li>上市要求严格，以<strong>传统行业大蓝筹</strong>为主：金融（摩根大通）、消费（可口可乐、沃尔玛）、工业（波音）等。</li>'
+    + '<li>形象稳重，老牌巨头聚集地。</li>'
+    + '</ul>'
+
+    + '<h3>2. 纳斯达克（NASDAQ）</h3>'
+    + '<ul>'
+    + '<li>全球第二大，以<strong>科技股</strong>著称：苹果、微软、谷歌、亚马逊、英伟达、特斯拉。</li>'
+    + '<li>上市门槛相对灵活，吸引高成长、高创新企业。</li>'
+    + '<li>纳斯达克综合指数是科技股风向标；纳斯达克100指数（QQQ）是热门ETF。</li>'
+    + '</ul>'
+
+    + '<h3>美股三大指数</h3>'
+    + '<ul>'
+    + '<li><strong>道琼斯</strong>：30只蓝筹股，最老牌，代表性强但样本少。</li>'
+    + '<li><strong>标普500</strong>：500家大公司，覆盖面广，被视作<strong>美股大盘风向标</strong>。</li>'
+    + '<li><strong>纳斯达克综合</strong>：偏科技，波动大，代表创新经济。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>选市场建议：</strong>稳健型选港股蓝筹/美股道指标普，追求成长选美股纳斯达克。投资前务必了解公司在哪个市场、什么板块，这决定了流动性和风险特征。</div>'
+},
+
+{
+    id: 'adr-interconnect',
+    category: 'hkus',
+    title: 'ADR存托凭证与沪深港通',
+    summary: '中概股通过ADR在美上市，内地资金通过沪深港通投资港股，理解这些机制才能读懂跨境投资。',
+    tags: ['ADR', '中概股', '沪深港通', '互联互通', '存托凭证'],
+    body:
+    '<h2>什么是ADR（美国存托凭证）</h2>'
+    + '<p>ADR（American Depositary Receipt）是<strong>美国存托凭证</strong>。外国公司想在美国上市、让美国投资者用美元买卖，通常不直接发行股票，而是通过<strong>存托银行</strong>发行一种代表其股票的"凭证"，这就是ADR。</p>'
+    + '<p>大部分<strong>中概股</strong>（中国概念股）就是通过ADR在美股上市的，如阿里巴巴（BABA）、京东（JD）、百度（BIDU）、拼多多（PDD）。</p>'
+
+    + '<h2>中概股的三种上市路径</h2>'
+    + '<ul>'
+    + '<li><strong>美股ADR</strong>：阿里、京东、百度等，以ADR形式在纽交所/纳斯达克交易。</li>'
+    + '<li><strong>港股二次上市/双重主要上市</strong>：近年很多中概股<strong>回港上市</strong>，如阿里、京东、网易、B站，既在美股也在港股交易，两地股票可转换。</li>'
+    + '<li><strong>A股</strong>：少数中概股回归A股（如三六零），或采用A+H股两地上市。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>为什么中概股回港？</strong>中美监管摩擦（如PCAOB审计争议、HFCAA法案）使中概股面临<strong>退市风险</strong>。回港上市是<strong>风险对冲</strong>，保留融资渠道，也方便亚洲投资者参与。</div>'
+
+    + '<h2>沪深港通：内地资金的出海通道</h2>'
+    + '<p><strong>沪深港通</strong>（Stock Connect）是内地与香港股市的互联互通机制，让两地投资者互相买卖对方市场的股票：</p>'
+    + '<ul>'
+    + '<li><strong>港股通</strong>（内地→香港）：内地投资者可买符合条件的<strong>港股</strong>。包括<strong>沪港通</strong>和<strong>深港通</strong>。</li>'
+    + '<li><strong>陆股通</strong>（香港→内地）：境外资金通过香港买<strong>A股</strong>，这就是常说的"北向资金"。</li>'
+    + '</ul>'
+
+    + '<h2>北向资金：外资风向标</h2>'
+    + '<p>通过陆股通流入A股的境外资金被称为<strong>"北向资金"</strong>（从香港向北流入内地）。市场普遍关注北向资金的<strong>净流入/流出</strong>，将其视为<strong>外资对A股的态度风向标</strong>：</p>'
+    + '<ul>'
+    + '<li>北向资金大幅<strong>净流入</strong>：外资看好A股，市场情绪偏暖。</li>'
+    + '<li>北向资金大幅<strong>净流出</strong>：外资撤离，需警惕。</li>'
+    + '</ul>'
+    + '<div class="kb-warn"><strong>注意：</strong>北向资金只是参考指标之一，不能单独决定买卖。外资也会追涨杀跌，短线波动不代表长期趋势。</div>'
+
+    + '<h2>港股通能买什么</h2>'
+    + '<p>港股通不是所有港股都能买，有<strong>成分股名单</strong>（恒生综合大型/中型/小型指数成分股等）。像腾讯、美团、阿里、汇丰都在名单内，但部分小市值或新上市公司可能不在。开通港股通还需满足<strong>50万元</strong>资产门槛。</p>'
+},
+
+{
+    id: 'hk-vs-a-vs-us',
+    category: 'hkus',
+    title: 'A股 / 港股 / 美股：三大市场对比',
+    summary: '一表看清A股、港股、美股在交易规则、涨跌停、做空、费用等核心维度的差异。',
+    tags: ['对比', 'A股', '港股', '美股', '差异', 'T+1', 'T+0'],
+    body:
+    '<h2>三大市场核心对比</h2>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;">'
+    + '<tr style="background:#1a2b4a;color:#fff;"><th style="padding:7px;border:1px solid #ddd;">对比项</th><th style="padding:7px;border:1px solid #ddd;">A股</th><th style="padding:7px;border:1px solid #ddd;">港股</th><th style="padding:7px;border:1px solid #ddd;">美股</th></tr>'
+    + '<tr><td style="padding:7px;border:1px solid #ddd;">交易制度</td><td style="padding:7px;border:1px solid #ddd;">T+1</td><td style="padding:7px;border:1px solid #ddd;">T+0</td><td style="padding:7px;border:1px solid #ddd;">T+0</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:7px;border:1px solid #ddd;">涨跌停</td><td style="padding:7px;border:1px solid #ddd;">±10%/20%</td><td style="padding:7px;border:1px solid #ddd;">无</td><td style="padding:7px;border:1px solid #ddd;">个股熔断</td></tr>'
+    + '<tr><td style="padding:7px;border:1px solid #ddd;">做空</td><td style="padding:7px;border:1px solid #ddd;">有限制</td><td style="padding:7px;border:1px solid #ddd;">支持</td><td style="padding:7px;border:1px solid #ddd;">成熟</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:7px;border:1px solid #ddd;">交易单位</td><td style="padding:7px;border:1px solid #ddd;">100股/手</td><td style="padding:7px;border:1px solid #ddd;">不统一</td><td style="padding:7px;border:1px solid #ddd;">1股起</td></tr>'
+    + '<tr><td style="padding:7px;border:1px solid #ddd;">货币</td><td style="padding:7px;border:1px solid #ddd;">人民币</td><td style="padding:7px;border:1px solid #ddd;">港币</td><td style="padding:7px;border:1px solid #ddd;">美元</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:7px;border:1px solid #ddd;">交易时间</td><td style="padding:7px;border:1px solid #ddd;">9:30-15:00</td><td style="padding:7px;border:1px solid #ddd;">9:30-16:00</td><td style="padding:7px;border:1px solid #ddd;">21:30-次4:00</td></tr>'
+    + '<tr><td style="padding:7px;border:1px solid #ddd;">佣金</td><td style="padding:7px;border:1px solid #ddd;">较低</td><td style="padding:7px;border:1px solid #ddd;">较高</td><td style="padding:7px;border:1px solid #ddd;">零佣金为主</td></tr>'
+    + '<tr style="background:#f9f9f9;"><td style="padding:7px;border:1px solid #ddd;">分红</td><td style="padding:7px;border:1px solid #ddd;">不稳定</td><td style="padding:7px;border:1px solid #ddd;">较高（蓝筹）</td><td style="padding:7px;border:1px solid #ddd;">多回购少分红</td></tr>'
+    + '</table>'
+
+    + '<h2>A股特点：政策市 + 散户多</h2>'
+    + '<p>A股<strong>散户占比高</strong>，情绪化明显，受政策影响大（俗称"政策市"）。涨跌停板和T+1限制了短期波动，但也限制了流动性。适合偏好稳健、能承受政策博弈的投资者。</p>'
+
+    + '<h2>港股特点：低估值 + 高股息</h2>'
+    + '<p>港股<strong>估值普遍偏低</strong>（PE/PB低于A股和美股），蓝筹股<strong>股息率高</strong>（汇丰、中海油常达5%以上），适合价值投资和收息策略。但<strong>流动性分化严重</strong>——少数龙头成交活跃，大量中小盘股流动性极差。</p>'
+
+    + '<h2>美股特点：长牛 + 科技龙头</h2>'
+    + '<p>美股是全球<strong>最成熟、流动性最好</strong>的市场，长期呈慢牛走势。以科技巨头（FAANG+英伟达）为代表的成长股是核心驱动力。美股公司<strong>更爱回购</strong>（buyback）而非分红，回购推高每股收益和股价。适合长期配置、追求成长收益。</p>'
+
+    + '<div class="kb-tip"><strong>汇率影响：</strong>投资港美股涉及<strong>汇率波动</strong>。人民币升值时，港美股的收益会被汇率抵消一部分；贬值时反而增厚收益。这是跨境投资不可忽视的隐性成本/收益。</div>'
+
+    + '<div class="kb-warn"><strong>风险提示：</strong>港美股无涨跌停，单日波动可能极大；美股需熬夜看盘；港股流动性风险（想卖卖不掉）；中概股的政策与退市风险。跨市场投资务必分散、控仓、设止损。</div>'
+},
+
+/* ====================================================================
+   六、玄学板块（大A未解之谜）
+   ==================================================================== */
+{
+    id: 'magic-hour',
+    category: 'mystic',
+    title: '神奇两点半：尾盘定律与资金暗战',
+    summary: '下午两点半是A股最玄的时间点——很多变盘、跳水、拉升都发生在这时刻，背后是资金的最后博弈。',
+    tags: ['两点半', '尾盘', '神奇两点半', '资金博弈'],
+    body:
+    '<h2>什么是"神奇两点半"</h2>'
+    + '<p>老股民常挂在嘴边一句话："A股不看全天，只看两点半。"下午<strong>14:30</strong>前后，市场经常出现<strong>突然变盘</strong>——或尾盘拉升收红，或尾盘跳水杀跌。这个现象被称为"神奇两点半"。</p>'
+
+    + '<h2>为什么偏偏是两点半</h2>'
+    + '<ul>'
+    + '<li><strong>资金决策时点</strong>：很多机构、游资在下午两点半前后做<strong>最后的仓位决策</strong>——今天要不要加仓、要不要减仓避险，集中在这时执行。</li>'
+    + '<li><strong>两融平仓</strong>：融资融券账户如果维持担保比例不达标，券商常在尾盘<strong>强制平仓</strong>，引发集中抛售。</li>'
+    + '<li><strong>尾盘抢跑</strong>：不愿过夜的短线资金在两点半后开始<strong>获利了结</strong>或止损，形成卖压。</li>'
+    + '<li><strong>主力做盘</strong>：想控盘的主力，喜欢在尾盘用少量资金<strong>做K线</strong>（拉红或砸绿），成本最低、效果最明显。</li>'
+    + '</ul>'
+
+    + '<h2>玄学背后的真相</h2>'
+    + '<p>两点半"神奇"的本质是<strong>多空双方在收盘前的最后博弈</strong>。经过一整天的交易，筹码和情绪已经充分积累，到尾盘集中释放。这不是玄学，而是<strong>资金行为的集中体现</strong>。</p>'
+    + '<div class="kb-tip"><strong>怎么用：</strong>如果全天震荡、两点半突然<strong>放量拉升</strong>，可能是资金看好次日，可关注；如果尾盘<strong>跳水放量</strong>，往往是恐慌或主力出货，次日开盘承压。但切记这只是概率，不是规律。</div>'
+},
+
+{
+    id: 'red-friday',
+    category: 'mystic',
+    title: '红周五与黑周四：星期效应',
+    summary: 'A股流传"黑周四、红周五"的说法，统计上某些星期确实涨多跌少，但因果远没有想象中简单。',
+    tags: ['红周五', '黑周四', '星期效应', '周末效应'],
+    body:
+    '<h2>A股的星期效应传说</h2>'
+    + '<p>民间流传各种星期规律：</p>'
+    + '<ul>'
+    + '<li><strong class="down">黑周四</strong>：周四容易跌，因为卖股取钱（T+1）周五才能到账。</li>'
+    + '<li><strong class="up">红周五</strong>：周五容易涨，因为资金博弈周末利好消息。</li>'
+    + '<li><strong>周一效应</strong>：周一反映周末积累的情绪和消息，波动大。</li>'
+    + '</ul>'
+
+    + '<h2>统计上成立吗</h2>'
+    + '<p>拉长十年看，A股确实存在<strong>微弱的星期效应</strong>：部分统计显示周四平均跌幅略大、周五平均涨幅略正。但这个优势<strong>非常微弱</strong>，远不足以作为稳定盈利的依据。很多年份这个规律完全失效。</p>'
+
+    + '<h2>背后的逻辑（若有的话）</h2>'
+    + '<ul>'
+    + '<li><strong>周四卖、周五到账</strong>：T+1制度下，周四卖出周五资金可用，确实促使部分资金周四抛售。</li>'
+    + '<li><strong>周末持仓博弈</strong>：持币还是持股过周末，周五是最后决策点，乐观者占多则偏红。</li>'
+    + '<li><strong>自我实现</strong>：当大家都信"黑周四"，周四就会有人提前卖，跌了就更信——典型的<strong>预期自我实现</strong>。</li>'
+    + '</ul>'
+
+    + '<div class="kb-warn"><strong>理性看待：</strong>星期效应是<strong>统计幻觉多于真实规律</strong>。把它当谈资可以，当交易依据危险。市场真正决定走势的是基本面、资金面和情绪，不是星期几。</div>'
+},
+
+{
+    id: 'pe-customs',
+    category: 'mystic',
+    title: '风水与股市：券商年度策略报告里的玄学',
+    summary: '每年都有券商发布"风水角度看A股"的报告，生肖、方位、五行轮动，虽然是噱头，却意外地有人信。',
+    tags: ['风水', '生肖', '五行', '券商报告', '玄学'],
+    body:
+    '<h2>券商的"风水研报"现象</h2>'
+    + '<p>每年岁末年初，总有券商机构会出一份<strong>"风水角度看股市"</strong>的策略报告。比如某年属龙，龙的方位在东南，五行属土，土生金，金融板块要涨……之类的逻辑。报告标题还一本正经地写着《己亥年A股风水展望》。</p>'
+
+    + '<h2>这些报告准吗</h2>'
+    + '<p>统计下来，风水研报的准确率和<strong>抛硬币差不多</strong>——毕竟市场只有涨跌两个方向，蒙也有50%概率。但有趣的是，<strong>偶尔蒙对的那几次会被大肆传播</strong>，蒙错的则被遗忘，这就是幸存者偏差。</p>'
+
+    + '<h2>为什么有人信</h2>'
+    + '<ul>'
+    + '<li><strong>市场太复杂</strong>：投资者面对海量不确定信息，本能地想要一个"简单答案"，玄学恰好提供了心理安慰。</li>'
+    + '<li><strong>自我强化</strong>：信的人多了，部分行为趋同（比如某方位板块真有资金进去），短时间"应验"，进一步强化信仰。</li>'
+    + '<li><strong>博眼球</strong>：券商发这种报告本身就是为了<strong>营销和传播</strong>，认真你就输了。</li>'
+    + '</ul>'
+
+    + '<div class="kb-tip"><strong>正确姿势：</strong>风水研报当个乐子看就好。市场真正受<strong>政策、资金、业绩、情绪</strong>驱动，不会因为某个生肖值年就必然涨跌。理性投资，远离算命式炒股。</div>'
+},
+
+{
+    id: 'curse-effects',
+    category: 'mystic',
+    title: '世界杯魔咒、招商策略会魔咒：那些吓人的巧合',
+    summary: '每逢世界杯A股就跌，每逢招商开策略会大盘就跌——这些"魔咒"巧合得让人毛骨悚然，但真相是什么？',
+    tags: ['魔咒', '世界杯', '招商策略会', '丁蟹效应', '巧合'],
+    body:
+    '<h2>大A的著名魔咒</h2>'
+    + '<ul>'
+    + '<li><strong>世界杯魔咒</strong>：每逢世界杯期间A股多下跌——因为资金被分流看球、交易清淡？还是巧合？</li>'
+    + '<li><strong>招商策略会魔咒</strong>：招商证券开中期/年度策略会的那两天，大盘大概率跌，被称为"A股最准反向指标"。</li>'
+    + '<li><strong>丁蟹效应（港股）</strong>：港剧《大时代》主演郑少秋有新剧播出，恒指就跌——统计上竟有一定显著性。</li>'
+    + '<li><strong>419魔咒</strong>：4月19日前后A股历史上多次大跌，被称作"419惨案"。</li>'
+    + '</ul>'
+
+    + '<h2>为什么"魔咒"这么准</h2>'
+    + '<p>表面上看很玄，拆开看其实是<strong>三种力量的叠加</strong>：</p>'
+    + '<ol>'
+    + '<li><strong>幸存者偏差</strong>：魔咒"灵验"的年份被记住，失效的年份被忽略。世界杯期间也涨过，只是没人提。</li>'
+    + '<li><strong>自我实现</strong>：当"招商魔咒"广为人知，到那天就有人<strong>提前减仓避险</strong>，集体行为导致真跌——预言自己成真。</li>'
+    + '<li><strong>季节性巧合</strong>：很多魔咒恰逢<strong>季末、年末、资金紧张期</strong>，下跌本是资金面使然，被附会成"魔咒"。</li>'
+    + '</ol>'
+
+    + '<h2>魔咒能用来交易吗</h2>'
+    + '<div class="kb-warn"><strong>千万别。</strong>魔咒的"准确率"建立在<strong>选择性记忆</strong>上，一旦你真金白银押注，就会发现它失灵的时候远比灵验的时候多。把巧合当规律，是亏钱的最快方式之一。</div>'
+
+    + '<div class="kb-tip"><strong>看破不说破：</strong>了解魔咒的价值在于<strong>理解市场情绪</strong>——当大家都在传"魔咒要来了"，恐慌情绪本身就会带来波动。聪明的投资者利用这种情绪，而不是被它支配。</div>'
+},
+
+{
+    id: 'mystic-truth',
+    category: 'mystic',
+    title: '玄学的尽头是情绪：大A的底层逻辑',
+    summary: '所有"玄学"现象拆到底，都是情绪、资金和预期的博弈。看懂这一点，才算真正读懂A股。',
+    tags: ['情绪', '资金博弈', '预期', '政策市', '底层逻辑'],
+    body:
+    '<h2>为什么大A这么多"玄学"</h2>'
+    + '<p>A股被称作<strong>政策市</strong>、<strong>情绪市</strong>，玄学现象远多于成熟市场。根本原因是：</p>'
+    + '<ul>'
+    + '<li><strong>散户占比高</strong>：A股散户交易占比长期超70%，散户决策<strong>情绪化、跟风化</strong>，容易形成集体非理性行为。</li>'
+    + '<li><strong>政策影响大</strong>：监管政策、行业风向对市场影响巨大，"政策底""政策顶"是真实存在的，给人"政策市"的观感。</li>'
+    + '<li><strong>信息不对称</strong>：散户获取信息滞后，只能靠<strong>猜政策、跟主力、看玄学</strong>来弥补信息差。</li>'
+    + '</ul>'
+
+    + '<h2>玄学 = 情绪的可视化</h2>'
+    + '<p>所有的魔咒、规律、风水，本质都是<strong>市场情绪的载体</strong>：</p>'
+    + '<ul>'
+    + '<li>传"世界杯魔咒" → 投资者提前避险 → 真跌 → 验证魔咒。这是<strong>情绪的自我实现</strong>。</li>'
+    + '<li>说"两点半要变盘" → 大家两点半盯着盘 → 集中买卖 → 真的变盘。这是<strong>注意力的集中</strong>。</li>'
+    + '<li>信"风水看多" → 部分资金进场 → 短暂上涨 → 证明风水准。这是<strong>信仰的变现</strong>。</li>'
+    + '</ul>'
+    + '<p>玄学不是原因，而是<strong>情绪的放大器</strong>。当一种说法被广泛接受，它就会通过影响人的行为，反过来影响市场。</p>'
+
+    + '<h2>真正的底层逻辑：三要素</h2>'
+    + '<p>抛开玄学，A股的涨跌真正由三个要素决定：</p>'
+    + '<ol>'
+    + '<li><strong>政策</strong>：货币宽松/收紧、行业扶持/打压，是最强的方向性力量。</li>'
+    + '<li><strong>资金</strong>：北向资金、融资余额、公募发行，资金面决定涨跌的力度。</li>'
+    + '<li><strong>情绪</strong>：散户的贪婪与恐惧，放大波动、制造极端。</li>'
+    + '</ol>'
+
+    + '<div class="kb-tip"><strong>最高境界：</strong>看懂玄学，但不被玄学支配。当大众被"魔咒"吓得抛售、被"风水"骗得追涨时，理性的投资者知道——<strong>情绪制造的错杀，往往是机会；情绪制造的泡沫，往往是风险</strong>。玄学的尽头，是人性的修炼。</div>'
+
+    + '<div class="kb-warn"><strong>最后提醒：</strong>本板块内容纯属趣味科普，不构成任何投资建议。股市没有真正的"规律"和"魔咒"，敬畏市场、理性投资才是长久之道。</div>'
+}
+];
+
+/* ============================================================
+   名词解释（最基础的股市名词 · 首页最高权重板块）
+   每条：term 名词 / def 一句话白话解释 / detail 拆解（可空）/ link 关联详解文章id（可空）
+   ============================================================ */
+var KB_GLOSSARY = [
+    {
+        term: '换手率',
+        def: '当天这只股票被买卖了多少次，数值越高越活跃。',
+        detail: '换手率 = 当日成交量 ÷ 流通股本 × 100%。可理解为：当天有多少比例的"流通筹码"换了主人。换手率高=交易火热、资金关注度高；过低则冷清。',
+        link: 'turnover'
+    },
+    {
+        term: '主力',
+        def: '资金量大、能影响股价走势的大户，如机构、游资、大资金。',
+        detail: '主力泛指资金雄厚、买卖量足以推动股价的资金方（公募、险资、游资、外资等）。相对的"散户"指资金量小的普通投资者。主力动向常被用来揣测后市，但主力也会做假动作骗线。'
+    },
+    {
+        term: '主力净额（净额）',
+        def: '主力资金"买入金额 − 卖出金额"的差值，正数代表主力净买入。',
+        detail: '净额 = 买入总额 − 卖出总额。主力净额 = 大单买入金额 − 大单卖出金额。正值（净流入）=主力买得多，偏多；负值（净流出）=主力卖得多，偏空。注意：这是按单子大小估算的，并非真实身份，仅供参考。',
+        link: 'market-data'
+    },
+    {
+        term: '成交量',
+        def: '一段时间内股票成交的总手数（股数），反映交易的热度。',
+        detail: '成交量是已成交的股票数量。量价配合是核心：放量上涨可信度高，缩量上涨易乏力。',
+        link: 'volume'
+    },
+    {
+        term: '量比',
+        def: '今天每分钟成交量，是过去5天平均的多少倍。',
+        detail: '量比 > 1 说明今天比平时活跃，< 1 说明缩量。量比 > 2.5 常意味着明显放量、可能有异动。',
+        link: 'market-data'
+    },
+    {
+        term: 'K线',
+        def: '用一根"蜡烛"记录开盘、收盘、最高、最低四个价位的图。',
+        detail: '阳线（红）=收盘高于开盘=涨；阴线（绿）=收盘低于开盘=跌。实体表示开/收盘区间，上下影线表示最高/最低。',
+        link: 'kline-basic'
+    },
+    {
+        term: '阳线 / 阴线',
+        def: 'A股里红涨绿跌：阳线（红）是涨，阴线（绿）是跌。',
+        detail: '阳线收盘价高于开盘价，阴线收盘价低于开盘价。注意港美股惯例相反（绿涨红跌）。',
+        link: 'kline-basic'
+    },
+    {
+        term: '均线（MA）',
+        def: '过去N天收盘价的平均连线，用来判断趋势方向。',
+        detail: '常见有 MA5（5日）、MA20（20日）、MA60。均线向上=多头，向下=空头。短期均线上穿长期均线叫"金叉"（看多）。',
+        link: 'ma-intro'
+    },
+    {
+        term: '市盈率（PE）',
+        def: '股价 ÷ 每股盈利，"多少年能回本"。',
+        detail: 'PE = 股价 ÷ 每股收益。PE越低通常越"便宜"，但要结合行业和成长性看，亏损股没有PE。',
+        link: 'pe'
+    },
+    {
+        term: '市净率（PB）',
+        def: '股价 ÷ 每股净资产，衡量股价相对公司"家底"的贵贱。',
+        detail: 'PB = 股价 ÷ 每股净资产。PB<1 叫"破净"，股价低于账面价值，常见于银行等板块。',
+        link: 'pb-ps'
+    },
+    {
+        term: '外盘 / 内盘',
+        def: '外盘=主动买入的量，内盘=主动卖出的量。',
+        detail: '外盘是以卖方价成交（买方主动追价），偏多；内盘是以买方价成交（卖方主动杀跌），偏空。外盘>内盘偏多，反之偏空。',
+        link: 'market-data'
+    },
+    {
+        term: 'T+1',
+        def: '今天买的股票，明天才能卖。',
+        detail: 'A股实行T+1：当日买入的股票当日不能卖出，需到下一个交易日才能卖。资金则是T+1到账可取。',
+        link: 'prepost-session'
+    },
+    {
+        term: '涨跌幅 / 涨跌停',
+        def: '今天相比昨收涨（跌）了多少，A股主板单日最多±10%。',
+        detail: '涨跌幅 =（现价 − 昨收）÷ 昨收 × 100%。A股主板/创业板涨跌停 ±10%，ST股 ±5%，科创板/创业板注册制 ±20%。到涨停板只能挂单排队、不能更高成交。',
+        link: 'support-resistance'
+    },
+    {
+        term: '涨停板 / 跌停板',
+        def: '股价当天涨（跌）到规定上限被"卡住"的价位。',
+        detail: '涨停即当日涨幅达到上限，买单巨多、卖单极少，想买要排队；跌停反之。一字涨停=开盘就封死涨停，全天没人卖得动。',
+        link: 'support-resistance'
+    },
+    {
+        term: '集合竞价',
+        def: '开盘（9:15-9:25）和收盘（14:57-15:00）前撮合定价的时段。',
+        detail: '集合竞价把一段时间内的所有买卖委托集中起来，按"最大成交量"原则算出一个开盘/收盘价。9:20-9:25 不可撤单，主力意图更真实。',
+        link: 'call-auction'
+    },
+    {
+        term: '开盘价 / 收盘价',
+        def: '开盘价是9:25竞价产生，收盘价是当天最后一笔成交价。',
+        detail: '开盘价反映隔夜消息和主力态度；收盘价是次日的基准。A股收盘价按最后1分钟（14:57-15:00）集合竞价确定。',
+        link: 'prepost-session'
+    },
+    {
+        term: 'MACD',
+        def: '看趋势和买卖点的趋势指标，金叉看多、死叉看空。',
+        detail: 'MACD 由快线(DIF)、慢线(DEA)和红绿柱组成。DIF 上穿 DEA = 金叉（看多）；下穿 = 死叉（看空）。红柱变长=多头增强。',
+        link: 'macd'
+    },
+    {
+        term: '金叉 / 死叉',
+        def: '短期线上穿长期线叫金叉（看多），下穿叫死叉（看空）。',
+        detail: '常用在均线、MACD、KDJ。金叉=短期走强于长期，往往是买入信号；死叉反之。需结合位置和成交量，否则容易"假金叉"。',
+        link: 'golden-cross'
+    },
+    {
+        term: 'KDJ',
+        def: '判断超买超卖的短线指标，数值0-100。',
+        detail: 'KDJ 衡量短期强弱。K/D 值 > 80 为超买（易回调），< 20 为超卖（易反弹）。J 值可超过100或低于0，反映极端情绪。',
+        link: 'kdj'
+    },
+    {
+        term: '支撑位 / 压力位',
+        def: '支撑位是跌到这儿容易反弹，压力位是涨到这儿容易遇阻。',
+        detail: '支撑位=下方买盘集中的价位（如前期低点、均线）；压力位=上方卖盘集中的价位（如前期高点、套牢区）。突破压力位常打开上涨空间。',
+        link: 'support-resistance'
+    },
+    {
+        term: 'ROE（净资产收益率）',
+        def: '公司用股东的钱赚了多少，越高赚钱能力越强。',
+        detail: 'ROE = 净利润 ÷ 净资产 × 100%。巴菲特最看重它，常要求连续多年 > 15%。ROE 高=公司赚钱效率高，是好公司的标志。',
+        link: 'roe'
+    },
+    {
+        term: 'ETF',
+        def: '一只像股票一样买卖的"打包基金"，买它等于买一篮子股票。',
+        detail: 'ETF（交易型开放式指数基金）跟踪某个指数（如沪深300）。买一只 ETF 就等于分散买入一篮子股票，省去选股烦恼，适合新手。',
+        link: 'etf'
+    },
+    {
+        term: 'F10',
+        def: '股票资料页，看公司家底、股东、业绩的地方。',
+        detail: 'F10 是行情软件里的公司基本面档案：股东构成、十大流通股东、财务数据、分红、高管等。买股前必看，判断"这家公司靠不靠谱"。',
+        link: 'f10'
+    },
+    {
+        term: '分红 / 股息',
+        def: '公司把赚的钱分一部分给股东，现金或送股形式。',
+        detail: '分红是回报股东的方式。现金分红叫股息；送红股是增发股票。分红后股价会相应下调（除权除息），总资产不变，但持续分红是好公司的体现。'
+    },
+    {
+        term: '除权除息',
+        def: '分红/送股后，股价按比例下调，你的总资产不变。',
+        detail: '分红后公司价值减少，股价需下调以保持公平。除权（送股）、除息（现金分红）后价格会"跳水"，但这不是亏损，股票数量或现金已补足。',
+        link: 'pb-ps'
+    },
+    {
+        term: '仓位',
+        def: '你账户里有多少钱买了股票，满仓=全买入。',
+        detail: '仓位 = 已投入资金 ÷ 总资金。满仓(100%)、半仓(50%)、空仓(0%)。新手切忌满仓操作，留有现金才能应对风险和抓住机会。'
+    },
+    {
+        term: '止损 / 止盈',
+        def: '亏到一定比例就卖叫止损，赚到目标就卖叫止盈。',
+        detail: '止损是保命法则：亏到预设比例（如-5%）果断卖出，不让小亏变大亏。止盈是落袋为安：涨到目标价就卖，别贪。纪律比预测更重要。'
+    },
+    {
+        term: '牛市 / 熊市',
+        def: '牛市是长期上涨、大家都在赚钱；熊市是长期下跌。',
+        detail: '牛市（Bull）= 市场持续上涨、情绪乐观；熊市（Bear）= 持续下跌、情绪悲观。还有"猴市"= 上蹿下跳震荡市。',
+        link: 'hk-vs-a-vs-us'
+    },
+    {
+        term: '做多 / 做空',
+        def: '做多=先买后卖赚上涨的钱；做空=先卖后买赚下跌的钱。',
+        detail: 'A股普通交易只能做多（买涨）。做空需要融券（借券卖出）。对新手来说，做空风险更大，亏损理论上无上限。',
+        link: 'hk-vs-a-vs-us'
+    }
+];
+
+/* 让文章能通过 category 反向查找同分类文章（router 使用） */
+if (typeof window !== 'undefined') {
+    window.KB_CATEGORIES = KB_CATEGORIES;
+    window.KB_ARTICLES = KB_ARTICLES;
+    window.KB_GLOSSARY = KB_GLOSSARY;
+}

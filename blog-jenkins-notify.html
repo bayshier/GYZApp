@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Android 打包与消息通知体系搭建实录：GitLab Webhook → Jenkins 自动打包 → 蒲公英上传 → 企业微信群通知。强制检出推送提交、merge 跳过、同分支去重三件套，与 12 个实战踩坑解法。">
+    <meta name="theme-color" content="#0a0e16">
+    <title>Jenkins 打包通知体系搭建实录 — Easin's Blog</title>
+    <link rel="shortcut icon" href="icon_logo.png" type="image/png">
+    <link rel="stylesheet" href="css/blog.css">
+</head>
+
+<body>
+    <div class="article-wrap">
+
+        <a class="back-home" href="easin.html">← 返回主页</a>
+
+        <div class="article-meta">
+            <span class="tag hot">Jenkins</span>
+            <span class="tag">CI/CD</span>
+            <span class="tag">GitLab Webhook</span>
+            <span class="tag">PowerShell</span>
+            <span class="tag">企业微信机器人</span>
+        </div>
+
+        <h1 class="article-title">Jenkins 打包通知体系搭建实录：从 GitLab 推送 到 企业微信群消息，全程无人工</h1>
+        <div class="article-date">
+            2026.09 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a>
+        </div>
+
+        <blockquote>
+            <p>一条 push 进去，五分钟后两个企业微信群分别收到带下载二维码的结果通知——这条链路上真正难的不是"打通"，而是<strong>让每一次打的包都永远是对的</strong>。这篇是完整的搭建实录与踩坑手册（敏感信息已脱敏）。</p>
+        </blockquote>
+
+        <h2>一、体系总览</h2>
+
+        <p>代码从 GitLab 推送开始，到两个企业微信群收到消息为止，全链路自动完成，平均耗时 <strong>4~5 分钟</strong>（编译约 4 分钟 + 上传通知约 1 分钟）。</p>
+
+        <pre><code>开发者 push
+   │
+   ▼
+GitLab（私有部署）
+   │  ① Webhook（push 事件，全部分支）
+   ▼
+Jenkins（Windows 打包机，打包任务）
+   │  ② 强制检出本次推送的确切提交
+   │  ③ merge 提交 → 自动跳过打包
+   │  ④ 按分支选 flavor → Gradle 编译
+   │  ⑤ 产物落盘 D:\ApkOutput\build-N\{debug,release}
+   ▼
+上传 + 通知编排脚本
+   ├─ ⑥ 上传蒲公英（debug→测试通道，release→正式通道）
+   └─ ⑦ 企业微信消息
+        ├─ 主打包群：所有消息（成功 + 失败）
+        └─ 上线验收群：仅需求整合分支的出包成功消息</code></pre>
+
+        <p>另有三个旁路机制保证"打的包永远是对的"：</p>
+
+        <table>
+            <tr><th>机制</th><th>解决的问题</th></tr>
+            <tr><td>强制检出推送提交</td><td>几秒内多人同时推送时，构建的 cause 和实际代码交叉错乱</td></tr>
+            <tr><td>merge 提交跳过</td><td>merge 操作触发无意义的重复打包</td></tr>
+            <tr><td>同分支去重守护（每分钟定时任务）</td><td>同分支连续多次 push 打出多个重复包，只保留最后一次</td></tr>
+        </table>
+
+        <h2>二、基础环境</h2>
+
+        <table>
+            <tr><th>系统</th><th>用途</th><th>凭据存放</th></tr>
+            <tr><td>Jenkins 2.580</td><td>打包任务（FreeStyle，串行执行）</td><td>专用账号，凭据存打包机</td></tr>
+            <tr><td>GitLab 私有部署</td><td>代码仓库、webhook 配置</td><td>具备 webhook 管理权限的账号</td></tr>
+            <tr><td>蒲公英</td><td>APK 托管、二维码</td><td>API Key 存本地密钥文件（严禁入库）</td></tr>
+            <tr><td>企业微信 AI 机器人</td><td>群消息推送（MCP 接口）</td><td>MCP 接口地址存本地密钥文件（严禁入库）</td></tr>
+        </table>
+
+        <h2>三、Jenkins 任务配置</h2>
+
+        <p>FreeStyle 任务，串行执行（<strong>不勾选</strong> Execute concurrent builds），三个 Batch 构建步骤：</p>
+
+        <h3>触发器：只开 Webhook，千万别开轮询</h3>
+
+        <ul>
+            <li>只开 GitLab push webhook 触发（Branch filter = All）；</li>
+            <li><strong>不要开启 Poll SCM</strong>——轮询 + 通配分支会引发 "catch-up 级联"，自动补打很久以前的老分支，我们历史上蒲公英莫名出现老版本就是这么来的；</li>
+            <li>插件自带的 cancelPendingBuildsOnUpdate 只对 Merge Request 事件生效（反编译验证过），push 场景的去重要靠第五节的自建守护。</li>
+        </ul>
+
+        <h3>三个构建步骤</h3>
+
+        <pre><code>:: 步骤一（准备）：写 SDK 路径 + 强制检出本次推送的提交
+chcp 65001 &gt;nul
+echo sdk.dir=C:/Users/&lt;用户&gt;/AppData/Local/Android/Sdk&gt; local.properties
+powershell -NoProfile -ExecutionPolicy Bypass -File D:\jenkins-setup\checkout-pushed.ps1
+if errorlevel 1 (powershell ... upload-notify.ps1 -Failed &amp; exit /b 1)
+
+:: 步骤二（编译）：开头两行是 merge 跳过
+powershell ... is-merge-tip.ps1
+if not errorlevel 1 (echo === SKIP: merge commit tip === &amp; exit /b 0)
+...按分支选 flavor，gradlew 打包，产物拷贝到 D:\ApkOutput\build-%BUILD_NUMBER%...
+powershell ... prune-apkoutput.ps1 -Keep 20   :: 只保留最近 20 次产物
+
+:: 步骤三（上传+通知）
+chcp 65001 &gt;nul
+powershell -NoProfile -ExecutionPolicy Bypass -File D:\jenkins-setup\upload-notify.ps1</code></pre>
+
+        <p>构建后设置两个关键项：</p>
+
+        <ul>
+            <li><strong>Archive the artifacts 必须勾 allowEmptyArchive</strong>——否则 merge 跳过的构建因"无产物"被标 FAILURE，一片假红；</li>
+            <li><strong>Naginator 自动重试</strong>：正则 <code>Could not connect|Connection timed out|Failed to connect</code>——GitLab 偶发连接抖动时自动重跑，不用人工干预。</li>
+        </ul>
+
+        <h2>四、GitLab Webhook 打通（最容易踩坑的一段）</h2>
+
+        <ol>
+            <li><strong>项目 webhook</strong>：URL 指向 Jenkins 任务地址，Secret token 与 Jenkins 触发器一致；触发事件<strong>仅 Push events</strong>，SSL 校验关闭；</li>
+            <li><strong>本地网络放行（关键坑）</strong>：GitLab 默认禁止向内网地址发 webhook。要在<strong>实例级</strong> Settings → Network → Outbound requests 的 allowlist 中加入 Jenkins 的内网地址，否则 webhook 永远到不了 Jenkins——表现就是推了代码毫无反应；</li>
+            <li>注意 allowlist 的参数名是带 <code>_raw</code> 后缀的那个才是可写的；</li>
+            <li><strong>验证顺序</strong>：先在 webhook 页点 Test → Push events 确认返回 200，再观察 Jenkins 出构建。</li>
+        </ol>
+
+        <h2>五、打包正确性三件套（本文核心）</h2>
+
+        <h3>5.1 强制检出推送提交</h3>
+
+        <p><strong>问题</strong>：Jenkins git 插件配通配分支时，检出的是"所有分支中最新 tip"。两人几秒内各推一次，会出现构建 A 的推送人/分支来自甲、实际检出代码却是乙的——消息全部错乱（历史事故：推送记录显示某同学，打包出来的却是别人的提交）。</p>
+
+        <p><strong>方案</strong>：每个构建开始时，从本构建的 <code>build.xml</code> 里读取 GitLabWebHookCause 的 <code>after</code>（本次推送的最后一个提交 SHA），<code>git checkout -f &lt;sha&gt;</code> 强制对齐。于是<strong>打包人、分支、最新提交、merge 判断永远来自同一次推送</strong>。手动构建（无 webhook cause）不干预。</p>
+
+        <h3>5.2 merge 提交跳过</h3>
+
+        <p><code>git log -1 --pretty=%P HEAD</code> 父提交数 &gt;1 即 merge → 直接跳过编译、上传、通知（配合 allowEmptyArchive，构建安静地 SUCCESS）。业务规则："merge 不要打包"。</p>
+
+        <h3>5.3 同分支去重守护</h3>
+
+        <p><strong>需求</strong>：同分支多个 commit 一次 push 本来就只出一个包（webhook 的 after = 最后一个提交）；但<strong>短时间多次 push</strong> 会出多个重复包，业务上只要最后一个。</p>
+
+        <p><strong>实现</strong>（Windows 计划任务，SYSTEM 账户，每分钟）：</p>
+
+        <ol>
+            <li>用 <strong>scriptText Groovy 只读查询</strong>队列项的推送分支（坑：队列 REST API 的 cause 只有一个序列化不出来的空 <code>data:{}</code>，分支信息拿不到，只能走服务端脚本）；</li>
+            <li>队列里同分支多个待构建 → <strong>先</strong>取消旧的（<code>POST /queue/cancelItem?id=N</code>——注意不是 <code>/queue/item/N/cancel</code>，那个在本版本返回 404），只留最新；</li>
+            <li><strong>再</strong>判断：运行中的构建若被同分支新推送取代 → <code>POST /job/xxx/&lt;N&gt;/stop</code>（<strong>顺序不能反</strong>！先 stop 会让旧队列项立刻出队复活）；</li>
+            <li>Fail-safe：识别不出推送来源的构建/队列项一律不碰；跨分支互不影响；动作全记录审计日志。</li>
+        </ol>
+
+        <p><strong>边界</strong>：旧构建已进入上传的最后一分钟时新推送才到，旧包仍可能上传（约 1 分钟窗口，正常推送间隔都能拦住）。</p>
+
+        <h2>六、蒲公英上传：build 号的口径坑</h2>
+
+        <ul>
+            <li>上传接口 <code>POST https://www.pgyer.com/apiv2/app/upload</code>（<code>_api_key</code> + 文件 + 更新说明）；</li>
+            <li><strong>全局 build 号用 <code>buildBuildVersion</code></strong>（蒲公英后台"最新 build"页显示的数字）；<code>buildVersionNo</code> 只是应用内序号，<strong>不要用</strong>——历史上因此出过"后台显示 #42、群里发 #1814"的乌龙；</li>
+            <li>上传响应通常已含全部字段，缺 <code>buildShortcutUrl</code> 时轮询 <code>buildInfo</code> 接口补齐（最多 15 次 × 3 秒）。</li>
+        </ul>
+
+        <h2>七、企业微信消息通道</h2>
+
+        <h3>7.1 通道原理</h3>
+
+        <p>机器人是企业微信 AI 机器人，对外提供 MCP 接口（streamable-http），脚本直接 <code>POST tools/call</code>：<code>sessions_list</code> 发现群 chat_id，<code>send</code> 以 markdown 格式发消息。</p>
+
+        <h3>7.2 双群路由：配置文件即路由表</h3>
+
+        <table>
+            <tr><th>配置文件</th><th>作用</th><th>投递规则</th></tr>
+            <tr><td>wecom-main-group.txt</td><td>主打包群 chat_id</td><td>所有成功 + 失败消息</td></tr>
+            <tr><td>wecom-accept-group.txt</td><td>上线验收群 chat_id</td><td>仅需求整合分支 + 打包成功</td></tr>
+            <tr><td>wecom-dm-userid.txt</td><td>私聊兜底</td><td>无群会话时用</td></tr>
+        </table>
+
+        <p>固定 chat_id 的另一个好处：机器人加入多个群后，不会因为"取最近会话"而发错群。</p>
+
+        <h3>7.3 换群 / 关群</h3>
+
+        <ul>
+            <li><strong>换上线群</strong>：拉机器人进新群 → 在新群 <strong>@机器人</strong> 发一句话（让它记住该群）→ 查出新群 chat_id 替换配置文件即可；</li>
+            <li><strong>群解散</strong>：无需处理——发往已关闭群的消息会失败，但只记在构建日志里，不影响打包和主群消息；想彻底停掉就清空配置文件（空 = 自动跳过）；</li>
+            <li><strong>验收群纪律</strong>：除出包消息外不发任何东西。</li>
+        </ul>
+
+        <h3>7.4 消息格式（示例）</h3>
+
+        <pre><code>### ✅ APK 打包完成，已上传蒲公英，请尽快测试验证
+**打包人**: ×××　　**分支**: main_dev_xx　　**构建号**: #60
+&gt; **[debug] 测试通道** v1.x.x · [蒲公英build #18xx](下载页链接) · 41.2MB
+[点击下载](链接)  [二维码](链接)
+&gt; **[release] 正式通道** v1.x.x · [蒲公英build #18xx](下载页链接) · 38.9MB
+**最新提交**: `a1b2c3d` ×××：提交说明……
+
+### ❌ APK 打包失败
+**打包人**: ×××　　**分支**: ×××　　**构建号**: #N
+请相关同学检查代码，[点击查看构建日志](链接)</code></pre>
+
+        <p>字段来源的可靠性设计：</p>
+
+        <ul>
+            <li><strong>打包人</strong>：优先 webhook cause 的 userName；缺失时用提交作者；再缺失才标"手动构建"；</li>
+            <li><strong>分支</strong>：webhook cause 的 sourceBranch（权威，勿用 <code>GIT_BRANCH</code> 环境变量——交叉时它会指向别的分支）；</li>
+            <li><strong>最新提交</strong>：工作区 HEAD（经强制检出后 = 本次推送最后一个提交）。</li>
+        </ul>
+
+        <h2>八、运维 SOP：改 Jenkins 配置的三个坑</h2>
+
+        <p>通过 REST API 提交 config.xml，三件事缺一不可：</p>
+
+        <pre><code># 1. 取 crumb（xpath 方式的 crumbIssuer 已被禁用，必须用 JSON）
+curl -s -c cookies.txt -u &lt;user&gt;:&lt;pass&gt; -o crumb.json \
+     http://&lt;jenkins&gt;:8080/crumbIssuer/api/json
+# 2. 提交配置（必须带 charset，否则中文配置按 ISO-8859-1 解码 → 乱码写坏线上配置！）
+curl -s -b cookies.txt -u &lt;user&gt;:&lt;pass&gt; -H "Jenkins-Crumb:&lt;crumb&gt;" \
+     -H "Content-Type: text/xml; charset=utf-8" \
+     --data-binary @new-config.xml -X POST \
+     http://&lt;jenkins&gt;:8080/job/&lt;job&gt;/config.xml</code></pre>
+
+        <ul>
+            <li>config.xml 里 Jenkins 自己写的 <code>&lt;?xml version="1.1"?&gt;</code> <strong>改回 1.0</strong> 再提交，否则 HTTP 500；</li>
+            <li>提交前 XmlDocument 校验，UTF-8 无 BOM 保存；提交后<strong>重新拉取线上配置核对</strong>（尤其含中文的分支名）；</li>
+            <li><code>build.xml</code> 不走 HTTP（会 302），直接读盘，同样要 1.1→1.0 降级才能 XmlDocument 解析。</li>
+        </ul>
+
+        <h3>PowerShell 5.1 守则</h3>
+
+        <ul>
+            <li><strong>含中文的 .ps1 必须 UTF-8 带 BOM</strong>，否则按 ANSI 解析直接语法错误（本次开发反复踩中）；</li>
+            <li>新脚本尽量纯 ASCII，中文用 <code>[char]</code> 码拼接；</li>
+            <li>Git Bash 里调 PowerShell：<code>$</code> 和反斜杠会被吃掉，一律写脚本文件后 <code>-File</code> 执行，路径用正斜杠。</li>
+        </ul>
+
+        <h3>验证纪律</h3>
+
+        <ul>
+            <li><strong>严禁在生产任务上模拟 webhook 触发</strong>——与真实推送撞车会产生重复/串台构建（历史三起事故皆源于此）；</li>
+            <li>需要验证触发/队列行为时，<strong>建一次性探针任务</strong>（带同样触发器、只 sleep、不打包不通知），验证完删除；</li>
+            <li>模拟 payload 必须是完整 GitLab 结构（含 <code>project.path_with_namespace</code>、commit 的 title/timestamp/author 等），缺字段插件直接 500。</li>
+        </ul>
+
+        <h2>九、踩坑速查表</h2>
+
+        <table>
+            <tr><th>坑</th><th>症状</th><th>解法</th></tr>
+            <tr><td>GitLab 禁止内网 webhook</td><td>推代码无反应</td><td>实例级 allowlist 加 Jenkins 地址</td></tr>
+            <tr><td>config.xml 提交 500</td><td>HTTP 500</td><td>XML 声明 1.1 → 1.0</td></tr>
+            <tr><td>提交后中文分支乱码</td><td>main_dev_???</td><td>POST 必须带 charset=utf-8</td></tr>
+            <tr><td>crumb 接口 403</td><td>primitive XPath forbidden</td><td>改用 /crumbIssuer/api/json</td></tr>
+            <tr><td>队列 REST 拿不到推送分支</td><td>cause 的 data 为空</td><td>scriptText Groovy 服务端查询</td></tr>
+            <tr><td>队列取消 404</td><td>cancel 不生效</td><td>用 POST /queue/cancelItem?id=N</td></tr>
+            <tr><td>先 stop 后 cancel</td><td>旧队列项复活成新构建</td><td>先去重队列，再停运行中构建</td></tr>
+            <tr><td>无产物构建 FAILURE</td><td>merge 跳过被标红</td><td>ArtifactArchiver 勾 allowEmptyArchive</td></tr>
+            <tr><td>蒲公英 build 号错误</td><td>显示应用内序号</td><td>用 buildBuildVersion 字段</td></tr>
+            <tr><td>轮询引发老分支补打</td><td>蒲公英出现老版本</td><td>关闭 Poll SCM</td></tr>
+            <tr><td>中文 .ps1 语法错误</td><td>莫名解析失败</td><td>UTF-8 带 BOM 保存</td></tr>
+            <tr><td>双 push 交叉错乱</td><td>打包人/分支/提交对不上</td><td>强制检出推送提交</td></tr>
+        </table>
+
+        <h2>十、快速上手清单（接手的人照此走一遍）</h2>
+
+        <ol>
+            <li>推一条提交到任一需求分支 → 约 5 分钟内主群收到 ✅ 消息，蒲公英出现新 build，消息里打包人/分支/提交一致；</li>
+            <li>推一条需求整合分支 → 主群收到双包消息 + 上线验收群收到同款消息；</li>
+            <li>在 GitLab 上做一次普通 merge 到该分支 → Jenkins 构建显示 SUCCESS 但无消息（跳过）；</li>
+            <li>同一分支 1 分钟内连推两次 → 只出一个包（旧构建 ABORTED，见 dedup 日志）；</li>
+            <li>看一次历史失败构建 → 主群收到 ❌ 消息，验收群无消息。</li>
+        </ol>
+
+        <p>以上五条全过，说明体系各环节运转正常。</p>
+
+        <div class="article-end">
+            <span>Easin's Code Lab · <a href="easin.html" style="color:inherit;">作者：Easin</a></span>
+            <span><a href="easin.html">← 返回主页</a> · <a href="blog-harness-engineering.html">上一篇：Harness Engineering</a> · <a href="https://github.com/bayshier" target="_blank" rel="noopener">GitHub ↗</a></span>
+        </div>
+
+    </div>
+</body>
+
+</html>

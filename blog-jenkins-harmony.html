@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="股宇宙双端自动化打包实录：一条 Jenkins 流水线完成 Android 签名打包→蒲公英上传→鸿蒙签名打包→AppGallery Connect 发布→GitHub Pages 下载页更新。Playwright 无头登录解决蒲公英验证码，tkinter 弹窗让签名密码不进脚本不进日志。">
+    <meta name="theme-color" content="#0a0e16">
+    <title>一条流水线，两个系统 — Easin's Blog</title>
+    <link rel="shortcut icon" href="icon_logo.png" type="image/png">
+    <link rel="stylesheet" href="css/blog.css">
+</head>
+
+<body>
+    <div class="article-wrap">
+
+        <a class="back-home" href="easin.html">← 返回主页</a>
+
+        <div class="article-meta">
+            <span class="tag hot">Jenkins</span>
+            <span class="tag">CI/CD</span>
+            <span class="tag">HarmonyOS</span>
+            <span class="tag">Playwright</span>
+            <span class="tag">双端发布</span>
+        </div>
+
+        <h1 class="article-title">一条流水线，两个系统：股宇宙双端自动化打包实录（Android + HarmonyOS）</h1>
+        <div class="article-date">
+            2026.09 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a>
+        </div>
+
+        <blockquote>
+            <p>股宇宙 APP 有了鸿蒙版之后，打包从"一条命令"变成了"两套流程"——Android 签名、蒲公英上传、鸿蒙签名、AGC 发布、下载页更新，每一步都机械但都不能错。这篇记录我怎么把<strong>五个手工步骤压进一条 Jenkins 流水线</strong>：Playwright 无头浏览器过蒲公英的验证码，tkinter 弹窗让签名密码<strong>不进脚本、不进日志</strong>，一次提交双端齐发。</p>
+        </blockquote>
+
+        <h2>一、为什么要做双端流水线</h2>
+
+        <p>股宇宙现在有两个端：<strong>Android</strong>（Kotlin + Compose）和<strong>鸿蒙 HarmonyOS</strong>（ArkTS + ArkUI，DevEco Studio 构建）。在此之前，每次发版是这样的：</p>
+
+        <ul>
+            <li>Android：本地 Gradle 签名打包 → 手动传蒲公英 → 群里发短链；</li>
+            <li>鸿蒙：DevEco Studio 手动签名 → 手动传 AppGallery Connect（AGC）→ 手动改下载页；</li>
+            <li>下载页：手动更新 GitHub Pages 上的版本号。</li>
+        </ul>
+
+        <p>步骤多、依赖人、容易漏：忘改下载页版本号、传错通道、密码贴在聊天记录里……这些事故每一件都真实发生过。所以在打通了 <a href="blog-jenkins-notify.html">GitLab → Jenkins → 企业微信通知</a>之后，下一步自然是把<strong>打包发布本身</strong>也自动化——而且要一次覆盖两个系统。</p>
+
+        <h2>二、流水线总览</h2>
+
+        <p>现在的一条流水线长这样，全程无人值守：</p>
+
+        <pre><code>开发者 push（双端任一仓库）
+   │
+   ▼
+GitLab Webhook → Jenkins（Windows 打包机，有桌面环境）
+   │
+   ├─ ① Android 签名打包（Gradle assembleRelease）
+   │      └─ 签名密码：tkinter 弹窗人工输入（不落盘）
+   ├─ ② 上传蒲公英（pgyer API）
+   │      └─ 登录凭证：Playwright 无头浏览器预先换取
+   ├─ ③ 鸿蒙签名打包（hvigor → hap → 签名）
+   │      └─ .p12 / .p7b 签名材料同样弹窗解锁
+   ├─ ④ 上传 AppGallery Connect（AGC API）
+   └─ ⑤ 发布 GitHub Pages（更新扫码下载页版本）
+   │
+   ▼
+企业微信通知（成功/失败 + 二维码 + 双端下载地址）</code></pre>
+
+        <p>一次提交，两个系统的包同时就绪，下载页自动更新。下面按环节展开。</p>
+
+        <h2>三、Android 签名：密码不进脚本，也不进日志</h2>
+
+        <p>签名是打包里最敏感的一环。密码写 Jenkins 凭据库当然可以，但我们的打包机<strong>有桌面环境</strong>，于是选了个更"物理隔离"的方案——<strong>tkinter 弹窗</strong>：</p>
+
+        <ul>
+            <li>流水线跑到签名这一步，弹出一个小窗口，打包人<strong>手动输入证书密码</strong>；</li>
+            <li>密码只存在于那次构建的内存里，<strong>不写进脚本、不写进环境变量、不写进日志</strong>；</li>
+            <li>超时未输入则构建失败，避免流水线挂着等人。</li>
+        </ul>
+
+        <p>这个设计换来两个好处：密码<strong>轮换零成本</strong>（改密码不用改任何配置），泄漏面<strong>趋近于零</strong>（日志里翻不到、进程列表里看不到明文）。代价是每次构建要人守一下——对发版频率不高的我们来说，完全可接受。</p>
+
+        <blockquote>
+            <p>细节：弹窗脚本要处理<strong>无显示器会话</strong>下 tkinter 起不来的情况（Jenkins 服务方式启动时可能没有交互桌面），我们的打包机以"允许服务与桌面交互"方式运行 Jenkins agent，弹窗才能正常弹出。</p>
+        </blockquote>
+
+        <h2>四、上传蒲公英：Playwright 过验证码</h2>
+
+        <p>蒲公英的 API 上传需要用户凭证，而我们的账号启用了登录验证——直接拿 token 会遇到<strong>验证码拦截</strong>，curl/HTTP 客户端在这里全部失效。</p>
+
+        <p>解法是用 <strong>Playwright 无头浏览器</strong>模拟真实登录：</p>
+
+        <ol>
+            <li>流水线触发时，Playwright 启动无头 Chromium，打开蒲公英登录页；</li>
+            <li>遇到验证码环节，把验证码图片<strong>实时推送到企业微信</strong>，打包人直接在群里回复验证码；</li>
+            <li>登录成功后<strong>提取会话凭证</strong>交给上传环节使用，浏览器关闭。</li>
+        </ol>
+
+        <p>这个"验证码进群"的设计有点歪打正着：它把本来要打断开发者的安全验证，变成了一条群消息——<strong>验证码出现在你要收打包通知的同一个地方</strong>，心智负担反而更低。</p>
+
+        <h2>五、鸿蒙端：把 HarmonyOS 签名也压进流水线</h2>
+
+        <p>鸿蒙的构建比 Android 多一层：DevEco Studio 里点一下就能完成的签名，在命令行下是<strong>三份材料的组合</strong>——<code>.p12</code> 证书、<code>.cer</code> 公钥证书、<code>.p7b</code> Profile 文件，用签名工具对 <code>hap</code> 包签名。流水线化的关键动作：</p>
+
+        <ul>
+            <li><strong>hvigor 命令行构建</strong>出未签名的 hap；</li>
+            <li>签名材料放打包机固定目录，<strong>密码同样走 tkinter 弹窗</strong>（和 Android 同一套交互）；</li>
+            <li>签名产物走 <strong>AGC API 上传</strong>，提交审核/发布。</li>
+        </ul>
+
+        <p>做完之后回头看，鸿蒙端流水线化最大的收获不是省时间，而是<strong>签名一致性</strong>：本地手动签名容易出现"用了错的 Profile"这种事故，流水线只认固定路径的签名材料，从机制上杜绝了拿错证书的可能。</p>
+
+        <h2>六、发布到 GitHub Pages：下载页自动更新</h2>
+
+        <p>最后一环是<strong>扫码下载页</strong>（就是用户扫码进的那个页面）。流水线在上传成功后自动：</p>
+
+        <ol>
+            <li>写入本次双端的版本号、构建时间、蒲公英/AGC 链接；</li>
+            <li>推送更新到 GitHub Pages 仓库；</li>
+            <li>下载页二维码指向的地址<strong>永远是最新的包</strong>。</li>
+        </ol>
+
+        <p>"忘改下载页"这类事故从此从可能项里消失了——因为<strong>没有任何人工环节可以忘</strong>。</p>
+
+        <h2>七、踩坑清单</h2>
+
+        <table>
+            <tr><th>坑</th><th>现象</th><th>解法</th></tr>
+            <tr><td>Jenkins agent 无交互桌面</td><td>tkinter 报错 / 弹窗不出现</td><td>agent 以"允许服务与桌面交互"方式运行</td></tr>
+            <tr><td>蒲公英验证码</td><td>API 直传被拦截</td><td>Playwright 无头登录 + 验证码推企业微信</td></tr>
+            <tr><td>密码进日志</td><td>环境变量方式被打进构建日志</td><td>改为 tkinter 弹窗内存输入，日志脱敏兜底</td></tr>
+            <tr><td>鸿蒙签名材料混乱</td><td>调试/发布 Profile 用错</td><td>固定目录存放 + 流水线只读引用</td></tr>
+            <tr><td>AGC 上传 API 鉴权</td><td>token 有效期与构建时长冲突</td><td>上传前实时获取 token，不做长缓存</td></tr>
+            <tr><td>下载页缓存</td><td>更新后手机仍显示旧版本</td><td>页面资源带版本参数，强刷 CDN 缓存</td></tr>
+        </table>
+
+        <h2>八、下一步展望</h2>
+
+        <ul>
+            <li><strong>验证码自动化</strong>：目前蒲公英验证码靠人回消息，探索打码服务或官方 API 直连，把最后一个人工环节也去掉；</li>
+            <li><strong>iOS 端接入</strong>：流水线结构已预留第三条支线；</li>
+            <li><strong>失败自动回滚下载页</strong>：AGC 审核被拒时，下载页自动回退上一版本号；</li>
+            <li><strong>打包度量</strong>：把每次构建时长、包体积增量写入通知消息，体积异常膨胀第一时间暴露。</li>
+        </ul>
+
+        <h2>九、小结</h2>
+
+        <p>这条流水线做完，最大的体会是：<strong>自动化的价值不在"快"，而在"确定性"</strong>。手工五步，每步都简单，但串起来每次都有出错概率；流水线把它们变成同一次执行、同一套材料、同一个来源——<strong>发版从"凭仔细"变成了"凭机制"</strong>。双端齐发这件事，也从奢侈变成了日常。</p>
+
+        <div class="article-end">
+            <span>Easin's Code Lab · <a href="easin.html" style="color:inherit;">作者：Easin</a></span>
+            <span><a href="easin.html">← 返回主页</a> · <a href="blog-jenkins-notify.html">相关：Jenkins 打包通知体系</a> · <a href="https://github.com/bayshier" target="_blank" rel="noopener">GitHub ↗</a></span>
+        </div>
+
+    </div>
+</body>
+
+</html>

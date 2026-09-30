@@ -1,0 +1,421 @@
+/* ============================================================
+   财富在线 27周年庆 - 中国红简洁风
+   干净 · 大气 · 纯色
+   ============================================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --red: #c8161d;
+    --red-deep: #8b0e13;
+    --gold: #f0c75e;
+    --bg: #faf5ea;
+    --bg-card: #ffffff;
+    --text: #2b1810;
+    --text-dim: #7a6a5a;
+    --text-faint: #b0a090;
+    --line: #ead9c8;
+    --cyan: #1a6ec2;
+}
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                 "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- 顶部导航 ---------- */
+.an-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--red);
+    color: #fff;
+}
+
+.an-header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    height: 52px;
+}
+
+.an-brand .cn {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.an-brand .en {
+    font-size: 10px;
+    opacity: 0.7;
+    letter-spacing: 2px;
+    margin-left: 8px;
+}
+
+.an-back-btn {
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+/* ---------- 主容器 ---------- */
+.an-main { max-width: 900px; margin: 0 auto; }
+
+/* ---------- Hero：周年视频 ---------- */
+.an-hero {
+    position: relative;
+    background: var(--red-deep);
+}
+
+.an-hero-video {
+    width: 100%;
+    display: block;
+    max-height: 520px;
+    object-fit: cover;
+}
+
+/* 视频下方的品牌信息条 */
+.an-hero-bar {
+    background: var(--red);
+    color: #fff;
+    text-align: center;
+    padding: 20px 18px;
+}
+
+.an-hero-bar .cn {
+    font-size: 13px;
+    letter-spacing: 4px;
+    opacity: 0.85;
+}
+
+.an-hero-bar .num {
+    font-size: 28px;
+    font-weight: 900;
+    margin: 2px 0;
+}
+
+.an-hero-bar .num .th { font-size: 16px; opacity: 0.8; }
+
+.an-hero-bar .spirit {
+    font-size: 13px;
+    letter-spacing: 6px;
+    opacity: 0.9;
+}
+
+.an-hero-bar .spirit span { margin: 0 6px; }
+
+/* ---------- 区块 ---------- */
+.an-section { padding: 36px 18px; }
+
+.an-section-title {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.an-section-title h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--red);
+    letter-spacing: 3px;
+}
+
+.an-section-title p {
+    font-size: 12px;
+    color: var(--text-faint);
+    letter-spacing: 3px;
+    margin-top: 6px;
+}
+
+/* ---------- 数据墙 ---------- */
+.an-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.an-stat {
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 22px 14px;
+    text-align: center;
+}
+
+.an-stat .num {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--red);
+    line-height: 1;
+}
+
+.an-stat .num .unit {
+    font-size: 13px;
+    color: var(--text-dim);
+}
+
+.an-stat .label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 8px;
+}
+
+/* ---------- 时间轴 ---------- */
+.an-timeline {
+    position: relative;
+    padding-left: 24px;
+    margin-top: 4px;
+}
+
+.an-timeline::before {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: var(--line);
+}
+
+.an-tl-item {
+    position: relative;
+    margin-bottom: 22px;
+}
+
+.an-tl-item::before {
+    content: "";
+    position: absolute;
+    left: -24px;
+    top: 6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--red);
+}
+
+.an-tl-item .year {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--red);
+    margin-bottom: 2px;
+}
+
+.an-tl-item .title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.an-tl-item .desc {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.7;
+}
+
+/* ---------- 海报展示 ---------- */
+.an-poster {
+    text-align: center;
+}
+
+.an-poster img {
+    width: 100%;
+    max-width: 340px;
+    border-radius: 12px;
+}
+
+.an-poster .caption {
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-top: 10px;
+}
+
+/* ---------- 缩略图墙（办公掠影 / 旧时光 / 新篇章） ---------- */
+.an-office { text-align: center; }
+
+.an-office-thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+}
+
+.an-office-thumbs img {
+    width: 76px;
+    height: 76px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: zoom-in;
+    transition: transform 0.2s;
+}
+
+.an-office-thumbs img:hover { transform: scale(1.06); }
+
+.an-office-note {
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-top: 12px;
+}
+
+/* ---------- 我们的伙伴（吉祥物 + 产品） ---------- */
+.an-brand-card {
+    background: var(--bg-card);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.an-brand-item {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 22px 18px;
+}
+
+.an-brand-item + .an-brand-item { border-top: 1px solid var(--line); }
+
+.an-brand-item img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.an-brand-item h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.an-brand-item p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+}
+
+.an-brand-item .tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.an-brand-item .tags span {
+    font-size: 11px;
+    color: var(--red);
+    background: rgba(200, 22, 29, 0.08);
+    border-radius: 4px;
+    padding: 2px 10px;
+}
+
+/* ---------- 灯箱 ---------- */
+.an-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.92);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    cursor: zoom-out;
+}
+
+.an-lightbox.active { display: flex; }
+
+.an-lightbox img,
+.an-lightbox video {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 8px;
+}
+
+.an-lightbox-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    font-size: 32px;
+    color: #fff;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.an-lightbox-close:hover { opacity: 1; }
+
+/* ---------- CTA ---------- */
+.an-cta {
+    text-align: center;
+    padding: 36px 18px;
+}
+
+.an-cta-slogan {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--red);
+    letter-spacing: 3px;
+    margin-bottom: 6px;
+}
+
+.an-cta-sub {
+    font-size: 14px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    margin-bottom: 22px;
+}
+
+.an-cta-btn {
+    display: inline-block;
+    background: var(--cyan);
+    color: #fff;
+    padding: 14px 44px;
+    border-radius: 26px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-decoration: none;
+    box-shadow: 0 4px 16px rgba(26, 110, 194, 0.3);
+    transition: transform 0.2s;
+}
+
+.an-cta-btn:hover { transform: translateY(-2px); }
+
+/* ---------- 页脚 ---------- */
+.an-footer {
+    text-align: center;
+    padding: 28px 18px 34px;
+    font-size: 12px;
+    line-height: 1.9;
+    color: var(--text-faint);
+    border-top: 1px solid var(--line);
+}
+
+.an-footer .brand-line {
+    color: var(--red);
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.an-footer .author {
+    margin-top: 6px;
+    color: var(--text-dim);
+    font-weight: 600;
+}
+
+.an-footer .author::before { content: "✍  "; }
+
+/* ---------- 响应式 ---------- */
+@media (min-width: 600px) {
+    .an-stats { grid-template-columns: repeat(4, 1fr); }
+    .an-brand-item img { width: 120px; height: 120px; }
+}

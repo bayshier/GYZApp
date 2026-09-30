@@ -1,0 +1,119 @@
+[2026-08-04 15:57:37.354] [INFO   ] [JuggManagerCreator] Start Init Jugg by embedded_updated on /Users/radar/Downloads/gitlab127001/GYZApp
+[2026-08-04 15:57:37.581] [FINE   ] [JuggServer] init finished, version: 3.0.35-release, projectId: GYZApp, userName: Easin, requestToken: f01e0f29, serverUrl: http://sickworm.com:12305
+[2026-08-04 15:57:37.587] [FINE   ] [JuggServerChooser] isForce=true, update server.
+[2026-08-04 15:57:37.610] [FINE   ] [JuggServerChooser] Update server rules: [ServerRule(url=http://wormchen-any1.devcloud.woa.com:12305, checkReachableHost=wormchen-any1.devcloud.woa.com), ServerRule(url=http://sickworm.com:12305, checkReachableHost=null)]
+[2026-08-04 15:57:37.610] [FINE   ] [JuggServerChooser] Check server rule: ServerRule(url=http://wormchen-any1.devcloud.woa.com:12305, checkReachableHost=wormchen-any1.devcloud.woa.com)
+[2026-08-04 15:57:37.870] [INFO   ] [ConstRefEngine] ConstRefEngine io throttle enabled, fullScan=3000ms/50files, fileChange=500ms/200files, preCompile=0ms/1files, onDemand=0ms/1files
+[2026-08-04 15:57:37.931] [FINE   ] [JuggManager] job <Init Jugg> waiting for TaskRunnerManager lock, thread=ApplicationImpl pooled thread 11
+[2026-08-04 15:57:37.931] [FINE   ] [JuggManager] job <Init Jugg> acquired TaskRunnerManager lock, waitCost=0ms
+[2026-08-04 15:57:37.932] [FINE   ] [JuggManager] job <Init Jugg> start
+[2026-08-04 15:57:37.932] [FINE   ] [McpLocalServer] start: MCP Local Server started on port 12320
+[2026-08-04 15:57:37.932] [FINE   ] [AsDeployerCompat] IDE version: IdeVersion(name=Android Studio Quail 3 | 2026.1.3, type=AI, mainVersion=261.26222.65, fullVersion=261.26222.65.2613.15948027)
+[2026-08-04 15:57:37.932] [WARNING] [AsDeployerCompat] Bad! IDE version higher than IdeVersion(name=Android Studio Quail, type=AI, mainVersion=261.23567.138, fullVersion=261.23567.138), use this for compat, good luck.
+[2026-08-04 15:57:37.933] [FINE   ] [CustomConfigManager] Custom config changed from null to 0_1784790072845, reload it.
+[2026-08-04 15:57:37.936] [FINE   ] [CustomConfigManager] Load default custom config: ProjectCustomConfig(servers=null, buildFileList=[], buildFileRules=[], dontFilterIgnoredFileRules=[], moduleCustomConfigs=[], customCompilers=null, embeddedApksSearchRules=null)
+[2026-08-04 15:57:37.937] [FINE   ] [FileChangesHandler] updateBuildFileRules: [], doNotIgnoreModulePaths: []
+[2026-08-04 15:57:37.938] [FINE   ] [CustomCompilerManager] updateCustomCompilers null
+[2026-08-04 15:57:37.938] [FINE   ] [CustomCompilerManager] updateCustomCompilers with null config, exit.
+[2026-08-04 15:57:37.938] [FINE   ] [JuggServerChooser] Update server rules: [ServerRule(url=http://wormchen-any1.devcloud.woa.com:12305, checkReachableHost=wormchen-any1.devcloud.woa.com), ServerRule(url=http://sickworm.com:12305, checkReachableHost=null)]
+[2026-08-04 15:57:37.938] [FINE   ] [JuggServerChooser] Check server rule: ServerRule(url=http://wormchen-any1.devcloud.woa.com:12305, checkReachableHost=wormchen-any1.devcloud.woa.com)
+[2026-08-04 15:57:37.978] [FINE   ] [JuggManager] JuggConfigurationType currentList: []
+[2026-08-04 15:57:37.982] [FINE   ] [JuggManager] Suggest run configurations: []
+[2026-08-04 15:57:37.982] [FINE   ] [JuggManager] No suggest run configuration
+[2026-08-04 15:57:37.983] [FINE   ] [ProjectInfoReader] IDE version: IdeVersion(name=Android Studio Quail 3 | 2026.1.3, type=AI, mainVersion=261.26222.65, fullVersion=261.26222.65.2613.15948027)
+[2026-08-04 15:57:37.983] [FINE   ] [ProjectInfoReader] plugin info: Version: 3.0.35-release, Compile-Date: 2026-07-23 19:24:21, Compile-Timestamp: 1784805861931, 
+[2026-08-04 15:57:37.983] [FINE   ] [ProjectInfoReader] os.name: Mac OS X, os.version: 26.5.2
+[2026-08-04 15:57:37.983] [FINE   ] [ProjectInfoReader] Idea JVM version: [25, 0, 2]
+[2026-08-04 15:57:37.984] [FINE   ] [ProjectInfoReader] gradleDistributionUrl: [file not found]
+[2026-08-04 15:57:37.984] [FINE   ] [ProjectInfoReader] systemPath: /Users/radar/Library/Caches/Google/AndroidStudio2026.1.3
+[2026-08-04 15:57:37.984] [FINE   ] [ProjectInfoReader] device MIN API: 26
+[2026-08-04 15:57:37.984] [FINE   ] [ProjectInfoReader] printProjectInfo cost: 1 ms
+[2026-08-04 15:57:37.984] [FINE   ] [DeployHistoryManager] checkProjectDirChanged, historyProjectDir: /Users/radar/Downloads/gitlab127001/GYZApp, realProjectDir: /Users/radar/Downloads/gitlab127001/GYZApp
+[2026-08-04 15:57:37.985] [FINE   ] [DeployHistoryManager] Project dir is not changed, continue to recover from deploy history later
+[2026-08-04 15:57:37.985] [INFO   ] [JuggManager] Start jugg finished.
+[2026-08-04 15:57:37.986] [FINE   ] [JuggManager] Checking updates...
+[2026-08-04 15:57:37.987] [FINE   ] [JuggManager] job <Init Jugg> finished, cost 55ms
+[2026-08-04 15:57:37.988] [FINE   ] [JuggServerChooser] Server expired, update server.
+[2026-08-04 15:57:37.988] [FINE   ] [JuggServerChooser] Update server rules: [ServerRule(url=http://wormchen-any1.devcloud.woa.com:12305, checkReachableHost=wormchen-any1.devcloud.woa.com), ServerRule(url=http://sickworm.com:12305, checkReachableHost=null)]
+[2026-08-04 15:57:37.988] [FINE   ] [JuggServerChooser] Check server rule: ServerRule(url=http://wormchen-any1.devcloud.woa.com:12305, checkReachableHost=wormchen-any1.devcloud.woa.com)
+[2026-08-04 15:57:37.991] [FINE   ] [JuggManager] JuggDeploymentService.preInit, cost 5ms
+[2026-08-04 15:57:38.176] [FINE   ] [JuggServer] check update response: [200] {"latestVersion":"3.2.2-release","isNeedUpgrade":false,"downloadUrl":"https://jugg.sickworm.com/download_page","templateList":[],"notification":null,"customConfigJson":{"servers":null,"buildFileList":[],"buildFileRules":[],"dontFilterIgnoredFileRules":[],"moduleCustomConfigs":[],"customCompilers":null}}
+[2026-08-04 15:57:38.178] [FINE   ] [CheckUpdateHandler] Check update result: VersionData(latestVersion=3.2.2-release, isNeedUpgrade=false, downloadUrl=https://jugg.sickworm.com/download_page, templateList=[], notification=null, customConfigJson=ProjectCustomConfig(servers=null, buildFileList=[], buildFileRules=[], dontFilterIgnoredFileRules=[], moduleCustomConfigs=[], customCompilers=null, embeddedApksSearchRules=null))
+[2026-08-04 15:57:38.180] [FINE   ] [CustomConfigManager] No need to update default custom config.
+[2026-08-04 15:57:38.180] [FINE   ] [JuggHotUpdateDownloader] notifyHotUpdateIfNeeded false
+[2026-08-04 15:57:38.180] [FINE   ] [JuggHotUpdateDownloader] notifyInstallUpdateIfNeeded false
+[2026-08-04 15:57:38.386] [FINE   ] [JuggManager] job <Init project info> waiting for TaskRunnerManager lock, thread=ApplicationImpl pooled thread 6
+[2026-08-04 15:57:38.386] [FINE   ] [JuggManager] job <Init project info> acquired TaskRunnerManager lock, waitCost=0ms
+[2026-08-04 15:57:38.386] [FINE   ] [JuggManager] job <Init project info> start
+[2026-08-04 15:57:38.386] [FINE   ] [JuggManager] Start recover deploy context
+[2026-08-04 15:57:38.407] [FINE   ] [DeployHistoryManager] tryGetContextRecoverInfoFromDb recover feature is available
+[2026-08-04 15:57:38.408] [FINE   ] [DeployHistoryManager] getChangedFilesSinceLastFullCompiled isOnInit true
+[2026-08-04 15:57:38.409] [INFO   ] [DeployHistoryManager] Project has not been commit yet, fullCompileGitCommitHash is null, need full compile first.
+[2026-08-04 15:57:38.410] [FINE   ] [DeployHistoryManager] No compile context db found
+[2026-08-04 15:57:38.412] [FINE   ] [DeployHistoryManager] tryGetContextRecoverInfoFromDb, changedFiles: null, cost: 2ms; compileContextInfo: null, cost: 0ms; deployedFiles: null,  cost: 0ms.
+[2026-08-04 15:57:38.412] [FINE   ] [DeployHistoryManager] getChangedFilesSinceLastFullCompiled failed, return null
+[2026-08-04 15:57:38.412] [FINE   ] [JuggManager] Can not recover from deploy history, please run gradle compile first
+[2026-08-04 15:57:38.412] [FINE   ] [JuggManager] job <Init project info> finished, cost 26ms
+[2026-08-04 15:57:40.789] [FINE   ] [McpLocalServer] start: Server is already running
+[2026-08-04 15:57:42.656] [FINE   ] [JuggServerChooser] wormchen-any1.devcloud.woa.com is not reachable
+[2026-08-04 15:57:42.656] [FINE   ] [JuggServerChooser] Check server rule: ServerRule(url=http://sickworm.com:12305, checkReachableHost=null)
+[2026-08-04 15:57:42.656] [FINE   ] [JuggServerChooser] Choose server http://sickworm.com:12305 for no check condition.
+[2026-08-04 15:57:42.656] [FINE   ] [JuggServerChooser] No need update server, still use http://sickworm.com:12305
+[2026-08-04 15:57:42.950] [FINE   ] [JuggServerChooser] wormchen-any1.devcloud.woa.com is not reachable
+[2026-08-04 15:57:42.951] [FINE   ] [JuggServerChooser] Check server rule: ServerRule(url=http://sickworm.com:12305, checkReachableHost=null)
+[2026-08-04 15:57:42.951] [FINE   ] [JuggServerChooser] Choose server http://sickworm.com:12305 for no check condition.
+[2026-08-04 15:57:42.951] [FINE   ] [JuggServerChooser] No need update server, still use http://sickworm.com:12305
+[2026-08-04 15:57:42.990] [FINE   ] [JuggServerChooser] wormchen-any1.devcloud.woa.com is not reachable
+[2026-08-04 15:57:42.990] [FINE   ] [JuggServerChooser] Check server rule: ServerRule(url=http://sickworm.com:12305, checkReachableHost=null)
+[2026-08-04 15:57:42.990] [FINE   ] [JuggServerChooser] Choose server http://sickworm.com:12305 for no check condition.
+[2026-08-04 15:57:42.990] [FINE   ] [JuggServerChooser] No need update server, still use http://sickworm.com:12305
+[2026-08-04 15:57:43.066] [FINE   ] [JuggServer] report Init Jugg response: [200] 2361858
+[2026-08-04 15:57:43.127] [FINE   ] [JuggServer] report Init project info response: [200] 2361859
+[2026-08-04 15:57:43.178] [FINE   ] [McpLocalServer] start: Server is already running
+[2026-08-04 15:57:46.084] [FINE   ] [McpLocalServer] start: Server is already running
+[2026-08-04 15:57:47.995] [FINE   ] [JuggManager] background job <Auto update Jugg CLI> start
+[2026-08-04 15:57:48.001] [INFO   ] [JuggCliAutoUpdater] Jugg CLI bin dir not found, skipping auto-update
+[2026-08-04 15:57:48.002] [FINE   ] [JuggManager] background job <Auto update Jugg CLI> finished, cost 7ms
+[2026-08-04 15:57:50.960] [FINE   ] [McpLocalServer] start: Server is already running
+[2026-08-04 15:57:59.534] [FINE   ] [McpLocalServer] start: Server is already running
+[2026-08-04 15:59:37.995] [FINE   ] [JuggManager] background job <Cleanup mcp fetch cache> start
+[2026-08-04 15:59:38.003] [FINE   ] [McpFetchCleaner] skip mcp_fetch cleanup because /Users/radar/Downloads/gitlab127001/GYZApp/build/jugg/mcp_fetch does not exist
+[2026-08-04 15:59:38.011] [FINE   ] [JuggManager] background job <Cleanup mcp fetch cache> finished, cost 15ms
+[2026-08-04 15:59:38.183] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate
+[2026-08-04 15:59:38.230] [FINE   ] [JuggServer] checkHotUpdate response: [200] {"isNeedUpdate":false,"isNeedReinstall":false,"targetVersion":"","updateInfo":null,"jarFileInfos":[]}
+[2026-08-04 15:59:38.239] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 15:59:41.056] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 15:59:43.312] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 15:59:46.190] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 15:59:51.101] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 15:59:59.658] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 16:05:37.298] [FINE   ] [McpLocalServer] start: Server is already running
+[2026-08-04 16:07:37.490] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 19:59:38.338] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate
+[2026-08-04 19:59:38.394] [FINE   ] [JuggServer] checkHotUpdate response: [200] {"isNeedUpdate":false,"isNeedReinstall":false,"targetVersion":"","updateInfo":null,"jarFileInfos":[]}
+[2026-08-04 19:59:38.416] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 19:59:46.320] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 19:59:51.360] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 19:59:59.821] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 20:07:37.653] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 23:59:38.432] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate
+[2026-08-04 23:59:38.486] [FINE   ] [JuggServer] checkHotUpdate response: [200] {"isNeedUpdate":false,"isNeedReinstall":false,"targetVersion":"","updateInfo":null,"jarFileInfos":[]}
+[2026-08-04 23:59:38.504] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 23:59:46.370] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 23:59:51.410] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-04 23:59:59.866] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-05 00:07:37.684] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-05 03:59:38.487] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate
+[2026-08-05 03:59:38.541] [FINE   ] [JuggServer] checkHotUpdate response: [200] {"isNeedUpdate":false,"isNeedReinstall":false,"targetVersion":"","updateInfo":null,"jarFileInfos":[]}
+[2026-08-05 03:59:38.577] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-05 03:59:46.394] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-05 03:59:51.426] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-05 03:59:59.883] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-05 04:07:37.740] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-05 07:59:38.415] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate
+[2026-08-05 07:59:38.450] [FINE   ] [JuggServer] checkHotUpdate response: [200] {"isNeedUpdate":false,"isNeedReinstall":false,"targetVersion":"","updateInfo":null,"jarFileInfos":[]}
+[2026-08-05 07:59:38.464] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-05 07:59:46.259] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-05 07:59:51.298] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-05 07:59:59.754] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)
+[2026-08-05 08:07:37.627] [FINE   ] [JuggHotUpdateDownloader] checkHotUpdate: HotUpdateData(isNeedUpdate=false, targetVersion=, updateInfo=null, jarFileInfos=[], isNeedReinstall=false)

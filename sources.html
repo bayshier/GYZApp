@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>资料来源与致谢 - 股宇宙知识库</title>
+<style>
+:root {
+    --brand: #1a2b4a; --brand-light: #2d4a7a; --accent: #d4a644;
+    --up: #e74c3c; --down: #2ecc71; --bg: #f5f6f8; --card: #ffffff;
+    --text: #2c3e50; --text-light: #7f8c8d; --border: #e8eaed;
+    --shadow: 0 2px 12px rgba(26, 43, 74, 0.08); --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.75; padding-bottom: 60px;
+}
+header {
+    background: var(--brand); color: #fff; padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10;
+}
+header a { color: #fff; text-decoration: none; font-size: 14px; opacity: .9; }
+header .logo { font-weight: 800; font-size: 15px; letter-spacing: .5px; }
+main { max-width: 760px; margin: 0 auto; padding: 26px 18px; }
+h1 { font-size: 23px; color: var(--brand); margin-bottom: 6px; }
+.sub { font-size: 13px; color: var(--text-light); margin-bottom: 24px; }
+h2 {
+    font-size: 16px; color: var(--brand); margin: 26px 0 12px;
+    display: flex; align-items: center; gap: 8px;
+}
+h2::before { content: ""; width: 4px; height: 16px; background: var(--accent); border-radius: 2px; }
+.card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 14px;
+}
+.src { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px dashed var(--border); }
+.src:last-child { border-bottom: none; padding-bottom: 0; }
+.src-icon { font-size: 20px; line-height: 1.4; }
+.src-name { font-size: 14.5px; font-weight: 700; }
+.src-name a { color: var(--brand); text-decoration: none; border-bottom: 1px solid rgba(212, 166, 68, .5); }
+.src-name a:hover { color: var(--brand-light); }
+.src-desc { font-size: 12.5px; color: var(--text-light); margin-top: 2px; }
+.src-use { display: inline-block; font-size: 11px; font-weight: 700; color: #5a4310;
+    background: rgba(212, 166, 68, .18); border-radius: 9px; padding: 1px 8px; margin-top: 5px; }
+.disclaim {
+    background: #fdf9ef; border: 1px solid rgba(212, 166, 68, .35); border-radius: var(--radius);
+    padding: 18px 20px; font-size: 13px; color: #6b5b2e; line-height: 1.9;
+}
+.disclaim b { color: #5a4310; }
+.mail { color: var(--brand); font-weight: 700; }
+footer { text-align: center; font-size: 12px; color: var(--text-light); margin-top: 34px; }
+footer a { color: inherit; }
+</style>
+</head>
+<body>
+<header>
+    <span class="logo">🌌 股宇宙 · 资料来源公示</span>
+    <a href="knowledge.html">← 返回知识库</a>
+</header>
+<main>
+    <h1>🙏 资料来源与致谢</h1>
+    <p class="sub">本站全部数据与学习资料均整理自网络公开资源与开源社区，特此公示致谢。如有疑问或侵权诉求，请通过页底邮箱联系。</p>
+
+    <h2>证券从业考试学习系统 · 题库来源</h2>
+    <div class="card">
+        <div class="src">
+            <span class="src-icon">🐙</span>
+            <div>
+                <div class="src-name"><a href="https://github.com/zfabc/zhengquantest" target="_blank" rel="noopener noreferrer">zfabc / zhengquantest</a></div>
+                <div class="src-desc">证券从业资格考试题库系统（开源社区项目）</div>
+                <span class="src-use">2019-2024 历年真题（网友回忆版）· 章节练习</span>
+            </div>
+        </div>
+        <div class="src">
+            <span class="src-icon">🐙</span>
+            <div>
+                <div class="src-name"><a href="https://github.com/kawu98661-cell/card-batch-demo" target="_blank" rel="noopener noreferrer">kawu98661-cell / card-batch-demo</a></div>
+                <div class="src-desc">证券从业资格考试 AI 题库系统（外滩大会 2026 开源项目）</div>
+                <span class="src-use">章节分类补充题库 · 速记卡片</span>
+            </div>
+        </div>
+        <div class="src">
+            <span class="src-icon">📚</span>
+            <div>
+                <div class="src-name">公开流通的备考教材与讲义（PDF）</div>
+                <div class="src-desc">《证券市场基本法律法规》《金融市场基础知识》两科的知识点学习内容，整理自公开渠道流通的备考资料</div>
+                <span class="src-use">知识点学习 · 24 篇文档 · 重点高亮标注</span>
+            </div>
+        </div>
+        <div class="src">
+            <span class="src-icon">🏛️</span>
+            <div>
+                <div class="src-name"><a href="https://www.sac.net.cn/" target="_blank" rel="noopener noreferrer">中国证券业协会（官网）</a></div>
+                <div class="src-desc">考试官方机构——报名、大纲与公告请以协会官网为准</div>
+                <span class="src-use">权威信息核对照</span>
+            </div>
+        </div>
+        <div class="src">
+            <span class="src-icon">🧪</span>
+            <div>
+                <div class="src-name">[2026.09] 乐橙网 提分密训卷 / 章节母题 / 模拟密卷（2026新大纲）</div>
+                <div class="src-desc">网络流通的考前辅导交互页面（题目+答案+解析），版权归原作者所有，本站仅作学习整理</div>
+                <span class="src-use">提分密训板块 · 5 套 · 646 题（单选/多选/判断/案例）· 仅供内部学习</span>
+            </div>
+        </div>
+        <div class="src">
+            <span class="src-icon">🔮</span>
+            <div>
+                <div class="src-name">[2026.09] LC 终极押题（考前辅导材料）</div>
+                <div class="src-desc">网络流通的考前押题资料（题目+答案+解析合并版），版权归原作者所有，本站仅作学习整理</div>
+                <span class="src-use">9月押题板块 · 6 套 · 710 题（单选/多选/判断/案例）· 仅供内部学习</span>
+            </div>
+        </div>
+    </div>
+
+    <h2>AI 教学知识 · 课件来源</h2>
+    <div class="card">
+        <div class="src">
+            <span class="src-icon">🎓</span>
+            <div>
+                <div class="src-name"><a href="https://github.com/datawhalechina/llm-cookbook" target="_blank" rel="noopener noreferrer">datawhalechina / llm-cookbook</a></div>
+                <div class="src-desc">吴恩达大模型系列课程中文版（Datawhale 开源组织）</div>
+                <span class="src-use">AI 教学 · 必修一至必修四 · 30 章全文收录</span>
+            </div>
+        </div>
+        <div class="src">
+            <span class="src-icon">🚀</span>
+            <div>
+                <div class="src-name"><a href="https://github.com/datawhalechina/llm-universe" target="_blank" rel="noopener noreferrer">datawhalechina / llm-universe</a></div>
+                <div class="src-desc">面向开发者的大模型应用开发教程（Datawhale 开源组织）</div>
+                <span class="src-use">AI 教学 · 原理→RAG→实战 · 7 章全文收录</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="src">
+            <span class="src-icon">🧩</span>
+            <div>
+                <div class="src-name"><a href="https://gitee.com/dev-edu/agent-core" target="_blank" rel="noopener noreferrer">dev-edu / agent-core（Gitee）</a></div>
+                <div class="src-desc">《Agent 的底层逻辑》开源课件与配套工程代码</div>
+                <span class="src-use">AI 教学 · 全量版 35 讲（课件 + 每章工程代码快照 + 附件，薄章节含编者增补并已标注）</span>
+            </div>
+        </div>
+    </div>
+
+    <h2>股宇宙 APP 下载渠道</h2>
+    <div class="card">
+        <div class="src">
+            <span class="src-icon">📲</span>
+            <div>
+                <div class="src-name"><a href="https://sj.qq.com/appdetail/com.stock.universe" target="_blank" rel="noopener noreferrer">应用宝 · 股宇宙</a></div>
+                <div class="src-desc">安卓用户可通过应用宝官方渠道下载</div>
+            </div>
+        </div>
+    </div>
+
+    <h2>免责声明</h2>
+    <div class="disclaim">
+        <b>① 数据来源：</b>本站所有题目、知识点与资料均整理自上述网络公开数据与开源仓库，仅供个人学习交流使用，不作任何商业用途。<br>
+        <b>② 权利归属：</b>相关内容的著作权归原作者及原提供方所有。本站以学习为目的进行收集整理，若权利人认为内容不适宜展示，请邮件联系，我们将第一时间核实并删除。<br>
+        <b>③ 不构成投资建议：</b>证券类学习内容仅用于从业资格考试备考，不构成任何投资建议。股市有风险，投资需谨慎。<br>
+        <b>④ 内容准确性：</b>真题为网友回忆版，答案与解析仅供参考，请以中国证券业协会官方公布为准。<br>
+        <b>⑤ 题目勘误：</b>全部题库整理自网络公开教学数据，经人工核对但不保证所有题目的准确性与时效性；部分多选题、组合题的答案以解析为准。如发现错误，欢迎通过下方邮箱反馈，我们将及时修正。<br>
+        <b>⑥ 内部使用声明：</b>本站内容仅供公司内部学习交流使用，请勿外传——不得将链接、题目、知识点分享至公开网络或社群，不得用于任何商业用途；因擅自外传引发的任何问题由传播者自行承担。<br>
+        <b>⑦ 联系方式：</b>意见反馈与侵权处理请联系 <span class="mail">lanchenyixin@cncfzx.com</span>（或使用学习系统内的 💬 反馈入口）。
+    </div>
+
+    <footer>
+        <p>股宇宙知识库 · <a href="knowledge.html">返回首页</a> · <a href="quiz.html">学习系统</a> · <a href="easin.html">作者主页</a></p>
+    </footer>
+</main>
+</body>
+</html>

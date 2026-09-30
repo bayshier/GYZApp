@@ -1,0 +1,234 @@
+/* ============================================================
+   自考学习系统 — 增量样式（基础组件复用 quiz.css）
+   ============================================================ */
+
+/* ---------- 考期倒计时横幅 ---------- */
+.zk-countdown {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    background: linear-gradient(125deg, #16264a 0%, #2d4a7a 55%, #16264a 100%);
+    border-radius: 14px; padding: 18px 22px; margin-bottom: 18px;
+    color: #fff; box-shadow: 0 6px 22px rgba(26, 43, 74, 0.3);
+    position: relative; overflow: hidden;
+}
+.zk-countdown::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent), #f3d98b, var(--accent), transparent);
+    background-size: 200% 100%;
+    animation: goldFlow 3s linear infinite;
+}
+.zkc-label { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; }
+.zkc-days {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 40px; font-weight: 800; color: #f3d98b; line-height: 1;
+    text-shadow: 0 0 20px rgba(243, 217, 139, 0.4);
+}
+.zkc-days i { font-style: normal; font-size: 14px; color: rgba(255,255,255,.7); margin-left: 4px; }
+.zkc-date { font-size: 12px; color: rgba(255,255,255,.65); }
+.zkc-next {
+    margin-left: auto; text-align: right;
+    font-size: 12.5px; color: rgba(255,255,255,.85); line-height: 1.7;
+}
+.zkc-next b { color: #f3d98b; }
+
+/* ---------- 进度概览 ---------- */
+.zk-overview {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    margin-bottom: 22px;
+}
+.zko {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: var(--shadow);
+    padding: 14px 10px 12px; text-align: center;
+}
+.zko b {
+    display: block; font-family: "SF Mono", Menlo, monospace;
+    font-size: 24px; font-weight: 800; color: var(--brand);
+}
+.zko.ok b { color: var(--down); }
+.zko i { display: block; font-style: normal; font-size: 11px; color: var(--text-light); margin-top: 3px; letter-spacing: 0.08em; }
+@media (max-width: 560px) { .zk-overview { grid-template-columns: repeat(2, 1fr); } }
+
+/* ---------- 考期分组 ---------- */
+.zk-term { margin-bottom: 26px; }
+.zk-term-head {
+    display: flex; align-items: baseline; gap: 10px;
+    margin-bottom: 12px; padding-left: 10px;
+    border-left: 3px solid var(--accent);
+}
+.zk-term-head h3 { font-size: 16px; color: var(--brand); font-weight: 800; }
+.zk-term-head span { font-size: 12px; color: var(--text-light); }
+.zk-term-head .zk-term-date { margin-left: auto; font-size: 12px; color: var(--accent); font-weight: 600; }
+
+.zk-courses { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 680px) { .zk-courses { grid-template-columns: 1fr 1fr; } }
+
+.zk-course {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: var(--shadow);
+    padding: 13px 16px; text-decoration: none; color: var(--text);
+    transition: border-color .2s, transform .2s, box-shadow .2s;
+    cursor: pointer;
+}
+.zk-course:hover {
+    border-color: var(--accent); transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(26, 43, 74, 0.14);
+}
+.zkc-code {
+    font-family: "SF Mono", Menlo, monospace; font-size: 11px;
+    color: var(--brand-light); background: var(--bg);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 2px 7px; flex-shrink: 0;
+}
+.zkc-info { flex: 1; min-width: 0; }
+.zkc-name { font-size: 14.5px; font-weight: 600; }
+.zkc-sub { font-size: 11.5px; color: var(--text-light); margin-top: 1px; }
+.zkc-status { flex-shrink: 0; font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 12px; }
+.st-passed { color: #fff; background: var(--down); }
+.st-planned { color: #06220f; background: var(--accent); }
+.st-todo { color: var(--text-light); background: var(--bg); border: 1px solid var(--border); }
+.st-practice { color: #fff; background: var(--brand-light); }
+.st-thesis { color: #fff; background: #8e44ad; }
+.zkc-score {
+    font-family: "SF Mono", Menlo, monospace; font-size: 13px;
+    color: var(--down); font-weight: 700; flex-shrink: 0;
+}
+
+/* ---------- 课程详情页 ---------- */
+.zk-course-head {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 22px 24px; margin-bottom: 16px;
+}
+.zkc-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.zkc-title-row h2 { font-size: 21px; color: var(--brand); }
+.zkc-meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; font-size: 12.5px; color: var(--text-light); }
+.zkc-meta b { color: var(--text); }
+.zk-course-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+/* ---------- 状态徽章小号 ---------- */
+.zk-mini-note {
+    font-size: 12px; color: var(--text-light); line-height: 1.7;
+    padding: 10px 14px; background: #fdf9ef;
+    border: 1px solid rgba(212, 166, 68, 0.3); border-radius: 8px;
+}
+
+/* ---------- 高频考点速记（问题+答案直出） ---------- */
+.zk-memo-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.zm-chip {
+    font-size: 12px; font-weight: 600; padding: 5px 13px; border-radius: 14px;
+    background: var(--card); color: var(--text-light);
+    border: 1px solid var(--border); cursor: pointer; transition: all .15s;
+}
+.zm-chip.on { color: #fff; background: var(--brand); border-color: var(--brand); }
+.zm-chip.zm-s3.on { background: var(--up); border-color: var(--up); }
+
+.zk-memo-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 22px 26px; margin-bottom: 14px;
+}
+.zm-tags { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+.zm-star { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 10px; letter-spacing: .5px; }
+.zm-star.s3 { color: #fff; background: var(--up); }
+.zm-star.s2 { color: #5a4310; background: var(--accent); }
+.zm-star.s1 { color: var(--text-light); background: var(--bg); border: 1px solid var(--border); }
+.zm-tag { font-size: 11.5px; color: var(--brand); font-weight: 700; background: rgba(26, 43, 74, .07); padding: 3px 10px; border-radius: 10px; }
+
+.zm-q { font-size: 17.5px; font-weight: 700; color: var(--text); line-height: 1.6; }
+.zm-sep {
+    font-size: 11px; font-weight: 800; color: var(--accent); letter-spacing: 4px;
+    margin: 12px 0 8px; display: flex; align-items: center; gap: 10px;
+}
+.zm-sep::before, .zm-sep::after { content: ""; height: 1px; flex: 1; background: rgba(212, 166, 68, .35); }
+.zm-a { font-size: 15px; color: var(--text); line-height: 1.9; white-space: pre-wrap; }
+
+/* 关键词高亮：金色底 + 深蓝字 */
+.zm-k {
+    font-style: normal; font-weight: 700; color: var(--brand);
+    background: linear-gradient(transparent 62%, rgba(212, 166, 68, .38) 62%);
+    border-radius: 2px; padding: 0 1px;
+}
+
+/* 首页概览金色块 */
+.zko.gold b { color: var(--accent); }
+.btn.gold {
+    color: #5a4310; background: linear-gradient(135deg, #f0d48a, var(--accent));
+    border: none;
+}
+
+/* ============================================================
+   考试安排（202610 真实开考表）
+   ============================================================ */
+.zk-sched {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: var(--shadow); padding: 16px 18px; margin-bottom: 18px;
+}
+.zk-sched-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.zk-sched-head h3 { font-size: 16px; color: var(--brand); }
+.zk-sched-head span { font-size: 11px; color: var(--text-light); }
+.zk-sess {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 10px 0; border-top: 1px dashed var(--border);
+}
+.zk-sess:first-of-type { border-top: none; }
+.zk-sess-time { flex-shrink: 0; width: 118px; }
+.zk-sess-time b { display: block; font-size: 15px; color: var(--brand); }
+.zk-sess-time i { font-style: normal; font-size: 11.5px; color: var(--text-light); }
+.zk-sess-items { flex: 1; display: flex; flex-wrap: wrap; gap: 6px; }
+.zk-sitem {
+    font-size: 12px; color: var(--text-light);
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 4px 10px;
+}
+.zk-sitem.pick {
+    color: #fff; font-weight: 700;
+    background: linear-gradient(135deg, var(--brand-light), var(--brand));
+    border-color: var(--brand);
+}
+.zk-sitem.conflict {
+    color: #b3541e; background: #fdf3ea; border: 1px dashed #e2a06b;
+}
+.zk-sitem.done { opacity: .55; text-decoration: line-through; }
+.zk-sched-note {
+    margin-top: 10px; font-size: 11.5px; color: var(--text-light);
+    line-height: 1.8; background: var(--bg); border-radius: 10px; padding: 8px 12px;
+}
+@media (max-width: 560px) {
+    .zk-sess { flex-direction: column; gap: 6px; }
+    .zk-sess-time { width: auto; }
+}
+
+/* 周日下车：不可考时段 & 顺延课程 */
+.zk-sess.off .zk-sess-time b { color: var(--text-light); }
+.zk-sess.off .zk-sess-time em {
+    display: block; font-style: normal; font-size: 11px; font-weight: 700;
+    color: #b3541e; margin-top: 3px;
+}
+.zk-sitem.dim { opacity: .5; }
+.zk-sitem.defer {
+    color: #8a6d1a; background: #fdf8e9; border: 1px dashed #d4c06a;
+}
+
+/* ============================================================
+   笔记阅读页：吸顶工具栏（返回 + 章节筛选固定不随滚动）
+   ============================================================ */
+.zk-reader-bar {
+    position: sticky; top: 56px; z-index: 90;
+    background: var(--bg);
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; margin-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+.zk-toc-sel {
+    flex: 1; min-width: 0;
+    font-family: inherit; font-size: 13px; color: var(--text);
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.zk-toc-sel:focus { outline: none; border-color: var(--accent); }
+@media (max-width: 560px) {
+    .zk-reader-bar { top: 52px; gap: 8px; }
+    .zk-reader-bar .btn { padding: 7px 10px; font-size: 12px; }
+}
