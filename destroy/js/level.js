@@ -35,22 +35,40 @@
     /* 标题字号表：h1 最大，h6 最小 */
     var H_SIZE = { H1: 26, H2: 21, H3: 18, H4: 16, H5: 15, H6: 14 };
 
+    /* ---------- 文本垃圾检测 ----------
+     * 代理偶尔会把 HTML 传坏（标签截断/转义），DOMParser 的容错
+     * 会把 <style>/<script> 的内容当成正文文本，排出一整面 CSS 墙。
+     * 这里用启发式识别这类「伪文本」：带标签碎片，或花括号密集
+     * 且开头不是人类语言段落。误杀率远低于丑陋度收益。 */
+    function junkText(s) {
+        if (!s || s.length < 60) return false;
+        if (/<style|<\/style|<script|<\/script|<div|<\/div|<html/i.test(s)) return true;
+        var braces = (s.match(/[{}]/g) || []).length;
+        if (braces >= 6 && /[:;]/.test(s) && !/[一-鿿]/.test(s.slice(0, 40))) return true;
+        return false;
+    }
+
     /* ---------- 工具：把外链图片经代理取回 ----------
      * 不能直接 <img> 画到画布上——外部图片会「污染」画布，
      * 之后 getImageData 读像素会直接抛安全异常，破坏系统就废了。
-     * 所以图片也走 CORS 代理取回 blob 再解码，画布保持干净。 */
+     * 所以图片也走 CORS 代理取回 blob 再解码，画布保持干净。
+     * 单图 8 秒超时：一张卡死的图不能拖死整个关卡构建 */
     function loadViaProxy(src) {
         var proxies = [
-            function (u) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); },
-            function (u) { return 'https://corsproxy.io/?url=' + encodeURIComponent(u); }
+            function (u) { return 'https://api.cors.lol/?url=' + encodeURIComponent(u); },
+            function (u) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); }
         ];
         var i = 0;
         function attempt() {
             if (i >= proxies.length) return Promise.reject(new Error('图片全部失败'));
-            return fetch(proxies[i](src), { mode: 'cors' })
-                .then(function (r) { if (!r.ok) throw 0; return r.blob(); })
-                .then(function (b) { return createImageBitmap(b); })
-                .catch(function () { i++; return attempt(); });
+            var done = fetch(proxies[i](src), { mode: 'cors' }).then(function (r) {
+                if (!r.ok) throw 0;
+                return r.blob();
+            }).then(function (b) { return createImageBitmap(b); });
+            var killer = new Promise(function (_, reject) {
+                setTimeout(function () { reject(new Error('图片超时')); }, 8000);
+            });
+            return Promise.race([done, killer]).catch(function (e) { i++; return attempt(); });
         }
         return attempt();
     }
@@ -93,6 +111,7 @@
     Builder.prototype.drawText = function (text, size, color, bold, isLink) {
         text = (text || '').replace(/\s+/g, ' ').trim();
         if (!text) return 0;
+        if (junkText(text)) return 0;                // CSS/JS 伪文本墙：拒画
         var ctx = this.ctx;
         /* 画笔状态封装成函数：ensure 扩容画布会重置全部画笔状态，
            扩容后必须重设字号，否则文字会变成默认 10px */
@@ -210,7 +229,9 @@
         if (this.full() || this.truncated) return;
         if (node.nodeType === 3) {                       // 文本节点：裸文字（少见于现代页面）
             var t = node.textContent;
-            if (t && t.trim().length > 2 && !/^\s+$/.test(t)) this.drawText(t, 11, INK_FADE, false, inLink);
+            if (t && !/^\s+$/.test(t) && t.trim().length > 2 && !junkText(t)) {
+                this.drawText(t, 11, INK_FADE, false, inLink);
+            }
             return;
         }
         if (node.nodeType !== 1) return;
@@ -309,6 +330,22 @@
         var doc = new DOMParser().parseFromString(html, 'text/html');
         var b = new Builder();
         b.title = (doc.title || url || '未知网页').slice(0, 40);
+
+        /* 防御：某些代理会转义/传坏 HTML，导致 <style>/<div> 变成
+           正文文本。探针发现标签碎片时，先反转义重解析一次；
+           仍坏也无妨——junkText 过滤器会在绘制层兜底 */
+        var probe = (doc.body ? doc.body.textContent : '').slice(0, 3000);
+        if (/&lt;|<style|<div|<\/html/i.test(probe)) {
+            var unescaped = html
+                .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+                .replace(/&amp;/g, '&');
+            var doc2 = new DOMParser().parseFromString(unescaped, 'text/html');
+            if (doc2.body && doc2.body.textContent.length > 100) {
+                doc = doc2;
+                b.title = (doc.title || url || '未知网页').slice(0, 40);
+            }
+        }
 
         onStep('解析 DOM，规划像素排版…');
         /* 去掉所有图片标签的懒加载属性干扰，交给 walk 统一处理 */
