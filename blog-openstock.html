@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="行情要订阅费、资讯散落十个 App、AI 功能各管各的——OpenStock 把实时行情、TradingView K线、跨平台市场情绪和 Gemini 新闻摘要装进了一个开源项目。汉化与自部署实录。">
+    <meta name="theme-color" content="#0a0e16">
+    <title>行情、资讯、AI 摘要，一个开源平台全包了：OpenStock 汉化与自部署 — Easin's Blog</title>
+    <link rel="shortcut icon" href="icon_logo.png" type="image/png">
+    <link rel="icon" href="icon_logo.png" type="image/png">
+    <link rel="stylesheet" href="css/blog.css">
+</head>
+
+<body>
+    <div class="article-wrap">
+
+        <a class="back-home" href="easin.html">← 返回主页</a>
+
+        <div class="article-meta">
+            <span class="tag hot">开源</span>
+            <span class="tag">Next.js</span>
+            <span class="tag">行情平台</span>
+            <span class="tag">自部署</span>
+        </div>
+
+        <h1 class="article-title">行情、资讯、AI 摘要，一个开源平台全包了：OpenStock 汉化与自部署</h1>
+        <div class="article-date">
+            2026.10 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a>
+        </div>
+
+        <blockquote>
+            <p>行情平台要订阅费，资讯散落在十个 App 里，AI 功能各管各的——OpenStock 把这三件事装进了一个开源项目：实时行情 + TradingView K线、跨平台市场情绪聚合、Gemini 生成新闻摘要发到你邮箱。免费、开源（AGPL-3.0）、一台机器就能自部署。</p>
+        </blockquote>
+
+        <p>职业原因（安卓投资工具方向），我对"行情类产品怎么做"一直有职业性的好奇。市面上的路径基本两条：要么是券商/财经媒体的重客户端，功能全但闭源、处处订阅墙；要么是 GitHub 上的开源 watchlist 小玩具，一个搜索框加一张表，离"能日常用"差得远。</p>
+
+        <p>前两天刷到 <a href="https://github.com/Open-Dev-Society/OpenStock" target="_blank" rel="noopener">OpenStock</a>（Open Dev Society 出品），第一反应是"又一个 watchlist"，点进去发现判断错了：<strong>13,000+ 人在用</strong>，行情、资讯、AI 摘要、邮件推送做成了完整闭环。把它的代码翻了一遍之后，顺手做了一个中文版：<a href="https://github.com/bayshier/OpenStock-CN" target="_blank" rel="noopener">bayshier/OpenStock-CN</a>。这篇文章把值得说的功能和我看到的实现细节一起写掉。</p>
+
+        <figure>
+            <img src="image/openstock-dashboard.png" alt="OpenStock 仪表盘截图" class="wide">
+            <figcaption>OpenStock 仪表盘：热图、行情、要闻一屏打尽（截图来自项目官方 README）</figcaption>
+        </figure>
+
+        <h2>① 实时行情：TradingView 全家桶 + Finnhub 数据</h2>
+
+        <p>行情展示部分 OpenStock 直接采用了 <strong>TradingView 的嵌入式组件</strong>——这是我认为它最聪明的决定。自研 K线图是个巨坑（我写过<a href="blog-kline-vision.html">K线渲染器</a>，深有体会），而 TradingView 组件把 symbol info、蜡烛图、高级图、Baseline、技术指标这些专业功能全部白送，还自带多语言。</p>
+
+        <p>数据层用 <strong>Finnhub API</strong>：股票搜索、公司资料、财务数据、市场新闻。个股页里 TradingView 的公司概览和财务组件直接吃 Finnhub 的数据，链路很短。全局搜索做了防抖，空闲时展示热门股票，<strong>Cmd/Ctrl + K</strong> 随时唤起——这个交互细节在金融产品里相当少见。</p>
+
+        <h2>② 情绪聚合：Reddit、X、财经新闻、Polymarket 一个页面看完</h2>
+
+        <p>这是 OpenStock 最打动我的部分。散户的日常是：Reddit 看讨论 → 切到 X 刷情绪 → 再开一个财经网站看新闻 → 想看市场押注还要开 Polymarket。<strong>OpenStock 把这四个信息源聚合进了个股详情页</strong>，作为可选的跨源情绪洞察（sentiment insights）——一只股票的"基本面之外"发生了什么，一个页面看完。</p>
+
+        <p>行情之外还有市场全局：热图（heatmap）、实时报价、要闻（top stories），开盘前扫一眼就够了。</p>
+
+        <h2>③ Watchlist + Gemini：AI 读完资讯写摘要发你邮箱</h2>
+
+        <p>第三块是自动化。自建 Watchlist 存 MongoDB（每个用户每只股票唯一），然后是 AI 部分：</p>
+
+        <ul>
+            <li><strong>AI 个性化欢迎邮件</strong>：注册后 Gemini（通过 Inngest 触发）根据你的目标生成一封欢迎邮件；</li>
+            <li><strong>定期新闻摘要邮件</strong>：cron 定时任务聚合资讯，Gemini 生成摘要，经 Nodemailer（Gmail 通道）发送——不用开 App，行情世界的"上周发生了什么"自动躺进邮箱。</li>
+        </ul>
+
+        <p>这里的技术选型值得点个赞：AI 推理和定时任务交给 <strong>Inngest</strong>（事件驱动 + cron），邮件走 <strong>Nodemailer</strong>。把"AI 生成"这种慢操作放进任务队列而不是请求链路里，主线程就不会被拖死——很多玩具项目死在这一步。</p>
+
+        <h2>技术栈一览</h2>
+
+        <pre><code>框架      Next.js 15 (App Router) + React 19 + TypeScript
+UI        Tailwind CSS v4 + shadcn/ui + Radix UI（默认深色主题）
+认证      Better Auth（邮箱/密码）+ MongoDB Adapter
+数据      MongoDB + Mongoose；行情来自 Finnhub
+图表      TradingView 嵌入式组件
+自动化    Inngest（事件/cron/Gemini 推理）+ Nodemailer
+部署      Docker Compose 或 Vercel</code></pre>
+
+        <p>整套技术栈非常"当下"：React 19 + Tailwind v4 + shadcn/ui，想学现代全栈开发的话，这个仓库本身就是一份高质量的参考实现——项目结构、中间件保护路由、环境变量管理都做得规规矩矩。</p>
+
+        <h2>自部署：两种姿势</h2>
+
+        <p>README 提供了两条部署路径：</p>
+
+        <ul>
+            <li><strong>Docker Compose</strong>：<code>docker-compose.yml</code> 一把梭，适合挂在自家 NAS / VPS 上；</li>
+            <li><strong>Vercel</strong>：官方配置了 <code>vercel.json</code>，fork 之后填好环境变量（Finnhub key、MongoDB 连接串、Gemini key、Gmail 凭据）直接部署。</li>
+        </ul>
+
+        <p>需要自己申请的只有数据源和 AI 的 API key：Finnhub（免费档够用）、MongoDB Atlas（免费集群）、Gemini API key。整个过程不需要付任何订阅费。</p>
+
+        <h2>汉化：bayshier/OpenStock-CN</h2>
+
+        <p>原项目没有 i18n 机制，界面文案硬编码在 60 多个 TSX 文件里。我把全部用户可见的界面文案翻译成了简体中文——导航、仪表盘、个股页、Watchlist、营销页、错误提示，连同 README 一起：</p>
+
+        <div class="repo-cards">
+            <a class="repo-card" href="https://github.com/bayshier/OpenStock-CN" target="_blank" rel="noopener">
+                <div class="repo-name">bayshier/OpenStock-CN</div>
+                <div class="repo-desc">OpenStock 简体中文汉化版（AGPL-3.0）</div>
+            </a>
+            <a class="repo-card" href="https://github.com/Open-Dev-Society/OpenStock" target="_blank" rel="noopener">
+                <div class="repo-name">Open-Dev-Society/OpenStock</div>
+                <div class="repo-desc">上游原项目（13,000+ 用户，AGPL-3.0）</div>
+            </a>
+        </div>
+
+        <p>AGPL-3.0 的要求很明确：修改后 redistribution 必须同协议开源并署名原作者——汉化版仓库保留了原 LICENSE 与出处说明。想自己部署中文版的，clone 下来按上面的部署路径走就行。</p>
+
+        <p>照例声明：项目社区维护、不是券商，行情数据可能按数据源规则有延迟，<strong>不构成投资建议</strong>。</p>
+
+        <div class="article-end">
+            <span>Easin's Code Lab · <a href="easin.html" style="color:inherit;">作者：Easin</a></span>
+            <span><a href="easin.html">← 返回主页</a> · <a href="blog-kline-vision.html">上一篇：AI 读了读它的K线</a> · <a href="https://github.com/bayshier" target="_blank" rel="noopener">GitHub ↗</a></span>
+        </div>
+
+    </div>
+</body>
+
+</html>
