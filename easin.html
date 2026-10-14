@@ -10,6 +10,7 @@
     <link rel="shortcut icon" href="icon_logo.png" type="image/png">
     <link rel="icon" href="icon_logo.png" type="image/png">
     <link rel="stylesheet" href="css/easin.css?v=20260914">
+    <link rel="stylesheet" href="assets/transitions/ui-generation.css">
 </head>
 
 <body>
@@ -579,6 +580,28 @@
                 }
             }, { passive: true });
         }
+    })();
+    </script>
+
+    <!-- UI Generation 过渡（transitions.dev by Jakub Antalík）：
+         页面载入时 Résumé / Works 区块以"线框→轮廓→内容长成"登场。
+         零依赖运行时，prefers-reduced-motion 自动降级为淡入。 -->
+    <script type="module">
+    (function () {
+        'use strict';
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const play = async () => {
+            try {
+                const { generate } = await import('./assets/transitions/ui-generation.js');
+                await document.fonts.ready;
+                for (const [sel, done] of [['#resume', 'Résumé ready'], ['#works', 'Works ready']]) {
+                    const el = document.querySelector(sel);
+                    if (el) await generate(el, { mode: 'skeleton', done }).finished;
+                }
+            } catch (e) { /* 过渡是锦上添花：任何失败都安静回退到原样式 */ }
+        };
+        if (document.readyState === 'complete') play();
+        else window.addEventListener('load', play);
     })();
     </script>
 </body>
