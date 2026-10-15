@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Agent 的代码理解基建系列：从满仓库 grep 到问索引。Repowise 实测 + Harness 五组件 + 我的三个月工具链演进。">
+    <meta name="theme-color" content="#0a0e16">
+    <title>Agent 的代码理解基建（一）：别让 AI 花你的 token 重新发现你的代码库 — Easin's Blog</title>
+    <link rel="shortcut icon" href="icon_logo.png" type="image/png">
+    <link rel="icon" href="icon_logo.png" type="image/png">
+    <link rel="stylesheet" href="css/blog.css">
+</head>
+
+<body>
+    <div class="article-wrap">
+
+        <a class="back-home" href="easin.html">← 返回主页</a>
+
+        <div class="article-meta">
+            <span class="tag hot">Agent 基建</span>
+            <span class="tag">系列 · 一</span>
+            <span class="tag">Repowise</span>
+            <span class="tag">Kotlin</span>
+        </div>
+
+        <h1 class="article-title">Agent 的代码理解基建（一）：别让 AI 花你的 token 重新发现你的代码库</h1>
+        <div class="article-date">
+            2026.10 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a> · 全系列 3 篇 · 篇幅约 8 分钟
+        </div>
+
+        <blockquote>
+            <p>"让 AI 读得懂你的仓库，比给它换个更大的模型实在。"——这句话我用两个仓库、一台没有 GPU 的 MacBook 验证过了。</p>
+        </blockquote>
+
+        <h2>一个所有 AI 编程用户都见过的场面</h2>
+
+        <p>让 Claude Code 改一处半年前写的老代码，它的开场永远是：<em>"我先看看项目结构"</em>——然后 ls、grep、cat 一路翻下去，输出里全是"我再看看这个文件"。每一步都在烧 token，每一分钟都在等它重新发现你早就知道的事。</p>
+
+        <p>这不是模型的错。模型每次会话都是失忆的，<strong>它对代码库的全部理解都要现场重建</strong>。重建的成本，就是你账单上那行"上下文 token"。</p>
+
+        <p>这个系列讲我做的事：把"现场重建"变成"提前索引 + 随手可查"。第一篇从一个让我立刻装上的开源项目说起。</p>
+
+        <h2>Repowise：索引一次，AI 查得到</h2>
+
+        <p><a href="https://github.com/repowise-dev/repowise" target="_blank" rel="noopener">Repowise</a>（7.6k★，今年 3 月建仓）做的事一句话说完：<strong>在你本机把代码结构、调用图、Git 历史、测试、文档提前索引好，通过 MCP 暴露给 AI</strong>。官方在 Django 的 43 个 issue 上做过配对测试——同样的活，agent 输出量少 31.6%。</p>
+
+        <p>最打动我的不是省 token，是这句：<strong>图、风险、健康度、死代码全部是确定性计算，一次大模型调用都没有，不用配任何 API key。</strong>装完就能用，代码不出门。</p>
+
+        <h3>三分钟跑起来</h3>
+
+        <pre><code>uv tool install repowise
+cd /path/to/你的仓库
+repowise init --yes --no-prose    # 建索引，无 key
+repowise serve                    # 本地仪表盘 + MCP server</code></pre>
+
+        <p><code>init</code> 连 Claude Code 的 MCP 配置都自动写好（<code>.repowise/mcp.json</code>）。四个马上有用的命令：<code>health</code>（53 个检测器的健康分）、<code>dead-code</code>（死代码）、<code>ask</code>（带引用的仓库问答）、<code>context</code>（改一个文件前看"分诊卡"：谁调用它、历史 churn）。</p>
+
+        <h2>拿自己的仓库实测</h2>
+
+        <p>我拿两个自己的 Kotlin 仓库开了刀（v0.56.0，Apple Silicon 本机）：</p>
+
+        <table>
+            <tr><th>仓库</th><th>健康分</th><th>发现</th></tr>
+            <tr><td><a href="https://github.com/bayshier/t1-replay" target="_blank" rel="noopener">t1-replay</a>（7 文件）</td><td><strong>9.97/10</strong></td><td>全文件 excellent；TradingEngine.kt 圈复杂度 7，是全仓最"重"的逻辑——符合事实</td></tr>
+            <tr><td><a href="https://github.com/bayshier/kline-vision" target="_blank" rel="noopener">kline-vision</a>（8 文件）</td><td><strong>9.82/10</strong></td><td>Worst 正确锁定 ChartRenderer.kt（手绘 Java2D 渲染器）；死代码检测给出 1 条 40% 置信的保守误报</td></tr>
+        </table>
+
+        <p>那条误报值得展开：<code>VisionTools.kt</code> 是 MCP 工具入口，靠运行时注册被调用，静态调用图到不了它，于是被标成"no importers"。但工具自己只给了 <strong>40% 置信 + "Ready? ✗"</strong>——判断权留给人。<strong>这个"知道自己不确定"的设计，比一个自信的误报高级得多。</strong></p>
+
+        <h3>诚实部门：Kotlin 用户要注意</h3>
+
+        <p>官方 0.976–0.995 的调用图精度是 <strong>Go 和 TypeScript</strong> 的基准；Kotlin 走的是通用分析路线。结论：<strong>把它当辅助信号，别当真理</strong>。对我这个用途（改老代码前看影响面、健康分进 CI）完全够。</p>
+
+        <h2>为什么说这是"基建"，而不是又一个工具</h2>
+
+        <p>因为我已经写过它的反面。上个月做 <a href="https://github.com/bayshier/harness-engineering" target="_blank" rel="noopener">harness-engineering</a> 时，我给 Agent 运行时定了五个组件：OODA 循环、沙箱接缝、自进化技能、任务 DAG、预算护栏。当时漏了一层——<strong>Agent 的"知识获取"方式</strong>。grep 是物理扫描，RAG 是语义近似，而索引是<strong>预先算好的确定性事实</strong>：调用图对着编译器校验过（官方数据 0.976–0.995），健康分由 53 个检测器算出，死代码带着置信度。</p>
+
+        <p>三层对比：</p>
+
+        <table>
+            <tr><th>方式</th><th>成本</th><th>确定性</th><th>适合</th></tr>
+            <tr><td>grep + 读文件</td><td>每次会话现场重建，token 大户</td><td>高（所见即所得）</td><td>小仓库、一次性任务</td></tr>
+            <tr><td>RAG / 嵌入检索</td><td>索引一次 + 每次查询</td><td>近似（语义相似≠真的相关）</td><td>文档、非结构化文本</td></tr>
+            <tr><td><strong>结构化索引</strong></td><td><strong>索引一次</strong>，查询几乎免费</td><td><strong>确定性计算 + 置信度标注</strong></td><td>代码这种有严格结构的东西</td></tr>
+        </table>
+
+        <p>代码是有编译器和解释器背书的严格结构——<strong>对结构化数据用确定性工具，把 LLM 留给它真正擅长的事</strong>。这也是 Repowise 自己的设计哲学，我举双手赞成。</p>
+
+        <h2>接入我的工作流</h2>
+
+        <pre><code>// .repowise/mcp.json（init 自动生成）
+{ "mcpServers": { "repowise": {
+      "command": "repowise",
+      "args": ["mcp", "/绝对路径/仓库", "--transport", "stdio"] } } }</code></pre>
+
+        <p>我的日常变化：</p>
+
+        <ul>
+            <li><strong>改 kline 系列仓库前</strong>：<code>repowise health</code> 看分 → <code>context 文件</code> 看影响面 → 再开工</li>
+            <li><strong>提交后</strong>：<code>repowise update</code> 刷新索引</li>
+            <li><strong>健康分进 CI</strong>：零依赖命令，分数掉了就是代码在腐化</li>
+        </ul>
+
+        <p>完整中文指南（含 AGPL 合规说明）我放在了 <a href="https://github.com/bayshier/repowise-zh" target="_blank" rel="noopener">bayshier/repowise-zh</a>。</p>
+
+        <h2>下一篇预告</h2>
+
+        <p>索引解决了"AI 知道代码长什么样"，但没解决"AI 知道自己该守什么规矩"。第二篇讲我用 Kotlin 写的 Agent Harness 五组件——以及实测翻车的 macOS 26 沙箱讣告。第三篇讲让技能自己进化时，git 为什么是所有人都缺的那块拼图。</p>
+
+        <p>（系列索引：<a href="https://github.com/bayshier/repowise-zh" target="_blank" rel="noopener">repowise-zh 指南</a> · <a href="https://github.com/bayshier/harness-engineering" target="_blank" rel="noopener">harness-engineering</a> · <a href="https://github.com/bayshier/android-agent-skills" target="_blank" rel="noopener">android-agent-skills</a>）</p>
+
+        <div class="article-end">
+            <span>Easin's Code Lab</span>
+            <span><a href="easin.html">← 返回主页</a> · <a href="blog-harness-engineering.html">上一篇：Harness Engineering</a> · <a href="https://github.com/bayshier" target="_blank" rel="noopener">GitHub ↗</a></span>
+        </div>
+
+    </div>
+</body>
+
+</html>
