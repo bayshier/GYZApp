@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Agent 的代码理解基建（三）：技能自进化——观察、本能、eval 门控与 git 版本化。为什么 24 万★项目都缺 git 这块拼图，以及 Karpathy 的警告：过度过滤会杀死自我改进。">
+    <meta name="theme-color" content="#0a0e16">
+    <title>Agent 的代码理解基建（三）：技能自进化，git 是那块缺失的拼图 — Easin's Blog</title>
+    <link rel="shortcut icon" href="icon_logo.png" type="image/png">
+    <link rel="icon" href="icon_logo.png" type="image/png">
+    <link rel="stylesheet" href="css/blog.css">
+</head>
+
+<body>
+    <div class="article-wrap">
+
+        <a class="back-home" href="easin.html">← 返回主页</a>
+
+        <div class="article-meta">
+            <span class="tag hot">Agent 基建</span>
+            <span class="tag">系列 · 三</span>
+            <span class="tag">自进化</span>
+            <span class="tag">Git</span>
+        </div>
+
+        <h1 class="article-title">Agent 的代码理解基建（三）：技能自进化，git 是那块缺失的拼图</h1>
+        <div class="article-date">
+            2026.10 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a> · 系列第 3/3 篇 · 篇幅约 10 分钟
+        </div>
+
+        <blockquote>
+            <p>24 万★的技能框架不会版本管理自己的技能；91★的小仓库反而会。这块拼图不是技术问题，是观念问题：技能是代码，代码就应有 commit、diff 和 revert。</p>
+        </blockquote>
+
+        <p>系列前两篇解决了"AI 知道代码长什么样"（索引层）和"AI 的循环怎么跑"（Harness 层）。最终篇解决最玄也最实用的问题：<strong>Agent 会不会越用越聪明？</strong>答案拆成三半：观察怎么触发、进化怎么门控、以及——被所有人忽略的——<strong>进化之后怎么管理</strong>。</p>
+
+        <h2>现状：三个蓝本，各缺一角</h2>
+
+        <p>我把生态里最认真的三个自进化实现拆开看了：</p>
+
+        <table>
+            <tr><th>项目</th><th>观察触发</th><th>进化门控</th><th>版本化</th></tr>
+            <tr><td><strong>ECC</strong>（24 万★）</td><td>per-tool hooks 捕捉纠正/报错/重复流程</td><td>置信度 0.3–0.9，带证据计数</td><td>❌ 只有导入导出</td></tr>
+            <tr><td><strong>skill-creator</strong>（官方）</td><td>eval 失败驱动重写</td><td>盲测 A/B（独立评分 Agent）</td><td>快照目录，手动回滚</td></tr>
+            <tr><td><strong>seed</strong>（91★）</td><td>任务完成时自省</td><td>无（纯自觉）</td><td>✅ <strong>git，自我目录即仓库</strong></td></tr>
+        </table>
+
+        <p>注意最后一列。<strong>24 万★的项目没有版本管理自己的技能；91★的小仓库反而有。</strong>技能被改坏了怎么办？ECC 的答案是导出再导入——这等于说"备份靠复制粘贴"。</p>
+
+        <h2>机制拆解：从观察到本能到技能</h2>
+
+        <p>以 ECC 的 continuous-learning-v2 为例（文档写得极认真，值得通读）：</p>
+
+        <ol>
+            <li><strong>观察层：</strong>PreToolUse/PostToolUse hooks 把每次提示与工具调用记进按项目隔离的 <code>observations.jsonl</code>。v2 特意从"会话结束时捕获"改成"每次工具调用捕获"，理由是可靠性——hook 触发即捕获，没有遗忘窗口</li>
+            <li><strong>蒸馏层：</strong>一个<strong>后台小模型</strong>（不占主上下文）做模式识别：用户纠正 → 本能，报错解决 → 本能，重复流程 → 本能。每条本能是 YAML：触发条件 + 指导 + 置信度 + 证据（"observed 5 instances"）</li>
+            <li><strong>进化层：</strong><code>/evolve</code> 把相关本能聚合成完整技能；<code>/prune</code> 清理过期候选；项目内验证过的本能可以在第二个项目再现时<strong>晋升全局</strong>（防跨项目污染）</li>
+        </ol>
+
+        <p>我的 Kotlin 实现（<a href="https://github.com/bayshier/harness-engineering" target="_blank" rel="noopener">harness-engineering</a> 的 <code>EvolutionLoop</code>）遵循同样的三段，外加最后一步它没有的——</p>
+
+        <pre><code>loop.observe(Observation("counter", "read-only 下执行写入",
+    "写入被拒；应改用 workspace-write 或先落盘工件", failure = true))
+loop.observe(Observation("counter", "read-only 下执行写入",
+    "再次被拒；确认规则", failure = true))
+
+val instinct = loop.distill().first()      // 置信度随证据成长：0.45 → 0.6 成熟线
+val head = loop.evolve(instinct, gate, baselineReport)
+// head = "2ed1d67" —— 一次真实的 git commit
+
+store.rollback(head)                        // 回滚 = git revert，回到 22262a6</code></pre>
+
+        <h2>为什么门控必须存在，又不能太狠</h2>
+
+        <p>skill-creator 的门控设计最讲究：<strong>候选技能必须和基线盲测对比</strong>——两个独立 Agent 分别带着"有技能"和"无技能"跑同样任务，第三个评分 Agent 打分，赢了才发布。这把"写技能"从玄学变成了可度量的实验。</p>
+
+        <p>但门控的强度有个反直觉的最优值。Lilian Weng 的文章引用了 autoresearch 上的一个发现（94.6k★）：<strong>给生成的技能加严格的测试过滤，反而降低了下游任务表现</strong>。过度过滤自我改进 = 把"敢试错"的进化优势阉割掉了。</p>
+
+        <blockquote>
+            <p>门控的正确姿势：轻验证（能跑、格式对、比基线不差）+ git 兜底（坏了随时回滚）。让 git 当安全网，而不是让过滤器当守门员。</p>
+        </blockquote>
+
+        <h2>一个真实的小进化案例</h2>
+
+        <p>这个案例就发生在写 harness 仓库的当晚。demo 运行时，ScriptedWorker 在 READ_ONLY 沙箱里尝试写工件，被拒绝两次——同一情况重复出现。放进观察循环：</p>
+
+        <ul>
+            <li>两次观察 → 本能置信度 0.3 + 0.15×2 = <strong>0.6，过成熟线</strong></li>
+            <li>候选技能生成："当再次出现 read-only 下执行写入时：改用 workspace-write 或先落盘工件"</li>
+            <li>eval 门控通过（指导里包含正确的处置词）→ <strong>git commit 2ed1d67</strong></li>
+            <li>演示回滚 → 回到 <code>22262a6</code></li>
+        </ul>
+
+        <p>你可以在仓库 demo 里亲手复现这四步。它小，但完整：<strong>失败 → 本能 → 门控 → 提交 → 可回滚。</strong></p>
+
+        <h2>系列终章：三层基建拼图</h2>
+
+        <p>三篇连起来，是我眼中"Agent 代码理解基建"的最小完备集：</p>
+
+        <ol>
+            <li><strong>索引层</strong>（Repowise）：确定性事实的获取——调用图、健康分、影响面。零 LLM 调用</li>
+            <li><strong>运行时层</strong>（Harness）：确定性规则的执行——预算、沙箱、DAG、hooks。失败方式被设计过</li>
+            <li><strong>进化层</strong>（Skills + git）：确定性的成长——观察可审计、发布有门控、退路是 revert</li>
+        </ol>
+
+        <p>共同点一眼可见：<strong>把"智能"用在刀刃上，把其余一切交给确定性工程。</strong>LLM 负责决定做什么，基建负责保证做得对、做得起、做得回。这不是对 AI 的不信任，恰恰是让它可持续信任的前提。</p>
+
+        <p>全部实现：<a href="https://github.com/bayshier/harness-engineering" target="_blank" rel="noopener">harness-engineering</a> · <a href="https://github.com/bayshier/repowise-zh" target="_blank" rel="noopener">repowise-zh（中文指南）</a> · <a href="https://github.com/bayshier/android-agent-skills" target="_blank" rel="noopener">android-agent-skills</a> · <a href="https://github.com/bayshier/awesome-agent-harnesses" target="_blank" rel="noopener">awesome-agent-harnesses（生态全景）</a></p>
+
+        <div class="article-end">
+            <span>Easin's Code Lab · 系列完</span>
+            <span><a href="blog-agent-harness.html">← 上一篇：Harness 五组件</a> · <a href="blog-agent-codeintel.html">系列首篇</a> · <a href="easin.html">返回主页</a></span>
+        </div>
+
+    </div>
+</body>
+
+</html>

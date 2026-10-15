@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Agent 的代码理解基建（二）：Agent Harness 五组件参考实现——OODA 循环与预算护栏、fail-closed 沙箱接缝、任务 DAG。附 macOS 26 sandbox-exec 讣告（实测）。">
+    <meta name="theme-color" content="#0a0e16">
+    <title>Agent 的代码理解基建（二）：Harness 五组件与一场沙箱葬礼 — Easin's Blog</title>
+    <link rel="shortcut icon" href="icon_logo.png" type="image/png">
+    <link rel="icon" href="icon_logo.png" type="image/png">
+    <link rel="stylesheet" href="css/blog.css">
+</head>
+
+<body>
+    <div class="article-wrap">
+
+        <a class="back-home" href="easin.html">← 返回主页</a>
+
+        <div class="article-meta">
+            <span class="tag hot">Agent 基建</span>
+            <span class="tag">系列 · 二</span>
+            <span class="tag">Harness</span>
+            <span class="tag">Sandbox</span>
+            <span class="tag">Kotlin</span>
+        </div>
+
+        <h1 class="article-title">Agent 的代码理解基建（二）：Harness 五组件与一场沙箱葬礼</h1>
+        <div class="article-date">
+            2026.10 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a> · 系列第 2/3 篇 · 篇幅约 12 分钟
+        </div>
+
+        <blockquote>
+            <p>沙箱运行器解析了配置、却对每一次真实执行直接崩溃。我们没有绕过它，而是给它办了一场葬礼——把"运行器不可用"做成产品的 fail-closed 行为。这就是 harness 工程：可靠性不是承诺出来的，是设计出失败方式。</p>
+        </blockquote>
+
+        <p><a href="blog-agent-codeintel.html">上一篇</a>讲了索引层：让 AI 不再花 token 重新发现代码库。这一篇往上一层——<strong>运行时（Harness）</strong>：Agent 循环本身需要什么骨架，才能从"能跑的 demo"变成"敢上生产的系统"。</p>
+
+        <h2>先对齐术语：framework ≠ harness</h2>
+
+        <p>这个学科有自己的谱系。2025 年 11 月 Anthropic 写《Effective Harnesses for Long-Running Agents》；<strong>2026 年 2 月 OpenAI 的 Ryan Lopopolo 发表《Harness Engineering: Leveraging Codex in an Agent-First World》</strong>，把术语钉死：harness 是<strong>连接模型与工具、权限、环境的那一层</strong>，用 OODA 循环（Observe / Orient / Decide / Act）刻画。之后 Lilian Weng、martinfowler.com、Addy Osmani 相继跟进——半年内它从圈内黑话变成正式学科。</p>
+
+        <p>一句话区分：<strong>framework 是你 import 的代码结构；harness 是围绕一个模型循环的生产运行时产品。</strong>头部格局：DSH 189k★（TS）、LangGraph 40k★（Python）、autoresearch 94k★（Python）、microsandbox（Rust）、E2B/Daytona（Go）——<strong>Kotlin 空无一人</strong>。于是我用 Kotlin 写了一个五组件参考实现：<a href="https://github.com/bayshier/harness-engineering" target="_blank" rel="noopener">bayshier/harness-engineering</a>，离线可跑、9/9 单测。下面按组件讲，每个都带实测证据。</p>
+
+        <h2>组件一：OODA 循环 + token 预算，从第一行代码就开始</h2>
+
+        <p>OpenAI 把 harness 刻画为事件之上的 OODA 循环。落到工程上就是两件事：<strong>事件必须结构化，成本必须显式记账</strong>。</p>
+
+        <p>Anthropic 的生产数据给账本定了价：多 Agent 系统比单 Agent 好 <strong>90.2%</strong>，代价是 <strong>15 倍 token</strong>，而且 token 预算解释了 80% 的结果方差。这意味着预算不该是月底的账单，而是循环里的硬护栏：</p>
+
+        <pre><code>class TokenBudget(val limit: Int) {
+    fun charge(tokens: Int) {
+        used += tokens
+        if (used &gt; limit) throw BudgetExceededException(
+            "token budget blown: $used &gt; $limit — 多 Agent 的 15× 代价必须是一等旋钮")
+    }
+}</code></pre>
+
+        <p>超限就炸，炸得越早越好。非结构化的工具输出会被 OpenAI 称为"上下文腐烂"（context rot）——事件 schema 化不是洁癖，是让循环可调试的前提。</p>
+
+        <h2>组件二：沙箱接缝，以及一场实测的葬礼</h2>
+
+        <p>Agent 要执行生成的代码，就必须有隔离。生态谱系从轻到重：Seatbelt/bwrap/Landlock（进程级，Claude Code 与 Codex 生产在用）→ microsandbox / Firecracker（microVM）→ E2B / Daytona（云，后者 71.9k★）。关键认知：<strong>JVM 没有原生安全沙箱</strong>——Security Manager 随 JEP 486 永久禁用。正确姿势是 DSH 的设计：<code>confine(argv, policy)</code> 接缝后面 spawn OS 级运行器，配 deny-then-escalate——<strong>被拒的动作只有一次用户批准的升级机会，第二次终拒</strong>。</p>
+
+        <h3>讣告：macOS 26 的 sandbox-exec</h3>
+
+        <p>我在实现 Seatbelt 运行器时遇到的是一场缓慢的崩溃。第一版 profile 报 <code>posixshm-read* unbound variable</code>——这个操作名在新系统里不存在了；删掉后语法通过，真实执行却 exit 134（SIGABRT）；补上 <code>file-read-metadata</code>、放行 <code>/Library</code>、逐一放宽 <code>process-info</code>/<code>mach-lookup</code>——依然 134。结论：**macOS 26 的 sandbox-exec 语法解析活着，执行能力已经死了。**</p>
+
+        <p>处理方式不是绕过，而是写进了产品的行为：<strong>运行器必须先跑通一个功能探针（probe <code>/bin/echo</code>），探针失败则所有调用返回 <code>SANDBOX_UNAVAILABLE</code> 明确拒绝</strong>。demo 里你看到的 "execution DENIED (fail-closed)" 就是这台 MacBook 的真实状态。</p>
+
+        <blockquote>
+            <p>沙箱不可用时，唯一正确的答案是拒绝执行，而不是假装隔离。一个跑不通 /bin/echo 的运行器，不配叫运行器。</p>
+        </blockquote>
+
+        <h2>组件三：任务 DAG + 文件工件</h2>
+
+        <p>Anthropic 明确否决了共享内存黑板和全自主蜂群，生产形态是<strong>编排者-工人</strong>。两个工程细节值千金：</p>
+
+        <ul>
+            <li><strong>依赖门控 + 原子认领</strong>：任务在依赖完成前不可认领；认领用 <code>compareAndSet</code>——并发下一行代码的互斥，确保一个任务只有一个赢家</li>
+            <li><strong>工件落盘</strong>：工人之间不传话。"电话游戏"是已命名的失败模式（顺序衔接的 Agent 各自转述，信息递减），修复=结果写文件系统，编排者读文件</li>
+        </ul>
+
+        <p>已命名的翻车现场还有：任务描述含糊导致重复劳动、Agent 互相打扰、为不存在的信息无限搜索、<strong>简单问题爆出 50 个 subagent</strong>。Faros AI 的报告更扎心：Agent 普及后每 PR 事故率 +242.7%（相关性，非因果）——所以预算和认领这类护栏才必须硬。</p>
+
+        <h2>组件四：确定性 hooks，不靠提示词求Agent</h2>
+
+        <p>"请遵守规范"是祈祷；pre/post-tool hook 是执行。ECC（24 万★）用 per-tool hooks 做观察捕获，自称"100% reliable"；Claude Code 的 hooks 能在工具调用前后注入确定性动作。<strong>凡是能用代码强制的，就不要写进系统提示词</strong>——提示词是建议，hook 是法律。</p>
+
+        <h2>组件五：诚实的边界</h2>
+
+        <p>必须把反方观点刻在墙上。HumanLayer 那篇 394 分 HN 的《Why Software Factories Fail》核心论点：测试的反馈以秒计，坏架构的代价以月计，<strong>你无法把事故率反向传播回决策</strong>——软件工厂的失败不是 harness 能修的。所以我的仓库定位是"harness 的工程演示"，README 里明确写了这句。这个领域的坑：谁宣称"harness 能解决质量"，谁就会被懂行的人撕。</p>
+
+        <h2>五组件连起来跑</h2>
+
+        <pre><code>git clone https://github.com/bayshier/harness-engineering.git
+cd harness-engineering &amp;&amp; ./gradlew installDist
+./build/install/harness-engineering/bin/harness-engineering</code></pre>
+
+        <p>五分钟内依次看到：DAG 认领 → 沙箱判定（你的 Mac 上很可能就是 fail-closed 现场）→ deny-then-escalate 的一次与终拒 → token 预算面板。Agent 是 ScriptedAgent（确定性脚本），换 LLM 版只需实现同一个 <code>decide()</code> 接缝。</p>
+
+        <p>篇三是这个系列的收尾：技能让 Agent 站上巨人的肩膀，但技能自己怎么长？——为什么 <strong>git 版本化</strong>是 24 万★项目都缺的那块拼图。</p>
+
+        <div class="article-end">
+            <span>Easin's Code Lab</span>
+            <span><a href="blog-agent-codeintel.html">← 上一篇：索引层</a> · <a href="blog-agent-skill-evolution.html">下一篇：自进化技能</a> · <a href="easin.html">返回主页</a></span>
+        </div>
+
+    </div>
+</body>
+
+</html>
