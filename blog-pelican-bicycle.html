@@ -22,6 +22,8 @@
         .pc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .pc-links { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.35); border-radius: 10px; padding: 12px 16px; margin: 0 0 26px; font-size: 14px; }
         .pc-links a { color: #34d399; font-weight: 600; }
+        .pc-video video { width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid #e2e8f0; background: #000; }
+        .pc-sunset { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.35); border-radius: 10px; padding: 12px 16px; margin: 0 0 26px; font-size: 14px; }
         @media (max-width: 900px) { .pc-grid { grid-template-columns: 1fr; } }
     </style>
     <link rel="stylesheet" href="assets/transitions/ui-generation.css">
@@ -969,6 +971,45 @@
         <hr>
 
         <p>复现只需一句话：<code>curl $RELAY/v1/chat/completions -d '{"model":"...","messages":[{"role":"user","content":"请用SVG代码画一只骑自行车的鹈鹕。只输出SVG代码，不要任何解释。"}]}'</code>。你也在跑 New API 中转站的话，把 model 换成你列表里的名字就行。</p>
+
+        <hr>
+
+        <h2>七、续作（2026.10）：把考题做成世界——《鹈鹕环岛记》</h2>
+
+        <p>上面这场横评过去一个月后，这道题在我这儿有了下一集。前一轮比的是「谁把鹈鹕骑自行车<strong>画</strong>得对」，这一轮干脆换个问法：<strong>能不能造一个世界，让那只鹈鹕真的骑上去？</strong>于是有了《鹈鹕环岛记》——一只戴水手帽的鹈鹕，骑一辆红色自行车，在半径约一公里的程序化热带岛屿上环游：渔火村、灯塔海角、雪山主峰、跨海大桥、离岛鹈鹕岩，15 分钟一整天的昼夜循环，沿途还撒了 40 条等它收集的小鱼。</p>
+
+        <div class="pc-links">
+            🎮 <strong>游戏仓库</strong>（Three.js r160 · 约 2800 行 · 零美术资源文件，clone 即玩）：<a href="https://github.com/bayshier/pelican-isle" target="_blank" rel="noopener">github.com/bayshier/pelican-isle</a>
+            &nbsp;·&nbsp;
+            📐 <strong>复刻规格书</strong>（想用别的模型重造一座岛，直接看这个）：<a href="https://github.com/bayshier/pelican-isle/blob/main/REBUILD_SPEC.md" target="_blank" rel="noopener">REBUILD_SPEC.md</a>
+        </div>
+
+        <figure class="pc-fig pc-video">
+            <video src="image/pelican-isle/preview.mp4" controls muted loop preload="metadata"></video>
+            <figcaption>实机演示 60s：出发 → 车铃 → 电影机位 → 漂移 → 时间加速骑进夕阳</figcaption>
+        </figure>
+
+        <p>老规矩，先交代底线：整个游戏<strong>没有用一个模型、贴图、音频文件</strong>。地形是一个纯函数高度场（simplex 噪声域扭曲海岸线 + 主峰/离岛高斯 + 村庄海角台地 + 桥面走廊直接写进高度场），海面是手写的 shader（程序化法线 + 菲涅尔 + 烘焙高度图驱动的岸边泡沫），6000 多株植被全是 InstancedMesh 顶点色加 shader 风摆，村庄、灯塔、风车、热气球、篝火、串灯全部基元拼装，连风声浪声车铃声都是 WebAudio 现场合成的。</p>
+
+        <div class="pc-grid">
+            <figure class="pc-fig pc-img"><img src="image/pelican-isle/shot-village.png" alt="渔火村白昼"><figcaption>渔火村：10 栋小屋、串灯与市集，入夜窗火会亮</figcaption></figure>
+            <figure class="pc-fig pc-img"><img src="image/pelican-isle/shot-pier.png" alt="观海栈桥"><figcaption>观海栈桥：帆船随浪摇，沙滩篝火在旁</figcaption></figure>
+            <figure class="pc-fig pc-img"><img src="image/pelican-isle/shot-bridge.png" alt="跨海大桥"><figcaption>跨海大桥：317 米骑去离岛「鹈鹕岩」</figcaption></figure>
+            <figure class="pc-fig pc-img"><img src="image/pelican-isle/shot-night.png" alt="渔火村夜晚"><figcaption>22:24 的渔火村：窗火、串灯与星空</figcaption></figure>
+        </div>
+
+        <p>和上一篇最相关的呼应是「骑」这个动作。上次 glm-4.7-flash 因为<strong>把踏板装在后轮轴上、腿悬空</strong>被挂在了点评栏里；这次腿和踏板的位置不再靠摆坐标，而是每帧解一次<strong>双骨 IK</strong>：踏板位置由曲柄角解析算出，膝关节用平面圆交求出，大腿小腿两根骨骼各自朝目标摆放——鹈鹕是真的在蹬，加速时踏频会变快，压弯时人和车一起倾。上次文生图组 qwen-image 给鹈鹕穿了小皮鞋拿了个「题意天花板」，这次它戴上了水手帽，翅膀一直搭在车把上，过弯还会用身体配重。</p>
+
+        <p>技术上最有意思的三件事：一是<strong>万物只查一个高度函数</strong>，地形网格、植被散布、建筑地基、骑行物理、桥面全部调同一个 <code>terrainHeight(x,z)</code>，所以跨海大桥的桥面直接写进高度场，车轮天然贴桥；二是<strong>昼夜只是一份调色板</strong>——按太阳高度角插值的 5 个关键帧同时驱动雾色、水面三色、太阳颜色和半球光，15 分钟走完一天，黄昏时分整座岛自动变成金色；三是调色第一坑：<strong>线性 HDR 下 Bloom 阈值必须大于 1</strong>，一开始用 0.85，白墙和白鹈鹕辐射度超标，整个画面像蒙了一层雾，调到 1.15 世界立刻清爽。</p>
+
+        <div class="pc-sunset">
+            🛠 <strong>复刻指南</strong>：仓库里的 <code>REBUILD_SPEC.md</code> 把整座岛拆成了可交付的 9 个模块（地形→海面→天空→植被→建筑→角色→后期→玩法→主循环），
+            附一份<strong>可直接投喂给任何模型的复刻提示词</strong>（附录 A），以及三个最容易翻车的坑：
+            离岛高斯要加在掩膜之外（否则被海洋掩膜乘没）、跨海桥找岸点要从主岛向外找「最后一块陆地」、
+            白色材质的 Bloom 阈值必须 &gt; 1。想考考你的模型，不用从零写题面了。
+        </div>
+
+        <p>操作很简单：W 骑行、A D 转向、Shift 漂移、Space 小跳、C 换视角、T 加速时间、F 车铃、P 拍照模式。录制这张 60 秒演示视频用的也是最有时代感的方法——页面里 <code>canvas.captureStream + MediaRecorder</code> 录 WebM，ffmpeg 压成 2.8MB。上一次，9 个模型画了 9 只静止的鹈鹕；这一次，那只鹈鹕终于骑进了落日里。</p>
 
     </div>
 </body>
