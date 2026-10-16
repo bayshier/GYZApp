@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="鹈鹕环岛记：把一道 AI 考题造成一个世界。纯 Three.js 程序化生成 3D 骑行游戏——零美术资源文件，2800 行代码，15 分钟昼夜循环，双骨 IK 蹬踏，万物只查一个高度函数。">
+    <meta name="theme-color" content="#0a0e16">
+    <title>鹈鹕环岛记：把一道 AI 考题造成一个世界 — Easin's Blog</title>
+    <link rel="shortcut icon" href="icon_logo.png" type="image/png">
+    <link rel="icon" href="icon_logo.png" type="image/png">
+    <link rel="stylesheet" href="css/blog.css">
+    <style>
+        /* 本文专属：游戏截图双列网格 */
+        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 22px 0; }
+        .game-grid figure { margin: 0; }
+        .game-grid img { width: 100%; border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 8px 26px rgba(0,0,0,.45); }
+        .game-grid figcaption { color: var(--text-dim); font-size: 13px; margin-top: 8px; }
+        figure.video-fig video { width: 100%; border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+        figure.video-fig { margin: 26px 0; }
+        @media (max-width: 640px) { .game-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+
+<body>
+    <div class="article-wrap">
+
+        <a class="back-home" href="easin.html">← 返回主页</a>
+
+        <div class="article-meta">
+            <span class="tag hot">Three.js</span>
+            <span class="tag">程序化生成</span>
+            <span class="tag">零美术资源</span>
+            <span class="tag">鹈鹕宇宙</span>
+        </div>
+
+        <h1 class="article-title">鹈鹕环岛记：把一道 AI 考题造成一个世界</h1>
+        <div class="article-date">
+            2026.10 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a> · 篇幅约 9 分钟
+        </div>
+
+        <blockquote>
+            <p>去年大家让 AI "画鹈鹕骑自行车"，比的是谁画得对。这次换了个问法：<strong>能不能造一个世界，让那只鹈鹕真的骑上去？</strong></p>
+        </blockquote>
+
+        <p>答案是一座半径约一公里的程序化热带岛屿——《鹈鹕环岛记》。一只戴水手帽的鹈鹕，骑一辆红色自行车：环岛公路串起渔火村、灯塔海角、雪山主峰、观海栈桥与跨海大桥，317 米的桥直通离岛「鹈鹕岩」；<strong>15 分钟一整天的昼夜循环</strong>，入夜渔火村的窗火渐亮、灯塔光束开始旋转；沿途 40 条金色小鱼等它收集，车筐真的会装满。</p>
+
+        <p>老规矩先交代底线：<strong>整个游戏没有用一个模型、贴图、音频文件</strong>——约 2800 行 Three.js 手写代码，几何、颜色、水面、天空、乃至风声浪声车铃声，全部实时生成。</p>
+
+        <figure class="video-fig">
+            <video src="image/pelican-isle/preview.mp4" controls muted loop preload="metadata"></video>
+            <figcaption>实机演示 60s：出发 → 车铃 → 电影机位 → 漂移 → 时间加速骑进夕阳</figcaption>
+        </figure>
+
+        <h2>岛上有什么</h2>
+
+        <div class="game-grid">
+            <figure><img src="image/pelican-isle/shot-village.png" alt="渔火村白昼"><figcaption>渔火村：10 栋小屋、串灯与市集，入夜窗火会亮</figcaption></figure>
+            <figure><img src="image/pelican-isle/shot-pier.png" alt="观海栈桥"><figcaption>观海栈桥：帆船随浪摇，沙滩篝火在旁</figcaption></figure>
+            <figure><img src="image/pelican-isle/shot-bridge.png" alt="跨海大桥"><figcaption>跨海大桥：317 米骑去离岛「鹈鹕岩」</figcaption></figure>
+            <figure><img src="image/pelican-isle/shot-night.png" alt="渔火村夜晚"><figcaption>22:24 的渔火村：窗火、串灯与星空</figcaption></figure>
+        </div>
+
+        <p>还有雪山主峰的观景台、山岗上的三台风力发电机、两只热气球、海鸥编队与夜间萤火虫。仓库里有完整的 <a href="https://github.com/bayshier/pelican-isle#操作" target="_blank" rel="noopener">按键操作表</a>——包括我的最爱：按 <code>T</code> 把时间调到 40×，停在山腰看整座岛在 20 秒内走完黄昏。</p>
+
+        <h2>「骑」这个动作：IK 让上次的概念图站了起来</h2>
+
+        <p>和前作最相关的呼应是「骑」。上次横评里 glm-4.7-flash 因为<strong>把踏板装在后轮轴上、鹈鹕腿悬空</strong>被挂在点评栏；这次腿和踏板的位置不再靠摆坐标——<strong>每帧解一次双骨 IK</strong>：踏板位置由曲柄角解析算出，膝关节用平面圆交求出，大腿小腿两根骨骼各自朝目标摆放。</p>
+
+        <p>于是鹈鹕是真的在蹬：加速时踏频变快，压弯时人和车一起倾，水手帽在颠簸中颤。前作文生图冠军 qwen-image 给鹈鹕穿小皮鞋拿过「题意天花板」，这次它戴上了水手帽，翅膀一直搭在车把上，过弯还会用身体配重。</p>
+
+        <h2>技术上最有意思的三件事</h2>
+
+        <h3>一、万物只查一个高度函数</h3>
+
+        <p>整座岛是一个纯函数 <code>terrainHeight(x, z)</code>：simplex 噪声域扭曲海岸线、主峰与离岛高斯隆起、村庄台地、连 317 米跨海大桥的桥面都直接写进高度场。<strong>地形网格、植被散布、建筑地基、骑行物理、海面泡沫——全部调同一个函数</strong>。好处是万物天然贴合：车轮贴地、桥面可骑、泡沫恰好出现在海岸线上。</p>
+
+        <h3>二、昼夜只是一份调色板</h3>
+
+        <p>15 分钟走完一天，听起来要写一套天气系统，实际是按太阳高度角插值的 <strong>5 个配色关键帧</strong>同时驱动雾色、水面三色、太阳颜色和半球光。黄昏时分整座岛自动变成金色——不是做了"黄昏特效"，是所有颜色都在同一份插值里。</p>
+
+        <h3>三、调色第一坑：线性 HDR 下 Bloom 阈值必须大于 1</h3>
+
+        <p>后期第一版把 UnrealBloom 阈值设成 0.85，结果白墙和白鹈鹕辐射度超标，整幅画面像蒙了层雾。调到 <strong>1.15</strong>，世界立刻清爽。线性空间里"过曝"的定义和直觉不一样——这是本次开发最贵的一课，五分钟调好，半小时才想明白为什么。</p>
+
+        <h2>想自己造一座岛？</h2>
+
+        <p>仓库里的 <a href="https://github.com/bayshier/pelican-isle/blob/main/REBUILD_SPEC.md" target="_blank" rel="noopener">REBUILD_SPEC.md</a> 把整座岛拆成可交付的 9 个模块（地形→海面→天空→植被→建筑→角色→后期→玩法→主循环），附一份<strong>可直接投喂给任何模型的复刻提示词</strong>（附录 A），和三个最容易翻车的坑：</p>
+
+        <ul>
+            <li>离岛高斯要加在掩膜<strong>之外</strong>——否则被海洋掩膜乘没，表现为"离岛不存在"</li>
+            <li>跨海桥找岸点要从主岛向外找"最后一块陆地"——反向找会先撞上离岛自己的山坡</li>
+            <li>白色材质的 Bloom 阈值必须 &gt; 1</li>
+        </ul>
+
+        <p>想考考你的模型，不用从零写题面了——clone 下来，让 AI 对着规格书造一座你自己的岛。</p>
+
+        <div class="repo-cards">
+            <a class="repo-card" href="https://github.com/bayshier/pelican-isle" target="_blank" rel="noopener">
+                <div class="repo-name">bayshier/pelican-isle</div>
+                <div class="repo-desc">游戏本体：Three.js r160 · 约 2800 行 · 零美术资源，clone 即玩</div>
+            </a>
+            <a class="repo-card" href="https://github.com/bayshier/pelican-isle/blob/main/REBUILD_SPEC.md" target="_blank" rel="noopener">
+                <div class="repo-name">REBUILD_SPEC.md</div>
+                <div class="repo-desc">复刻规格书：9 模块拆解 + 可投喂提示词</div>
+            </a>
+            <a class="repo-card" href="blog-pelican-bicycle.html" target="_blank" rel="noopener">
+                <div class="repo-name">前作：鹈鹕骑自行车测试</div>
+                <div class="repo-desc">9 个国产模型横评——这道题的上半集</div>
+            </a>
+        </div>
+
+        <div class="article-end">
+            <span>Easin's Code Lab</span>
+            <span><a href="easin.html">← 返回主页</a> · <a href="blog-pelican-bicycle.html">上半集：9 模型横评</a> · <a href="https://github.com/bayshier" target="_blank" rel="noopener">GitHub ↗</a></span>
+        </div>
+
+    </div>
+</body>
+
+</html>
