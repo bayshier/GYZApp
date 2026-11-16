@@ -278,6 +278,10 @@
             renderReview(parts[1]);
         } else if (parts[0] === 'radar' && parts[1]) {
             renderRadar(parts[1]);
+        } else if (parts[0] === 'j2026' && parts[1]) {
+            render2026Set(parts[1]);
+        } else if (parts[0] === 'j2026') {
+            render2026Home();
         } else if (parts[0] === 'midterm' && parts[1]) {
             renderMidtermSet(parts[1]);
         } else if (parts[0] === 'midterm') {
@@ -320,6 +324,8 @@
         var nPredQ = PRED.reduce(function (a, s) { return a + s.questions.length; }, 0);
         var MT = window.MIDTERM_202609 || [];
         var nMtQ = MT.reduce(function (a, s) { return a + s.questions.length; }, 0);
+        var E26 = window.EXAM_JUN2026 || [];
+        var nE26Q = E26.reduce(function (a, s) { return a + s.questions.length; }, 0);
         var html = '<section class="q-promo">'
             + '<div class="promo-badges">'
             +   '<span class="pb pb-fire">🔥 六年真题 2019-2024</span>'
@@ -367,6 +373,11 @@
             + (MT.length
                 ? '<a class="qq-card qq-mid qq-wide" href="#/midterm"><span class="qq-ico">🧪</span>'
                   + '<span class="qq-txt"><b>提分密训</b><i><em>' + MT.length + '</em> 套 · <em>' + nMtQ + '</em> 题 · 乐橙密训卷 / 章节母题 / 模拟卷</i></span>'
+                  + '<span class="qq-go">开刷 →</span></a>'
+                : '')
+            + (E26.length
+                ? '<a class="qq-card qq-j2026 qq-wide" href="#/j2026"><span class="qq-ico">📚</span>'
+                  + '<span class="qq-txt"><b>2026题库</b><i><em>' + E26.length + '</em> 套 · <em>' + nE26Q + '</em> 题 · 6月押题 / 9月300题 / 6月真题汇编</i></span>'
                   + '<span class="qq-go">开刷 →</span></a>'
                 : '')
             + '</section>';
@@ -867,7 +878,7 @@
         return r;
     }
 
-    function renderSetList(sets, heading, note, base, icon) {
+    function renderSetList(sets, heading, note, base, icon, byCategory) {
         if (!sets.length) { renderNotFound(); return; }
         var html = '<div class="q-topbar q-sticky-bar">'
             + '<a class="btn ghost" href="#/">← 退出</a>'
@@ -875,31 +886,47 @@
             + '<span class="q-progress-text">' + sets.length + ' 套</span></div>'
             + '<div class="pd-note">' + note + '</div>';
 
-        var bySubject = {};
-        sets.forEach(function (s) {
-            (bySubject[s.subject] = bySubject[s.subject] || []).push(s);
-        });
-        Object.keys(bySubject).forEach(function (sub) {
-            var name = SUBJECTS[sub] ? SUBJECTS[sub].name : sub;
-            html += '<div class="q-learn-cat"><h3>' + esc(name) + '</h3>';
-            bySubject[sub].forEach(function (s) {
-                var done = 0, wrongN = 0;
-                s.questions.forEach(function (q) {
-                    if (store.done[q.id]) done++;
-                    if (store.wrong[q.id]) wrongN++;
-                });
-                var st = s.stats || {};
-                var mix = ['单选', '多选', '判断', '案例'].filter(function (k) { return st[k]; })
-                    .map(function (k) { return st[k] + ' ' + k; }).join(' · ');
-                html += '<a class="q-doc-card pd-set" href="#/' + base + '/' + s.id + '">'
-                    + '<div class="qd-main"><div class="qd-title">' + icon + ' ' + esc(s.name) + '</div>'
-                    + '<div class="qd-meta">' + mix + ' · 共 ' + s.questions.length + ' 题</div>'
-                    + '<div class="pd-progress"><i style="width:' + (done / s.questions.length * 100) + '%"></i></div>'
-                    + '<div class="pd-meta2">已练 ' + done + '/' + s.questions.length + (wrongN ? ' · 待消灭错题 ' + wrongN : '') + '</div></div>'
-                    + '<span class="qd-arrow">' + (done ? '续刷 →' : '开始 →') + '</span></a>';
+        function setCard(s, dispName) {
+            var done = 0, wrongN = 0;
+            s.questions.forEach(function (q) {
+                if (store.done[q.id]) done++;
+                if (store.wrong[q.id]) wrongN++;
             });
-            html += '</div>';
-        });
+            var st = s.stats || {};
+            var mix = ['单选', '多选', '判断', '案例'].filter(function (k) { return st[k]; })
+                .map(function (k) { return st[k] + ' ' + k; }).join(' · ');
+            return '<a class="q-doc-card pd-set" href="#/' + base + '/' + s.id + '">'
+                + '<div class="qd-main"><div class="qd-title">' + icon + ' ' + esc(dispName) + '</div>'
+                + '<div class="qd-meta">' + mix + ' · 共 ' + s.questions.length + ' 题</div>'
+                + '<div class="pd-progress"><i style="width:' + (done / s.questions.length * 100) + '%"></i></div>'
+                + '<div class="pd-meta2">已练 ' + done + '/' + s.questions.length + (wrongN ? ' · 待消灭错题 ' + wrongN : '') + '</div></div>'
+                + '<span class="qd-arrow">' + (done ? '续刷 →' : '开始 →') + '</span></a>';
+        }
+
+        var groups = {};
+        if (byCategory) {
+            // 按类别分组（类别取自套名前缀「XX · YY」），组内显示短名
+            sets.forEach(function (s) {
+                var parts = String(s.name).split(' · ');
+                var cat = parts.length > 1 ? parts[0] : '试卷';
+                (groups[cat] = groups[cat] || []).push({ set: s, short: parts.length > 1 ? parts.slice(1).join(' · ') : s.name });
+            });
+            Object.keys(groups).forEach(function (cat) {
+                html += '<div class="q-learn-cat"><h3>' + esc(cat) + '</h3>';
+                groups[cat].forEach(function (e) { html += setCard(e.set, e.short); });
+                html += '</div>';
+            });
+        } else {
+            sets.forEach(function (s) {
+                (groups[s.subject] = groups[s.subject] || []).push(s);
+            });
+            Object.keys(groups).forEach(function (sub) {
+                var name = SUBJECTS[sub] ? SUBJECTS[sub].name : sub;
+                html += '<div class="q-learn-cat"><h3>' + esc(name) + '</h3>';
+                groups[sub].forEach(function (s) { html += setCard(s, s.name); });
+                html += '</div>';
+            });
+        }
         view.innerHTML = html;
         window.scrollTo(0, 0);
     }
@@ -931,6 +958,20 @@
         renderSetList(midtermSets(), '提分密训 · 乐橙网（密训卷 / 章节母题 / 模拟卷）',
             '🧪 2026 新大纲配套练习：法规两套密训卷 + 金融密训卷 / 模拟密卷 / 全书章节母题；多选勾选、判断二选一、案例题带资料，含逐题解析。',
             'midterm', '🧪');
+    }
+
+    function exam2026Sets() { return window.EXAM_JUN2026 || []; }
+
+    function render2026Home() {
+        renderSetList(exam2026Sets(), '2026题库 · 6月押题 / 9月300题 / 6月真题汇编',
+            '📚 2026 年卷池：6 月 LC 终极押题四套 + 9 月 300 题两套 + 6 月考试真题汇编两套（考生回忆）。真题因原始版式提取率为 95% 左右，缺题卷以实际题数为准。',
+            'j2026', '📄', true);
+    }
+
+    function render2026Set(setId) {
+        var s = findSet(exam2026Sets(), setId);
+        if (!s) { render2026Home(); return; }
+        startSetPractice(s, '2026题库 · ' + s.name, '#/j2026');
     }
 
     function renderMidtermSet(setId) {

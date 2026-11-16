@@ -807,3 +807,6 @@ body {
 /* ---------- 提分密训（第5张通栏卡） ---------- */
 .qq-mid { background: linear-gradient(135deg, #14532d 0%, #2f9e5a 100%); }
 .qq-wide { grid-column: 1 / -1; }
+
+/* ---------- 2026题库（通栏卡，深蓝渐变） ---------- */
+.qq-j2026 { background: linear-gradient(135deg, #123a6d 0%, #2f6fd4 100%); }
