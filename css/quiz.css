@@ -609,7 +609,15 @@ body {
 }
 
 /* ---------- 按钮 ---------- */
-.q-nav { display: flex; gap: 12px; align-items: center; }
+.q-nav {
+    display: flex; gap: 12px; align-items: center;
+    position: sticky; bottom: 0; z-index: 50;
+    background: var(--bg);
+    padding: 10px 2px calc(10px + env(safe-area-inset-bottom, 0px));
+    margin: 14px 0 24px;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -6px 18px rgba(15, 23, 42, .07);
+}
 .q-nav-jump { flex: 1; }
 .btn {
     font-family: inherit; font-size: 14px;

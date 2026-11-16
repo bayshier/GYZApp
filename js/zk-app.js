@@ -294,9 +294,9 @@
                     draw();
                 });
             });
-            document.getElementById('zk-prev').addEventListener('click', function () { if (i > 0) { i--; draw(); } });
+            document.getElementById('zk-prev').addEventListener('click', function () { if (i > 0) { i--; window.scrollTo(0, 0); draw(); } });
             document.getElementById('zk-next').addEventListener('click', function () {
-                if (i < qs.length - 1) { i++; draw(); } else location.hash = '#/course/' + code;
+                if (i < qs.length - 1) { i++; window.scrollTo(0, 0); draw(); } else location.hash = '#/course/' + code;
             });
         }
         draw();

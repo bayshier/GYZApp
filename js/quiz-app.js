@@ -482,7 +482,8 @@
             + '<a class="btn" href="#/practice/' + subject + '/order">开始刷题</a></div>';
     }
 
-    function renderPracticeQuestion() {
+    /* scroll: 'top'(默认) 回顶 | 'feedback' 滚到答题反馈 | 'none' 不动 */
+    function renderPracticeQuestion(scroll) {
         var q = practice.list[practice.idx];
         if (!q) return;
         var n = practice.idx + 1, total = practice.list.length;
@@ -557,12 +558,12 @@
                     var sel = practice.multiSel[q.id] = practice.multiSel[q.id] || [];
                     var k = sel.indexOf(L);
                     if (k > -1) { sel.splice(k, 1); } else { sel.push(L); }
-                    renderPracticeQuestion();
+                    renderPracticeQuestion('none');
                     return;
                 }
                 practice.picks[q.id] = L;
                 recordResult(q, L === q.answer);
-                renderPracticeQuestion();
+                renderPracticeQuestion('feedback');
             });
         });
 
@@ -574,7 +575,7 @@
             var p = normPick(sel);
             practice.picks[q.id] = p;
             recordResult(q, p === q.answer);
-            renderPracticeQuestion();
+            renderPracticeQuestion('feedback');
         });
 
         var fixlink = document.getElementById('q-fixlink');
@@ -592,6 +593,13 @@
                 location.hash = practice.backHash || '#/';
             }
         });
+
+        // 滚动控制：答题后滚到反馈/解析；切题/初始进入回顶
+        if (scroll === 'feedback') {
+            var fb = view.querySelector('.q-feedback');
+            if (fb) { fb.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+        }
+        if (scroll !== 'none') window.scrollTo(0, 0);
     }
 
     function mode_eraseWrongNote(q) {
@@ -647,7 +655,7 @@
         timerEl.classList.toggle('urgent', examState.left < 300);
     }
 
-    function renderExamQuestion() {
+    function renderExamQuestion(scroll) {
         var q = examState.list[examState.idx];
         var n = examState.idx + 1, total = examState.list.length;
         var pick = examState.picks[q.id];
@@ -698,7 +706,7 @@
                 } else {
                     examState.picks[q.id] = L;
                 }
-                renderExamQuestion();
+                renderExamQuestion('none');   // 点选项不跳动视口
             });
         });
         view.querySelectorAll('.sh-cell').forEach(function (btn) {
@@ -725,6 +733,9 @@
             var msg = unanswered ? '还有 ' + unanswered + ' 题未作答，确定交卷？' : '确定交卷？';
             if (confirm(msg)) submitExam();
         });
+
+        // 切题回顶；点选项（scroll='none'）保持视口不动
+        if (scroll !== 'none') window.scrollTo(0, 0);
     }
 
     function submitExam(note) {
