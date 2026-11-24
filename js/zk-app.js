@@ -53,21 +53,23 @@
     /* ============================================================
        首页：倒计时 + 概览 + 按考期分组
        ============================================================ */
-    var STATUS_TXT = { passed: '已通过', planned: '本期报考', todo: '待考', practice: '实践', thesis: '论文' };
+    var STATUS_TXT = { passed: '已通过', planned: '本期报考', retake: '重考', todo: '待考', practice: '实践', thesis: '论文' };
 
     function renderHome() {
         var nTotal = COURSES.length;
         var nPassed = passedCount();
         var remain = nTotal - nPassed;
-        var nextDate = EXAM_DATES['2026.10'] || '2026-10-24';
-        var oct = COURSES.filter(function (c) { return !isPassed(c) && c.term === '2026.10'; });
+        var nextTerm = '2027.04';
+        var nextDate = EXAM_DATES[nextTerm] || '2027-04-11';
+        var plan = D.plan202704 || { slots: [] };
+        var planCourses = COURSES.filter(function (c) { return !isPassed(c) && c.term === nextTerm; });
 
         var html = '<div class="zk-countdown" id="zk-cd">'
-            + '<div><div class="zkc-label">⏳ 距 2026.10 考期还有</div>'
+            + '<div><div class="zkc-label">⏳ 距 2027.04 考期还有</div>'
             + '<div class="zkc-days" id="zk-cd-days">--<i>天</i></div>'
-            + '<div class="zkc-date">' + nextDate.replace(/-/g, '.') + ' 开考（周六首考）</div></div>'
-            + '<div class="zkc-next">本期报考 <b>' + oct.length + '</b> 门（时段已排，无冲突）<br>'
-            + oct.map(function (c) { return c.code + ' ' + c.name; }).join('<br>')
+            + '<div class="zkc-date">' + nextDate.replace(/-/g, '.') + ' （预计，以官方日程为准）</div></div>'
+            + '<div class="zkc-next">下期报考 <b>' + plan.slots.length + '</b> 门（2 门重考 + 1 门新课）<br>'
+            + plan.slots.map(function (s) { var c = byCode(s.code); return s.code + ' ' + (c ? c.name : ''); }).join('<br>')
             + '</div>'
             + '</div>'
             + '<div class="zk-overview">'
@@ -78,33 +80,50 @@
             + '<div class="zko gold"><b>' + MEMO.length + '</b><i>速记卡片</i></div>'
             + '</div>';
 
-        /* 考试安排（202610 真实开考表，来自广东省自学考试管理系统） */
-        if (D.schedule2610 && D.schedule2610.sessions) {
-            html += '<div class="zk-sched"><div class="zk-sched-head"><h3>🗓 2026.10 考试安排</h3>'
-                + '<span>' + esc(D.schedule2610.source || '') + '</span></div>';
-            D.schedule2610.sessions.forEach(function (s) {
-                html += '<div class="zk-sess' + (s.off ? ' off' : '') + '"><div class="zk-sess-time"><b>' + esc(s.d) + '</b>'
-                    + '<i>' + esc(s.w || '') + ' ' + esc(s.t) + '</i>'
-                    + (s.off ? '<em>🚫 本人无法应考</em>' : '') + '</div>'
-                    + '<div class="zk-sess-items">';
-                s.items.forEach(function (it) {
-                    var c = byCode(it.c);
-                    var passed = c && isPassed(c);
-                    var cls = it.pick ? ' pick' : (it.defer ? ' defer' : (it.conflict ? ' conflict' : (passed ? ' done' : (s.off ? ' dim' : ''))));
-                    html += '<span class="zk-sitem' + cls + '">'
-                        + (it.pick ? '✓ 报考 ' : it.defer ? '⏳ 顺延 ' : it.conflict ? '⚠ 冲突 ' : '')
-                        + esc(it.c) + ' ' + esc(c ? c.name : '')
-                        + (passed ? '（已过）' : it.conflict ? '（与15040同时段）' : it.defer ? '（仅此时段开考）' : '')
-                        + '</span>';
-                });
-                html += '</div></div>';
+        /* 最近成绩：2026.10 实考 */
+        var hist = (D.examHistory || []).slice(-1)[0];
+        if (hist) {
+            var fails = hist.items.filter(function (i) { return !i.pass; }).length;
+            html += '<div class="zk-sched"><div class="zk-sched-head"><h3>📊 ' + esc(hist.month) + ' 成绩单</h3>'
+                + '<span>' + hist.items.length + ' 科 · ' + (fails ? fails + ' 科未过' : '全部通过') + '</span></div>';
+            hist.items.forEach(function (it) {
+                var gap = 60 - it.score;
+                html += '<div class="zk-score-row">'
+                    + '<span class="zk-sr-code">' + esc(it.code) + '</span>'
+                    + '<span class="zk-sr-name">' + esc(it.name) + '</span>'
+                    + '<span class="zk-sr-num' + (it.pass ? ' pass' : ' fail') + '">' + it.score + '</span>'
+                    + '<span class="zk-sr-gap">' + (it.pass ? '✓ 及格' : '差 ' + gap + ' 分') + '</span>'
+                    + '</div>';
             });
-            html += '<div class="zk-sched-note">📌 十月报 3 门：02324 离散数学（周六上午）+ 15040 习思想（周六下午）+ 13180 操作系统（周日上午），零冲突。<br>'
-                + '⏳ 13005 软件工程仅开考于周日下午、本人无法应考 → 顺延 2027.04；13003 与 15040 同时段冲突、13011 本期不开考，均顺延。<br>'
-                + '⚠ 2027.04 候选已积 5 门（13003/13005/13011/13015/03344），超出单期 4 门上限——待 2027.04 开考表公布后再按时段裁一门到 2027.10。</div></div>';
+            html += '<div class="zk-sched-note">及格线 60 分。' + esc(hist.note || '')
+                + '<br>📌 复盘：连续两期满额报考（4 门 / 3 门），每科准备时间被摊薄 → 本期改为「2 门重考 + 1 门轻松新课」，宁少勿滥。</div></div>';
         }
 
-        var terms = [['已通过', ''], ['2026.10', '本期主攻'], ['2027.04', '原理+数学'], ['2027.10', '数学+英语+实践'], ['2028.04', '实践收尾'], ['最后', '毕业环节']];
+        /* 2027.04 报考计划 */
+        if (plan.slots && plan.slots.length) {
+            html += '<div class="zk-sched"><div class="zk-sched-head"><h3>🎯 2027.04 报考计划</h3>'
+                + '<span>' + (plan.official ? '官方日程' : '时段为推定，待官方日程公布后核对') + '</span></div>';
+            plan.slots.forEach(function (s) {
+                var c = byCode(s.code);
+                html += '<div class="zk-sess"><div class="zk-sess-time"><b>' + esc(s.d) + '</b><i>' + esc(s.t) + '</i></div>'
+                    + '<div class="zk-sess-items">'
+                    + '<span class="zk-sitem pick">✓ ' + esc(s.tag) + ' ' + esc(s.code) + ' ' + esc(c ? c.name : '')
+                    + (s.score ? '（上次 ' + s.score + ' 分）' : '') + '</span></div></div>';
+            });
+            if (plan.deferred && plan.deferred.length) {
+                plan.deferred.forEach(function (df) {
+                    var c = byCode(df.code);
+                    html += '<div class="zk-sess off"><div class="zk-sess-time"><b>⏳ 顺延</b><i>' + esc(df.to) + '</i></div>'
+                        + '<div class="zk-sess-items"><span class="zk-sitem defer">' + esc(df.code) + ' ' + esc(c ? c.name : '')
+                        + ' —— ' + esc(df.why) + '</span></div></div>';
+                });
+            }
+            html += '<div class="zk-sched-note">'
+                + (plan.notes || []).map(function (n) { return '· ' + esc(n); }).join('<br>')
+                + '</div></div>';
+        }
+
+        var terms = [['已通过', ''], ['2027.04', '重考 2 门 + 新课 1 门'], ['2027.10', '操作系统重考 + 数学/英语'], ['2028.04', '实践收尾'], ['最后', '毕业环节']];
         terms.forEach(function (tp) {
             var key = tp[0];
             var list = COURSES.filter(function (c) { return key === '已通过' ? isPassed(c) : (!isPassed(c) && c.term === key); });
