@@ -4,13 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="股宇宙双端自动化打包实录：一条 Jenkins 流水线完成 Android 签名打包→蒲公英上传→鸿蒙签名打包→AppGallery Connect 发布→GitHub Pages 下载页更新。Playwright 无头登录解决蒲公英验证码，tkinter 弹窗让签名密码不进脚本不进日志。">
+    <meta name="description" content="股宇宙双端自动化打包实录：一条 Jenkins 流水线完成 Android 签名打包→蒲公英上传→鸿蒙签名打包→AppGallery Connect 发布→GitHub Pages 下载页更新。Playwright 无头登录解决蒲公英验证码，tkinter 弹窗让签名密码不进脚本不进日志。2026.11 补记第二季：360 加固与 10 渠道包一条命令出齐、蒲公英 buildKey 短链直下、打包日报定时汇总。">
     <meta name="theme-color" content="#0a0e16">
     <title>一条流水线，两个系统 — Easin's Blog</title>
     <link rel="shortcut icon" href="icon_logo.png" type="image/png">
     <link rel="stylesheet" href="css/blog.css">
-    <link rel="stylesheet" href="assets/transitions/ui-generation.css">
-    <script src="assets/transitions/auto-gen.js" defer></script>
 </head>
 
 <body>
@@ -28,11 +26,12 @@
 
         <h1 class="article-title">一条流水线，两个系统：股宇宙双端自动化打包实录（Android + HarmonyOS）</h1>
         <div class="article-date">
-            2026.09 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a>
+            2026.09 · 更新于 2026.11 · by <a href="https://github.com/bayshier" target="_blank" rel="noopener">Easin</a>
         </div>
 
         <blockquote>
             <p>股宇宙 APP 有了鸿蒙版之后，打包从"一条命令"变成了"两套流程"——Android 签名、蒲公英上传、鸿蒙签名、AGC 发布、下载页更新，每一步都机械但都不能错。这篇记录我怎么把<strong>五个手工步骤压进一条 Jenkins 流水线</strong>：Playwright 无头浏览器过蒲公英的验证码，tkinter 弹窗让签名密码<strong>不进脚本、不进日志</strong>，一次提交双端齐发。</p>
+            <p><strong>2026.11 补记：</strong>九月之后流水线又长出了第二季——<strong>360 加固与 10 渠道包一条命令出齐</strong>、蒲公英短链直下破局、打包日报定时自动汇总。见第八节。</p>
         </blockquote>
 
         <h2>一、为什么要做双端流水线</h2>
@@ -136,18 +135,69 @@ GitLab Webhook → Jenkins（Windows 打包机，有桌面环境）
             <tr><td>下载页缓存</td><td>更新后手机仍显示旧版本</td><td>页面资源带版本参数，强刷 CDN 缓存</td></tr>
         </table>
 
-        <h2>八、下一步展望</h2>
+        <h2>八、第二季：加固、渠道包与打包日报（2026.10 补）</h2>
+
+        <p>双端流水线跑通之后，剩下的手工活集中在两头：<strong>发版前的加固渠道包</strong>（Android 上架前要过 360 加固，再分发 10 个应用市场的渠道包）和<strong>发版后的告知</strong>。这两块在十月也被压进了自动化。</p>
+
+        <h3>8.1 360 加固：命令行在 4.x 被拿掉了</h3>
+
+        <p>加固这一步最"死"：上传 APK → 等云端加固 → 下载 → 逐渠道重签 → 逐个改短包名 → 压缩 → 发群。十来个手工动作，错一个就得重来。</p>
+
+        <p>想自动化时撞上第一堵墙：<strong>360 加固助手 4.x 起移除了命令行，新的 CLI 工具只对企业版开放</strong>（标准版直接报授权错误 <code>100166</code>）。文档和社区都指向"升级企业版"，但我们的套餐就是标准版。</p>
+
+        <p>破局是问客服：<strong>老版 3.8.0 的命令行模式，对"已购安卓加固套餐"用户继续开放</strong>（对应 2022 年的政策公告），客服提供了官方 pkg。把它解包出 arm64 payload（自带 JRE），不系统安装直接调用，命令行就回来了。经验：<strong>这类"新版本砍功能"的工具，别急着重构，先问客服要老版本</strong>——旧协议往往还在服务端开着。</p>
+
+        <h3>8.2 一条命令：加固 → 签名 → 10 渠道 → zip</h3>
+
+        <pre><code>./auto_jiagu.sh https://www.pgyer.com/xxxx   # 蒲公英短链
+./auto_jiagu.sh /path/to/app-release.apk     # 或本地 apk</code></pre>
+
+        <p>脚本做四件事：登录（每日自动）→ 幂等检查签名与渠道配置 → 调用加固 CLI（<code>-jiagu apk &lt;in&gt; &lt;out&gt; -auto-sign -auto-mulpkg</code>，一次产出母包 + 10 个渠道包）→ 把 11 个 APK 打成 zip。</p>
+
+        <p>最后一步有个必须踩的坑：<strong>macOS 自带 zip 不写 UTF-8 文件名标志位</strong>，Windows 解压中文渠道名全是乱码；改用 Python <code>zipfile</code>（自动置 <code>0x800</code> 标志位）解决。产物还做了短包名重命名——<code>v1.2.26.0_腾讯应用宝_sign.apk</code>、<code>v1.2.26.0_jiagu_sign.apk</code>，版本号从 APK 里 aapt 读、市场名从渠道表反查，运营拿到 zip 一眼能认出哪个包发哪个市场。</p>
+
+        <h3>8.3 蒲公英下载：正则抓到的是假 appKey</h3>
+
+        <p>流水线要能直接用蒲公英短链当输入，得先把 APK 下回来。这里有个很迷惑的坑：新版蒲公英是 SPA，页面源码里正则能抓到一串 32 位 hex，看起来就是 appKey——<strong>但拿去调下载接口会报 <code>App not found</code>，那是干扰值</strong>。</p>
+
+        <p>正解是抓下载按钮的 href：<code>/app/build/&lt;32hex&gt;</code>，这串才是 <strong>buildKey</strong>，然后：</p>
+
+        <pre><code>GET https://www.pgyer.com/apiv2/app/install?buildKey=&lt;bk&gt;&amp;_api_key=&lt;key&gt;
+  → 302 到 OSS 直链</code></pre>
+
+        <p>顺带确认：<code>apiv2</code> 网关只开放了 <code>install</code> 方法，<code>app/get</code>、<code>app/list</code> 一律返回 <code>1096 Unknown method</code>。<strong>这类 SPA 站点的"源码可抓参数"，十有八九不是你要的那个。</strong></p>
+
+        <h3>8.4 打包日报：把"今天发了什么"也交给流水线</h3>
+
+        <p>最后一块人工是发版后告知。现在每天 18:25 自动汇总当天打包情况推群，四条规则都是被实际需求逼出来的：</p>
 
         <ul>
-            <li><strong>验证码自动化</strong>：目前蒲公英验证码靠人回消息，探索打码服务或官方 API 直连，把最后一个人工环节也去掉；</li>
-            <li><strong>iOS 端接入</strong>：流水线结构已预留第三条支线；</li>
-            <li><strong>失败自动回滚下载页</strong>：AGC 审核被拒时，下载页自动回退上一版本号；</li>
-            <li><strong>打包度量</strong>：把每次构建时长、包体积增量写入通知消息，体积异常膨胀第一时间暴露。</li>
+            <li><strong>周日~周四发，周五周六不发</strong>——周末发版少，避免群消息噪音；</li>
+            <li><strong>构建还在跑就等</strong>，最长等 35 分钟，超时则明确说明"仍在构建"而不是发半截；</li>
+            <li><strong>上线分支当日没打包就整块省略</strong>，不留空壳占版面；</li>
+            <li><strong>产物目录保留最近 20 次构建</strong>，自动清理水位，打包机磁盘不再靠人盯。</li>
         </ul>
 
-        <h2>九、小结</h2>
+        <h3>8.5 交接：让 Windows 打包机自己跑</h3>
+
+        <p>本机跑通后，把整套东西打包成交接包交给 Windows 侧 Jenkins：PowerShell 流水线（登录/幂等配置/加固/验签/压缩，中文输出匹配用 <code>JAVA_TOOL_OPTIONS=UTF8</code> 解决）、配置模板（账号与 keystore 密码走 Jenkins 凭据注入，<strong>不进 git</strong>）、渠道表、keystore、Jenkinsfile 示例（用 lock 资源防并行加固——<strong>官方明确禁止并行提交加固任务</strong>）+ 接入 README。跨平台改造的坑都在 README 里标了"接入前先手动跑一次"。</p>
+
+        <p>到这一步，两个季度累计 <strong>287+ 次安卓构建、26+ 次鸿蒙构建全自动完成</strong>，每一次都能按「构建号 ↔ 提交 ↔ 蒲公英 build」双向追溯。人只需要做两件判断：<strong>"确定发布"和"要不要发"</strong>。</p>
+
+        <h2>九、下一步展望</h2>
+
+        <ul>
+            <li><strong>验证码自动化</strong>：<span style="opacity:.7;">（已部分解决——蒲公英 API Key 直链 + buildKey 抓取，见 8.3）</span></li>
+            <li><strong>iOS 端接入</strong>：流水线结构已预留第三条支线；</li>
+            <li><strong>失败自动回滚下载页</strong>：AGC 审核被拒时，下载页自动回退上一版本号；</li>
+            <li><strong>打包度量</strong>：<span style="opacity:.7;">（已落地——打包日报含构建结果与产物清单，见 8.4；下一步补包体积增量）</span></li>
+        </ul>
+
+        <h2>十、小结</h2>
 
         <p>这条流水线做完，最大的体会是：<strong>自动化的价值不在"快"，而在"确定性"</strong>。手工五步，每步都简单，但串起来每次都有出错概率；流水线把它们变成同一次执行、同一套材料、同一个来源——<strong>发版从"凭仔细"变成了"凭机制"</strong>。双端齐发这件事，也从奢侈变成了日常。</p>
+
+        <p>第二季补完加固与渠道包之后，这个判断更成立了：<strong>自动化的终点不是"人不用动手"，而是"人只剩下该由人做的判断"</strong>——发布的时机、发不发、发给谁。剩下的机械动作，一次都不该由人手重复第二遍。</p>
 
         <div class="article-end">
             <span>Easin's Code Lab · <a href="easin.html" style="color:inherit;">作者：Easin</a></span>
