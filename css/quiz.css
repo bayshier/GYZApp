@@ -818,3 +818,43 @@ body {
 
 /* ---------- 2026题库（通栏卡，深蓝渐变） ---------- */
 .qq-j2026 { background: linear-gradient(135deg, #123a6d 0%, #2f6fd4 100%); }
+
+/* ---------- 考前重点押题（置顶紧急入口 + 聚合页） ---------- */
+.q-focus-hero {
+    display: flex; align-items: center; gap: 13px;
+    background: linear-gradient(135deg, #8f1d1d 0%, #d4342f 100%);
+    border-radius: 14px; padding: 16px 18px; margin: 0 0 18px;
+    text-decoration: none; color: #fff;
+    box-shadow: 0 6px 20px rgba(143, 29, 29, .28);
+    border: 1px solid rgba(255, 200, 120, .35);
+    transition: transform .18s, box-shadow .18s;
+}
+.q-focus-hero:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(143, 29, 29, .36); }
+.qfh-fire { font-size: 30px; line-height: 1; flex-shrink: 0; }
+.qfh-txt { flex: 1; min-width: 0; }
+.qfh-txt b { display: block; font-size: 16.5px; letter-spacing: .5px; }
+.qfh-txt i { display: block; font-style: normal; font-size: 12px; color: rgba(255, 255, 255, .88); margin-top: 3px; }
+.qfh-go {
+    flex-shrink: 0; font-size: 12px; font-weight: 800; white-space: nowrap;
+    background: rgba(255, 255, 255, .18); border: 1px solid rgba(255, 255, 255, .45);
+    border-radius: 14px; padding: 6px 13px;
+}
+.qfh-panel {
+    background: linear-gradient(135deg, #8f1d1d 0%, #c23a34 100%);
+    border-radius: 14px; color: #fff; padding: 18px 20px; margin-bottom: 16px;
+}
+.qfh-panel-title { font-size: 18px; font-weight: 800; letter-spacing: .5px; }
+.qfh-panel-sub { font-size: 12.5px; color: rgba(255, 255, 255, .85); margin-top: 5px; }
+.qfh-stats { display: flex; flex-wrap: wrap; gap: 14px; margin: 12px 0 14px; font-size: 12.5px; color: rgba(255, 255, 255, .9); }
+.qfh-stats b { font-size: 15px; color: #ffe08a; }
+.qfh-runs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.qfh-run {
+    text-align: center; text-decoration: none; color: #5a1010; font-weight: 800; font-size: 13.5px;
+    background: linear-gradient(135deg, #ffe9b8, #f6d27a);
+    border-radius: 11px; padding: 11px 8px;
+}
+.qfh-run.basics { background: linear-gradient(135deg, #d9ecff, #a9cdf5); color: #10365e; }
+@media (max-width: 560px) {
+    .qfh-runs { grid-template-columns: 1fr; }
+    .qfh-txt i { font-size: 11.5px; }
+}

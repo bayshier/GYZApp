@@ -278,6 +278,10 @@
             renderReview(parts[1]);
         } else if (parts[0] === 'radar' && parts[1]) {
             renderRadar(parts[1]);
+        } else if (parts[0] === 'focus') {
+            renderFocusHome();
+        } else if (parts[0] === 'focusrun' && parts[1]) {
+            startFocusRun(parts[1]);
         } else if (parts[0] === 'j2026' && parts[1]) {
             render2026Set(parts[1]);
         } else if (parts[0] === 'j2026') {
@@ -340,6 +344,18 @@
             +   '<div class="ps"><b class="count" data-n="' + nPapers + '">0</b><i>套真题卷</i></div>'
             +   '<div class="ps"><b class="count" data-n="90">0</b><i>万字知识点</i></div>'
             + '</div></section>';
+
+        /* 🔥 考前重点押题（置顶紧急入口：临近考试优先展示） */
+        var focus = focusSets();
+        if (focus.length) {
+            var fq = 0;
+            focus.forEach(function (s) { fq += s.questions.length; });
+            html += '<a class="q-focus-hero" href="#/focus">'
+                + '<span class="qfh-fire">🔥</span>'
+                + '<span class="qfh-txt"><b>考前重点押题 · 6 套</b>'
+                + '<i>法规三卷 + 金融三卷 · 共 ' + fq + ' 题 · 分科连刷 / 单卷精刷</i></span>'
+                + '<span class="qfh-go">立即开刷 →</span></a>';
+        }
 
         /* 醒目的知识点学习入口（含各科知识点/章节统计） */
         html += '<section class="q-learn-strip">'
@@ -989,6 +1005,100 @@
         var s = findSet(midtermSets(), setId);
         if (!s) { renderMidtermHome(); return; }
         startSetPractice(s, '提分密训 · ' + s.name, '#/midterm');
+    }
+
+    /* ============================================================
+       考前重点押题（2026.11 LC 最后三套卷：法规×3 + 金融×3）
+       聚合页 + 分科连刷
+       ============================================================ */
+    function focusSets() {
+        return (window.EXAM_JUN2026 || []).filter(function (s) {
+            return String(s.name).indexOf('重点押题') === 0;
+        });
+    }
+
+    function focusOfSubject(sub) {
+        return focusSets().filter(function (s) { return s.subject === sub; })
+            .sort(function (a, b) { return a.id < b.id ? -1 : 1; });
+    }
+
+    function renderFocusHome() {
+        var sets = focusSets();
+        if (!sets.length) { renderNotFound(); return; }
+        var total = 0, done = 0, wrongN = 0;
+        sets.forEach(function (s) {
+            s.questions.forEach(function (q) {
+                total++;
+                if (store.done[q.id]) done++;
+                if (store.wrong[q.id]) wrongN++;
+            });
+        });
+
+        var html = '<div class="q-topbar q-sticky-bar">'
+            + '<a class="btn ghost" href="#/">← 退出</a>'
+            + '<span class="q-meta">🔥 考前重点押题</span>'
+            + '<span class="q-progress-text">' + sets.length + ' 套</span></div>'
+            + '<div class="qfh-panel">'
+            + '<div class="qfh-panel-title">🔥 考前重点押题 · 2026.11</div>'
+            + '<div class="qfh-panel-sub">法规三卷 + 金融三卷 · 共 ' + total + ' 题 · 每套含单选/多选/判断/案例与逐题解析</div>'
+            + '<div class="qfh-stats">'
+            + '<span>已练 <b>' + done + '</b> / ' + total + '</span>'
+            + '<span>待消灭错题 <b>' + wrongN + '</b></span>'
+            + '<span>完成率 <b>' + Math.round(done / total * 100) + '%</b></span>'
+            + '</div>'
+            + '<div class="qfh-runs">'
+            + '<a class="qfh-run" href="#/focusrun/law">📜 法规三卷连刷</a>'
+            + '<a class="qfh-run basics" href="#/focusrun/basics">📈 金融三卷连刷</a>'
+            + '</div></div>';
+
+        [['law', '📜', '证券市场基本法律法规'], ['basics', '📈', '金融市场基础知识']].forEach(function (sp) {
+            var list = focusOfSubject(sp[0]);
+            if (!list.length) return;
+            html += '<div class="q-learn-cat"><h3>' + sp[1] + ' ' + esc(sp[2]) + '</h3>';
+            list.forEach(function (s) {
+                var d = 0, w = 0;
+                s.questions.forEach(function (q) {
+                    if (store.done[q.id]) d++;
+                    if (store.wrong[q.id]) w++;
+                });
+                var st = s.stats || {};
+                var mix = ['单选', '多选', '判断', '案例'].filter(function (k) { return st[k]; })
+                    .map(function (k) { return st[k] + ' ' + k; }).join(' · ');
+                html += '<a class="q-doc-card pd-set" href="#/j2026/' + s.id + '">'
+                    + '<div class="qd-main"><div class="qd-title">🔥 ' + esc(String(s.name).replace('重点押题 · ', '')) + '</div>'
+                    + '<div class="qd-meta">' + mix + ' · 共 ' + s.questions.length + ' 题</div>'
+                    + '<div class="pd-progress"><i style="width:' + (d / s.questions.length * 100) + '%"></i></div>'
+                    + '<div class="pd-meta2">已练 ' + d + '/' + s.questions.length + (w ? ' · 待消灭错题 ' + w : '') + '</div></div>'
+                    + '<span class="qd-arrow">' + (d ? '续刷 →' : '开始 →') + '</span></a>';
+            });
+            html += '</div>';
+        });
+
+        html += '<div class="pd-note" style="margin-top:8px;">💡 连刷会把本科三卷合成一条队列（题号连续、进度与错题照常记录）；想按整套模拟就点上面的单卷。</div>';
+        view.innerHTML = html;
+        window.scrollTo(0, 0);
+    }
+
+    function startFocusRun(sub) {
+        var list = focusOfSubject(sub);
+        if (!list.length) { renderFocusHome(); return; }
+        var qs = [];
+        list.forEach(function (s) {
+            s.questions.forEach(function (q) {
+                qs.push({ id: q.id, subject: q.subject, source: q.source, type: q.type,
+                          q: q.q, options: q.options, answer: q.answer, explain: q.explain,
+                          set: s.name });
+            });
+        });
+        var name = sub === 'law' ? '法规' : '金融';
+        practice.list = qs;
+        practice.idx = 0;
+        practice.picks = {};
+        practice.multiSel = {};
+        practice.mode = 'order';
+        practice.title = '考前重点押题 · ' + name + '三卷连刷（' + qs.length + ' 题）';
+        practice.backHash = '#/focus';
+        renderPracticeQuestion();
     }
 
     function renderPapers(pid) {
