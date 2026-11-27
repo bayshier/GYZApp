@@ -297,14 +297,14 @@
         } else if (parts[0] === 'multi') {
             /* 多选题合集：全部多选题主练习 */
             practice.list = BANK.filter(isMulti);
-            practice.idx = 0; practice.picks = {}; practice.multiSel = {}; practice.mode = 'order';
+            practice.idx = 0; practice.picks = {}; practice.reveal = {}; practice.multiSel = {}; practice.mode = 'order';
             practice.title = '多选题合集 · ' + practice.list.length + ' 题';
             practice.backHash = '#/';
             renderPracticeQuestion();
         } else if (parts[0] === 'drill' && parts[1]) {
             var drillIds = parts[1].split(',').map(Number).filter(function (i) { return BANK[i]; });
             practice.list = drillIds.map(function (i) { return BANK[i]; });
-            practice.idx = 0; practice.picks = {}; practice.multiSel = {}; practice.mode = 'order';
+            practice.idx = 0; practice.picks = {}; practice.reveal = {}; practice.multiSel = {}; practice.mode = 'order';
             practice.title = '薄弱专项 · ' + drillIds.length + ' 题';
             practice.backHash = '#/';
             renderPracticeQuestion();
@@ -486,7 +486,7 @@
         }
         practice.list = list;
         practice.idx = 0;
-        practice.picks = {};
+        practice.picks = {}; practice.reveal = {};
         practice.multiSel = {};
         practice.mode = mode;
         renderPracticeQuestion();
@@ -498,12 +498,24 @@
             + '<a class="btn" href="#/practice/' + subject + '/order">开始刷题</a></div>';
     }
 
+    /* ---------- 背题模式（直接显答案，不计入错题） ---------- */
+    var PEEK_KEY = 'quiz-peek-mode';
+    var peekMode = false;
+    try { peekMode = localStorage.getItem(PEEK_KEY) === '1'; } catch (e) {}
+    function setPeek(on) {
+        peekMode = !!on;
+        try { localStorage.setItem(PEEK_KEY, peekMode ? '1' : '0'); } catch (e) {}
+    }
+
     /* scroll: 'top'(默认) 回顶 | 'feedback' 滚到答题反馈 | 'none' 不动 */
     function renderPracticeQuestion(scroll) {
         var q = practice.list[practice.idx];
         if (!q) return;
         var n = practice.idx + 1, total = practice.list.length;
         var pick = practice.picks[q.id];
+        practice.reveal = practice.reveal || {};
+        var peeked = pick === undefined && (peekMode || practice.reveal[q.id]);
+        var shown = pick !== undefined || peeked;   // 是否已显示答案
         var subName = SUBJECTS[q.subject] ? SUBJECTS[q.subject].short : q.subject;
         var typeTag = q.type === '案例' ? (isMulti(q) ? '案例·多选' : '案例题')
             : (isMulti(q) ? '多选题' : (q.type === '判断' ? '判断题' : ''));
@@ -514,6 +526,11 @@
             + '<span class="q-meta">' + (practice.title ? esc(practice.title) : esc(subName) + ' · ' + esc(q.source)) + '</span>'
             + '<span class="q-progress-text">' + n + ' / ' + total + '</span></div>'
             + '<div class="q-progress"><i style="width:' + (n / total * 100) + '%"></i></div>'
+            + '<div class="q-peek-bar">'
+            + '<button class="q-peek-toggle' + (peekMode ? ' on' : '') + '" id="q-peek-toggle">'
+            + (peekMode ? '👁 背题模式：开' : '👁 背题模式：关') + '</button>'
+            + '<span class="q-peek-hint">' + (peekMode ? '每题直接显示答案与解析，不记入错题本' : '开启后可直接看答案刷题') + '</span>'
+            + '</div>'
             + '<article class="q-card">'
             + '<div class="q-stem"><b>' + n + '.</b> ' + esc(q.q)
             + (typeTag ? ' <span class="q-multitag">' + typeTag + '</span>' : '') + '</div>'
@@ -524,32 +541,39 @@
         q.options.forEach(function (opt, i) {
             var L = letters[i];
             var cls = 'q-opt';
-            if (pick !== undefined) {
+            if (shown) {
                 if (q.answer.indexOf(L) > -1) cls += ' correct';
-                else if (pick.indexOf(L) > -1) cls += ' wrong';
+                else if (pick !== undefined && pick.indexOf(L) > -1) cls += ' wrong';
             } else if (isMulti(q) && multiSel.indexOf(L) > -1) {
                 cls += ' picked';
             }
             html += '<button class="' + cls + '" data-pick="' + L + '"'
-                + (pick !== undefined ? ' disabled' : '') + '>'
+                + (shown ? ' disabled' : '') + '>'
                 + '<i>' + L + '</i><span>' + esc(opt) + '</span></button>';
         });
 
         html += '</div>';
 
         // 多选题：未作答时显示提交按钮
-        if (pick === undefined && isMulti(q)) {
+        if (!shown && isMulti(q)) {
             html += '<button class="btn primary q-multi-ok" id="q-multi-ok"'
                 + (multiSel.length ? '' : ' disabled') + '>'
                 + (multiSel.length ? '提交答案（已选 ' + multiSel.length + ' 项）' : '请勾选答案后提交')
                 + '</button>';
         }
 
-        if (pick !== undefined) {
-            var right = pick === q.answer;
-            html += '<div class="q-feedback ' + (right ? 'ok' : 'no') + '">'
-                + (right ? '✓ 回答正确' : '✗ 回答错误 · 正确答案 ' + q.answer + (isMulti(q) ? '（多选）' : ''))
-                + (mode_eraseWrongNote(q)) + '</div>';
+        // 非背题模式下，可单题直接看答案
+        if (!shown) {
+            html += '<button class="q-peek-one" id="q-peek-one">👁 直接看答案</button>';
+        }
+
+        if (shown) {
+            var right = pick !== undefined && pick === q.answer;
+            var head = pick !== undefined
+                ? (right ? '✓ 回答正确' : '✗ 回答错误 · 正确答案 ' + q.answer + (isMulti(q) ? '（多选）' : ''))
+                : '👁 正确答案 ' + q.answer + (isMulti(q) ? '（多选）' : '') + ' · 背题模式，本题不计入错题';
+            html += '<div class="q-feedback ' + (pick !== undefined ? (right ? 'ok' : 'no') : 'peek') + '">'
+                + head + (pick !== undefined ? mode_eraseWrongNote(q) : '') + '</div>';
             if (q.explain) {
                 html += '<div class="q-explain"><b>解析</b>' + esc(q.explain) + '</div>';
             }
@@ -597,7 +621,19 @@
         var fixlink = document.getElementById('q-fixlink');
         if (fixlink) fixlink.addEventListener('click', function () { openQFix(q); });
 
-        if (pick !== undefined) fillKnowledge(q);
+        var peekToggle = document.getElementById('q-peek-toggle');
+        if (peekToggle) peekToggle.addEventListener('click', function () {
+            setPeek(!peekMode);
+            renderPracticeQuestion('none');
+        });
+
+        var peekOne = document.getElementById('q-peek-one');
+        if (peekOne) peekOne.addEventListener('click', function () {
+            practice.reveal[q.id] = 1;
+            renderPracticeQuestion('feedback');
+        });
+
+        if (shown) fillKnowledge(q);
 
         document.getElementById('q-prev').addEventListener('click', function () {
             if (practice.idx > 0) { practice.idx--; renderPracticeQuestion(); }
@@ -839,7 +875,7 @@
         }
         practice.list = due;
         practice.idx = 0;
-        practice.picks = {};
+        practice.picks = {}; practice.reveal = {};
         practice.multiSel = {};
         practice.mode = 'review';
         practice.title = '今日复习 · ' + SUBJECTS[subject].short + '（' + due.length + ' 题到期）';
@@ -961,7 +997,7 @@
     function startSetPractice(s, title, backHash) {
         practice.list = s.questions;
         practice.idx = 0;
-        practice.picks = {};
+        practice.picks = {}; practice.reveal = {};
         practice.multiSel = {};
         practice.mode = 'order';
         practice.title = title;
@@ -1093,7 +1129,7 @@
         var name = sub === 'law' ? '法规' : '金融';
         practice.list = qs;
         practice.idx = 0;
-        practice.picks = {};
+        practice.picks = {}; practice.reveal = {};
         practice.multiSel = {};
         practice.mode = 'order';
         practice.title = '考前重点押题 · ' + name + '三卷连刷（' + qs.length + ' 题）';
@@ -1109,7 +1145,7 @@
             if (!p) { renderPapers(null); return; }
             practice.list = p.qIds.map(function (i) { return BANK[i]; });
             practice.idx = 0;
-            practice.picks = {};
+            practice.picks = {}; practice.reveal = {};
             practice.multiSel = {};
             practice.mode = 'order';
             practice.title = '历年真题 · ' + p.name;

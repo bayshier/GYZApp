@@ -267,33 +267,52 @@
         var qs = bankOf(code);
         var c = byCode(code);
         if (!qs.length || !c) { location.hash = '#/course/' + code; return; }
-        var i = 0, picks = {};
+        var i = 0, picks = {}, reveals = {};
+        var PEEK_KEY = 'zk-peek-mode';
+        var peek = false;
+        try { peek = localStorage.getItem(PEEK_KEY) === '1'; } catch (e) {}
+        function setPeek(v) {
+            peek = !!v;
+            try { localStorage.setItem(PEEK_KEY, peek ? '1' : '0'); } catch (e) {}
+        }
 
         function draw() {
             var q = qs[i];
             var pick = picks[q.id];
+            var peeked = !pick && (peek || reveals[q.id]);
+            var shown = !!pick || peeked;
             var letters = ['A', 'B', 'C', 'D'];
             var html = '<div class="q-topbar"><a class="btn ghost" href="#/course/' + code + '">← 课程</a>'
                 + '<span class="q-meta">' + esc(c.name) + ' · 真题练习</span>'
                 + '<span class="q-progress-text">' + (i + 1) + ' / ' + qs.length + '</span></div>'
                 + '<div class="q-progress"><i style="width:' + ((i + 1) / qs.length * 100) + '%"></i></div>'
+                + '<div class="q-peek-bar">'
+                + '<button class="q-peek-toggle' + (peek ? ' on' : '') + '" id="zk-peek-toggle">'
+                + (peek ? '👁 背题模式：开' : '👁 背题模式：关') + '</button>'
+                + '<span class="q-peek-hint">' + (peek ? '每题直接显示答案与解析，不记入错题本' : '开启后可直接看答案刷题') + '</span>'
+                + '</div>'
                 + '<article class="q-card">'
                 + '<div class="q-stem"><b>' + (i + 1) + '.</b> ' + esc(q.q) + '</div><div class="q-options">';
             q.options.forEach(function (opt, j) {
                 var L = letters[j];
                 var cls = 'q-opt';
-                if (pick) {
+                if (shown) {
                     if (L === q.answer) cls += ' correct';
-                    else if (L === pick) cls += ' wrong';
+                    else if (pick && L === pick) cls += ' wrong';
                 }
-                html += '<button class="' + cls + '" data-l="' + L + '"' + (pick ? ' disabled' : '') + '>'
+                html += '<button class="' + cls + '" data-l="' + L + '"' + (shown ? ' disabled' : '') + '>'
                     + '<i>' + L + '</i><span>' + esc(opt) + '</span></button>';
             });
             html += '</div>';
-            if (pick) {
-                var right = pick === q.answer;
-                html += '<div class="q-feedback ' + (right ? 'ok' : 'no') + '">'
-                    + (right ? '✓ 正确' : '✗ 错误 · 答案 ' + q.answer) + ' · ' + esc(q.source || '') + '</div>';
+            if (!shown) {
+                html += '<button class="q-peek-one" id="zk-peek-one">👁 直接看答案</button>';
+            }
+            if (shown) {
+                var right = !!pick && pick === q.answer;
+                html += '<div class="q-feedback ' + (pick ? (right ? 'ok' : 'no') : 'peek') + '">'
+                    + (pick ? (right ? '✓ 正确' : '✗ 错误 · 答案 ' + q.answer)
+                            : '👁 正确答案 ' + q.answer + ' · 背题模式，本题不计入错题')
+                    + ' · ' + esc(q.source || '') + '</div>';
             }
             html += '</article><div class="q-nav">'
                 + '<button class="btn" id="zk-prev"' + (i === 0 ? ' disabled' : '') + '>← 上一题</button>'
@@ -303,7 +322,7 @@
 
             view.querySelectorAll('.q-opt').forEach(function (b) {
                 b.addEventListener('click', function () {
-                    if (picks[q.id]) return;
+                    if (shown) return;
                     var L = b.dataset.l;
                     picks[q.id] = L;
                     var ok = L === q.answer;
@@ -313,6 +332,10 @@
                     draw();
                 });
             });
+            var tk = document.getElementById('zk-peek-toggle');
+            if (tk) tk.addEventListener('click', function () { setPeek(!peek); draw(); });
+            var po = document.getElementById('zk-peek-one');
+            if (po) po.addEventListener('click', function () { reveals[q.id] = 1; draw(); });
             document.getElementById('zk-prev').addEventListener('click', function () { if (i > 0) { i--; window.scrollTo(0, 0); draw(); } });
             document.getElementById('zk-next').addEventListener('click', function () {
                 if (i < qs.length - 1) { i++; window.scrollTo(0, 0); draw(); } else location.hash = '#/course/' + code;

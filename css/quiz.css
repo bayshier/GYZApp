@@ -858,3 +858,33 @@ body {
     .qfh-runs { grid-template-columns: 1fr; }
     .qfh-txt i { font-size: 11.5px; }
 }
+
+/* ---------- 背题模式（直接显示答案） ---------- */
+.q-peek-bar {
+    display: flex; align-items: center; gap: 10px;
+    margin: 0 0 12px; flex-wrap: wrap;
+}
+.q-peek-toggle {
+    font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer;
+    color: var(--text-light); background: var(--card);
+    border: 1px solid var(--border); border-radius: 13px; padding: 6px 13px;
+    transition: all .15s;
+}
+.q-peek-toggle:hover { border-color: var(--accent); color: var(--brand); }
+.q-peek-toggle.on {
+    color: #fff; border-color: #7b61ff;
+    background: linear-gradient(135deg, #5b46b8, #7b61ff);
+    box-shadow: 0 3px 10px rgba(123, 97, 255, .28);
+}
+.q-peek-hint { font-size: 11.5px; color: var(--text-light); }
+.q-peek-one {
+    display: block; width: 100%; margin-top: 14px;
+    font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+    color: #4a3a9e; background: #f2efff; border: 1px dashed #b3a6f0;
+    border-radius: 10px; padding: 9px 12px; transition: background .15s, border-color .15s;
+}
+.q-peek-one:hover { background: #e9e3ff; border-color: #7b61ff; }
+/* 背题反馈条（未作答直接看答案） */
+.q-feedback.peek {
+    color: #4a3a9e; background: #f2efff; border-left-color: #7b61ff;
+}
